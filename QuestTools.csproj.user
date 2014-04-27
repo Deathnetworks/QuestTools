@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
+    <StartAction>Program</StartAction>
+    <StartProgram>C:\db\Demonbuddy.exe</StartProgram>
+    <StartArguments>-key="3W5J9L4P1W6Y4E2G5A4B" -routine "GilesPlugin" -noflash -autostart -noupdate</StartArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <StartAction>Program</StartAction>
+    <StartProgram>C:\db\Demonbuddy.exe</StartProgram>
+    <StartArguments>-key="3F8O2B4N6H3O4T2O9U7P" -routine "Trinity" -noflash -noupdate</StartArguments>
+    <StartWorkingDirectory>C:\db\</StartWorkingDirectory>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ProjectView>ShowAllFiles</ProjectView>
+  </PropertyGroup>
+</Project>
