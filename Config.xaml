@@ -16,16 +16,16 @@
     <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
         <StackPanel HorizontalAlignment="Center">
             <WrapPanel HorizontalAlignment="Right">
+                <TextBlock Text="Skip Cut Scenes" Margin="0,0,10,0" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                <CheckBox IsChecked="{Binding Path=SkipCutScenes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+            </WrapPanel>
+            <WrapPanel HorizontalAlignment="Right">
                 <TextBlock Text="Use Debug Logging" Margin="0,0,10,0" HorizontalAlignment="Right" VerticalAlignment="Center" />
                 <CheckBox IsChecked="{Binding Path=DebugEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
             </WrapPanel>
             <WrapPanel HorizontalAlignment="Right">
                 <TextBlock Text="Allow Profile Reloading" Margin="0,0,10,0" HorizontalAlignment="Right"  VerticalAlignment="Center"/>
                 <CheckBox IsChecked="{Binding Path=AllowProfileReloading, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-            </WrapPanel>
-            <WrapPanel HorizontalAlignment="Right">
-                <TextBlock Text="Reload Profile on Death" Margin="0,0,10,0" HorizontalAlignment="Right"  VerticalAlignment="Center"/>
-                <CheckBox IsChecked="{Binding Path=ReloadProfileOnDeath, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
             </WrapPanel>
             <WrapPanel HorizontalAlignment="Right">
                 <TextBlock Text="Allow Profile Restarts" Margin="0,0,10,0" HorizontalAlignment="Right"  VerticalAlignment="Center"/>

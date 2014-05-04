@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using QuestTools.Helpers;
 using Zeta.Bot;
 using Zeta.Bot.Profile;
 using Zeta.Game;
@@ -8,11 +9,13 @@ using Zeta.TreeSharp;
 using Zeta.XmlEngine;
 using Action = Zeta.TreeSharp.Action;
 
-namespace QuestTools
+namespace QuestTools.ProfileTags
 {
     [XmlElement("ResumeUseTownPortal")]
     public class ResumeUseTownPortalTag : ProfileBehavior
     {
+        public ResumeUseTownPortalTag() { }
+
         private bool _isDone = false;
         public override bool IsDone { get { return _isDone; } }
 
@@ -38,10 +41,10 @@ namespace QuestTools
                 new Decorator(ret => !ZetaDia.IsInTown,
                     new Action(ret => _isDone = true)
                 ),
-                new Decorator(ret => DateTime.UtcNow.Subtract(QuestTools.LastJoinedGame).TotalSeconds > TimeLimit && !ForceUsePortal,
+                new Decorator(ret => DateTime.UtcNow.Subtract(BotEvents.LastJoinedGame).TotalSeconds > TimeLimit && !ForceUsePortal,
                     new Action(ret => ResumeWindowBreached())
                 ),
-                new Decorator(ret => DateTime.UtcNow.Subtract(QuestTools.LastJoinedGame).TotalSeconds <= TimeLimit || ForceUsePortal,
+                new Decorator(ret => DateTime.UtcNow.Subtract(BotEvents.LastJoinedGame).TotalSeconds <= TimeLimit || ForceUsePortal,
                     new Decorator(ret => IsTownPortalNearby,
                         new Sequence(
                             new Action(ret => Logger.Log("Taking town portal back")),

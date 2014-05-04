@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Linq;
+using QuestTools.Helpers;
 using Zeta.Bot.Navigation;
 using Zeta.Bot.Profile;
 using Zeta.Common;
@@ -11,11 +12,13 @@ using Zeta.TreeSharp;
 using Zeta.XmlEngine;
 using Action = Zeta.TreeSharp.Action;
 
-namespace QuestTools
+namespace QuestTools.ProfileTags
 {
     [XmlElement("CustomBehavior")]
     class CustomBehavior : ProfileBehavior
     {
+        public CustomBehavior() { }
+
         private bool isDone = false;
         /// <summary>
         /// Setting this to true will cause the Tree Walker to continue to the next profile tag
@@ -100,7 +103,7 @@ namespace QuestTools
         private void PrintInfoToLog()
         {
             string info = string.Format("questId=\"{0}\" stepId=\"{1}\" {2} CurrentWorldId=={3} and CurrentLevelAreaId=={4}",
-                ZetaDia.CurrentQuest.QuestSNO, ZetaDia.CurrentQuest.StepId, QuestTools.GetProfilePosition(ZetaDia.Me.Position), ZetaDia.CurrentWorldId, ZetaDia.CurrentLevelAreaId);
+                ZetaDia.CurrentQuest.QuestSNO, ZetaDia.CurrentQuest.StepId, StringUtils.GetProfileCoordinates(ZetaDia.Me.Position), ZetaDia.CurrentWorldId, ZetaDia.CurrentLevelAreaId);
             Logger.Log(info);
         }
 

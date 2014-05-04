@@ -4,15 +4,17 @@ using Zeta.TreeSharp;
 using Zeta.XmlEngine;
 using Action = Zeta.TreeSharp.Action;
 
-namespace QuestTools
+namespace QuestTools.ProfileTags
 {
     [XmlElement("ConfirmOK")]
-    class ConfirmOK : ProfileBehavior
+    class ConfirmOkTag : ProfileBehavior
     {
-        private bool isDone = false;
+        public ConfirmOkTag() { }
+
+        private bool _isDone;
         public override bool IsDone
         {
-            get { return isDone; }
+            get { return _isDone; }
         }
 
         protected override Composite CreateBehavior()
@@ -23,23 +25,23 @@ namespace QuestTools
                     new Sequence(
                         new Action(ret => Logger.Log("Clicking ConfirmationDialogOkButton")),
                         new Action(ret => GameUI.SafeClickElement(UIElements.ConfirmationDialogOkButton, "ConfirmationDialogOKButton")),
-                        new Action(ret => isDone = true)
+                        new Action(ret => _isDone = true)
                     )
                 ),
                 new Decorator(ret => GameUI.IsElementVisible(GameUI.GenericOK),
                     new Sequence(
                         new Action(ret => Logger.Log("Clicking GenericOK")),
                         new Action(ret => GameUI.SafeClickElement(UIElements.ConfirmationDialogOkButton, "GenericOK")),
-                        new Action(ret => isDone = true)
+                        new Action(ret => _isDone = true)
                     )
                 ),
-                new Action(ret => isDone = true)
+                new Action(ret => _isDone = true)
             );            
         }
 
         public override void ResetCachedDone()
         {
-            isDone = false;
+            _isDone = false;
             base.ResetCachedDone();
         }
 

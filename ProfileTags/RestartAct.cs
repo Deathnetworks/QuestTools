@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Text.RegularExpressions;
 using Zeta.Bot;
 using Zeta.Bot.Profile;
 using Zeta.Game;
@@ -8,12 +7,13 @@ using Zeta.TreeSharp;
 using Zeta.XmlEngine;
 using Action = Zeta.TreeSharp.Action;
 
-namespace QuestTools
+namespace QuestTools.ProfileTags
 {
     [XmlElement("RestartAct")]
-    public class RestartAct : ProfileBehavior
+    public class RestartActTag : ProfileBehavior
     {
-        private bool _isDone = false;
+        public RestartActTag() { }
+        private bool _isDone;
         public override bool IsDone { get { return _isDone; } }
 
         public override void OnStart()
@@ -29,8 +29,6 @@ namespace QuestTools
 
         private RunStatus ForceRestartAct()
         {
-            Regex questingProfileName = new Regex(@"Act \d by rrrix");
-
             string act = "";
 
             switch (ZetaDia.CurrentAct)
@@ -44,8 +42,6 @@ namespace QuestTools
                 case Act.A4: act = "Act4";
                     break;
                 case Act.A5: act = "Act5";
-                    break;
-                default:
                     break;
             }
 

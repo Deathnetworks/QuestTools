@@ -36,5 +36,21 @@ namespace QuestTools
 			1938876101,
 			1938876102,
 		};
+        public static HashSet<int> ForceTownPortalLevelAreaIds { get { return DataDictionary.forceTownPortalLevelAreaIds; } }
+        private static readonly HashSet<int> forceTownPortalLevelAreaIds = new HashSet<int>
+        {
+            55313, // Act 2 Caldeum Bazaar
+        };
+        public static HashSet<int> BountyTurnInQuests { get { return DataDictionary.bountyTurnInQuests; } }
+        private static readonly HashSet<int> bountyTurnInQuests = new HashSet<int>()
+        {
+            356988, //x1_AdventureMode_BountyTurnin_A1 
+            356994, //x1_AdventureMode_BountyTurnin_A2 
+            356996, //x1_AdventureMode_BountyTurnin_A3 
+            356999, //x1_AdventureMode_BountyTurnin_A4 
+            357001, //x1_AdventureMode_BountyTurnin_A5 
+        };
+
+
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using QuestTools.Helpers;
 using Zeta.Bot;
 using Zeta.Bot.Navigation;
 using Zeta.Bot.Profile;
@@ -12,11 +13,13 @@ using Zeta.TreeSharp;
 using Zeta.XmlEngine;
 using Action = Zeta.TreeSharp.Action;
 
-namespace QuestTools
+namespace QuestTools.ProfileTags
 {
     [XmlElement("MoveToActor")]
     class MoveToActor : ProfileBehavior
     {
+        public MoveToActor() { }
+
         private bool _done = false;
         public override bool IsDone
         {
@@ -111,7 +114,6 @@ namespace QuestTools
 
         private int completedInteractions = 0;
         private int startingWorldId = 0;
-        private bool _initComplete = false;
         private DateTime lastInteract = DateTime.MinValue;
         private DateTime lastPositionUpdate = DateTime.UtcNow;
         private DateTime tagStartTime = DateTime.MinValue;
@@ -349,7 +351,7 @@ namespace QuestTools
         private Composite InteractSequence()
         {
             return
-            new Decorator(ret => QuestTools.IsPlayerValid(),
+            new Decorator(ret => Player.IsPlayerValid(),
                 new PrioritySelector(
                     new Decorator(ret => DungeonStonesPresent && (GameUI.IsElementVisible(GameUI.GenericOK) || GameUI.IsElementVisible(UIElements.ConfirmationDialogOkButton)),
                         new Sequence(
@@ -619,7 +621,7 @@ namespace QuestTools
                 if (actor != null && actor.IsValid && actor.CommonData != null && actor.CommonData.Position != null)
                 {
                     status += String.Format(" actorId=\"{0}\", Name={1} InLineOfSight={2} ActorType={3} Position= {4}",
-                        actor.ActorSNO, actor.Name, actor.InLineOfSight, actor.ActorType, QuestTools.GetProfileCoordinates(actor.Position));
+                        actor.ActorSNO, actor.Name, actor.InLineOfSight, actor.ActorType, StringUtils.GetProfileCoordinates(actor.Position));
                 }
             }
             catch (Exception ex)

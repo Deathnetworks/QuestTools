@@ -11,10 +11,10 @@ namespace QuestTools
     class QuestToolsSettings : XmlSettings
     {
         private static QuestToolsSettings _instance;
-        private bool debugEnabled;
-        private bool allowProfileReloading;
-        private bool reloadProfileOnDeath;
-        private bool allowProfileRestarts;
+        private bool _debugEnabled;
+        private bool _allowProfileReloading;
+        private bool _allowProfileRestarts;
+        private bool _skipCutScenes;
 
         private static string _battleTagName;
         public static string BattleTagName
@@ -44,11 +44,11 @@ namespace QuestTools
         {
             get
             {
-                return debugEnabled;
+                return _debugEnabled;
             }
             set
             {
-                debugEnabled = value;
+                _debugEnabled = value;
                 OnPropertyChanged("DebugEnabled");
             }
         }
@@ -60,28 +60,12 @@ namespace QuestTools
         {
             get
             {
-                return allowProfileReloading;
+                return _allowProfileReloading;
             }
             set
             {
-                allowProfileReloading = value;
+                _allowProfileReloading = value;
                 OnPropertyChanged("AllowProfileReloading");
-            }
-        }
-
-        [XmlElement("ReloadProfileOnDeath")]
-        [DefaultValue(false)]
-        [Setting]
-        public bool ReloadProfileOnDeath
-        {
-            get
-            {
-                return reloadProfileOnDeath;
-            }
-            set
-            {
-                reloadProfileOnDeath = value;
-                OnPropertyChanged("ReloadProfileOnDeath");
             }
         }
 
@@ -92,12 +76,29 @@ namespace QuestTools
         {
             get
             {
-                return allowProfileRestarts;
+                return _allowProfileRestarts;
             }
             set
             {
-                allowProfileRestarts = value;
+                _allowProfileRestarts = value;
                 OnPropertyChanged("AllowProfileRestarts");
+            }
+        }
+
+
+        [XmlElement("SkipCutScenes")]
+        [DefaultValue(true)]
+        [Setting]
+        public bool SkipCutScenes
+        {
+            get
+            {
+                return _skipCutScenes;
+            }
+            set
+            {
+                _skipCutScenes = value;
+                OnPropertyChanged("SkipCutScenes");
             }
         }
 

@@ -14,12 +14,13 @@ using Zeta.TreeSharp;
 using Zeta.XmlEngine;
 using Action = Zeta.TreeSharp.Action;
 
-namespace QuestTools
+namespace QuestTools.ProfileTags.Movement
 {
     [XmlElement("MoveToMapMarker")]
     public class MoveToMapMarker : ProfileBehavior
     {
-        private bool isDone = false;
+        public MoveToMapMarker() { }
+        private bool _isDone;
         /// <summary>
         /// Setting this to true will cause the Tree Walker to continue to the next profile tag
         /// </summary>
@@ -27,7 +28,7 @@ namespace QuestTools
         {
             get
             {
-                return !IsActiveQuestStep || isDone;
+                return !IsActiveQuestStep || _isDone;
             }
         }
 
@@ -103,7 +104,7 @@ namespace QuestTools
         [XmlAttribute("timeoutSeconds")]
         public int TimeoutSeconds { get; set; }
 
-        private Vector3 position;
+        private Vector3 _position;
         /// <summary>
         /// This is the calculated position from X,Y,Z
         /// </summary>
@@ -111,66 +112,60 @@ namespace QuestTools
         {
             get
             {
-                if (position == Vector3.Zero)
-                    position = new Vector3(X, Y, Z);
-                return position;
+                if (_position == Vector3.Zero)
+                    _position = new Vector3(X, Y, Z);
+                return _position;
             }
         }
 
-        private bool clientNavFailed = false;
-        private bool initialized = false;
+        private bool _clientNavFailed;
 
-        private int timeoutSecondsDefault = 600;
-        private int completedInteractAttempts = 0;
-        private int currentStuckCount = 0;
-        private int maxStuckCountSeconds = 30;
-        private int maxStuckRange = 15;
-        private int startWorldId = -1;
+        private const int TimeoutSecondsDefault = 600;
+        private const int MaxStuckCountSeconds = 30;
+        private const int MaxStuckRange = 15;
+        private int _completedInteractAttempts;
+        private int _currentStuckCount;
+        private int _startWorldId = -1;
 
-        private Vector3 lastPosition = Vector3.Zero;
-        private DateTime behaviorStartTime = DateTime.MinValue;
-        private DateTime stuckStart = DateTime.MinValue;
-        private DateTime lastCheckedStuck = DateTime.MinValue;
+        private Vector3 _lastPosition = Vector3.Zero;
+        private DateTime _behaviorStartTime = DateTime.MinValue;
+        private DateTime _stuckStart = DateTime.MinValue;
+        private DateTime _lastCheckedStuck = DateTime.MinValue;
 
-        private MinimapMarker miniMapMarker;
-        private DiaObject actor;
+        private MinimapMarker _miniMapMarker;
+        private DiaObject _actor;
 
-        private MoveResult lastMoveResult = MoveResult.Moved;
+        private MoveResult _lastMoveResult = MoveResult.Moved;
 
         /// <summary>
         /// The last seen position of the minimap marker, as it can disappear if you stand on it
         /// </summary>
-        private Vector3 mapMarkerLastPosition = new Vector3();
-        private Point my2DPoint = Point.Empty;
-        private Point destination2DPoint = Point.Empty;
+        private Vector3 _mapMarkerLastPosition;
 
         public override void OnStart()
         {
             // set defaults
-            if (PathPrecision == 0)
+            if (Math.Abs(PathPrecision) < 1f)
                 PathPrecision = 20;
             if (PathPointLimit == 0)
                 PathPointLimit = 250;
-            if (InteractRange == 0)
+            if (Math.Abs(InteractRange) < 1f)
                 InteractRange = 10;
             if (InteractAttempts == 0)
                 InteractAttempts = 5;
             if (TimeoutSeconds == 0)
-                TimeoutSeconds = timeoutSecondsDefault;
-            if (behaviorStartTime == DateTime.MinValue)
-                behaviorStartTime = DateTime.UtcNow;
+                TimeoutSeconds = TimeoutSecondsDefault;
+            if (_behaviorStartTime == DateTime.MinValue)
+                _behaviorStartTime = DateTime.UtcNow;
             if (MaxSearchDistance <= 0)
                 MaxSearchDistance = 10;
 
-            lastPosition = Vector3.Zero;
-            lastInteractTime = DateTime.MinValue;
-            stuckStart = DateTime.UtcNow;
-            lastCheckedStuck = DateTime.UtcNow;
-            lastMoveResult = MoveResult.Moved;
-            completedInteractAttempts = 0;
-            startWorldId = ZetaDia.CurrentWorldId;
-
-            initialized = true;
+            _lastPosition = Vector3.Zero;
+            _stuckStart = DateTime.UtcNow;
+            _lastCheckedStuck = DateTime.UtcNow;
+            _lastMoveResult = MoveResult.Moved;
+            _completedInteractAttempts = 0;
+            _startWorldId = ZetaDia.CurrentWorldId;
 
             Navigator.Clear();
             Logger.Debug("Initialized {0}", Status());
@@ -187,30 +182,30 @@ namespace QuestTools
                 new DecoratorContinue(ret => ZetaDia.Me.IsDead || ZetaDia.IsLoadingWorld,
                     new Sequence(
                       new Action(ret => Logger.Log("IsDead={0} IsLoadingWorld={1}", ZetaDia.Me.IsDead, ZetaDia.IsLoadingWorld)),
-                      new Action(ret => { return RunStatus.Failure; })
+                      new Action(ret => RunStatus.Failure)
                    )
                ),
-                new DecoratorContinue(ret => lastMoveResult == MoveResult.ReachedDestination && actor == null,
+                new DecoratorContinue(ret => _lastMoveResult == MoveResult.ReachedDestination && _actor == null,
                     new Sequence(
-                        new Action(ret => Logger.Log("{0}, finished!", lastMoveResult)),
-                        new Action(ret => isDone = true),
-                        new Action(ret => { return RunStatus.Failure; })
+                        new Action(ret => Logger.Log("{0}, finished!", _lastMoveResult)),
+                        new Action(ret => _isDone = true),
+                        new Action(ret => RunStatus.Failure)
                     )
                 ),
                 CheckTimeout(),
                 new Action(ret => FindMiniMapMarker()),
-                new DecoratorContinue(ret => mapMarkerLastPosition != Vector3.Zero,
+                new DecoratorContinue(ret => _mapMarkerLastPosition != Vector3.Zero,
                     new Action(ret => RefreshActorInfo())
                 ),
-                new DecoratorContinue(ret => actor == null && miniMapMarker == null && Position == Vector3.Zero,
+                new DecoratorContinue(ret => _actor == null && _miniMapMarker == null && Position == Vector3.Zero,
                     new Sequence(
-                        new Action(ret => miniMapMarker = GetRiftExitMarker())
+                        new Action(ret => _miniMapMarker = GetRiftExitMarker())
                     )
                 ),
-                new DecoratorContinue(ret => actor == null && miniMapMarker == null && Position == Vector3.Zero,
+                new DecoratorContinue(ret => _actor == null && _miniMapMarker == null && Position == Vector3.Zero,
                     new Sequence(
                         new Action(ret => Logger.Debug("Error: Could not find MiniMapMarker nor PortalObject nor Position {0}", Status())),
-                        new Action(ret => isDone = true)
+                        new Action(ret => _isDone = true)
                     )
                 ),
                 new Sequence(
@@ -222,32 +217,32 @@ namespace QuestTools
                         new Decorator(ret => GameUI.IsElementVisible(GameUI.GenericOK),
                             new Action(ret => Logger.Log("Generic OK is visible"))
                         ),
-                        new Decorator(ret => DestinationWorldId == -1 && ZetaDia.CurrentWorldId != startWorldId,
+                        new Decorator(ret => DestinationWorldId == -1 && ZetaDia.CurrentWorldId != _startWorldId,
                             new Sequence(
                                 new Action(ret => Logger.Log("World changed ({0} to {1}), destinationWorlId={2}, finished {3}",
-                                    startWorldId, ZetaDia.CurrentWorldId, DestinationWorldId, Status())),
-                                new Action(ret => isDone = true)
+                                    _startWorldId, ZetaDia.CurrentWorldId, DestinationWorldId, Status())),
+                                new Action(ret => _isDone = true)
                             )
                         ),
                         new Decorator(ret => DestinationWorldId != 0 && ZetaDia.CurrentWorldId == DestinationWorldId,
                             new Sequence(
                                 new Action(ret => Logger.Log("DestinationWorlId matched, finished {0}", Status())),
-                                new Action(ret => isDone = true)
+                                new Action(ret => _isDone = true)
                             )
                         ),
-                        new Decorator(ret => completedInteractAttempts > 1 && lastPosition.Distance(ZetaDia.Me.Position) > 4f,
+                        new Decorator(ret => _completedInteractAttempts > 1 && _lastPosition.Distance(ZetaDia.Me.Position) > 4f,
                             new Sequence(
-                                new Action(ret => isDone = true),
-                                new Action(ret => Logger.Log("Moved {0:0} yards after interaction, finished {1}", lastPosition.Distance(ZetaDia.Me.Position), Status()))
+                                new Action(ret => _isDone = true),
+                                new Action(ret => Logger.Log("Moved {0:0} yards after interaction, finished {1}", _lastPosition.Distance(ZetaDia.Me.Position), Status()))
                             )
                         ),
-                        new Decorator(ret => actor != null && actor.IsValid,
+                        new Decorator(ret => _actor != null && _actor.IsValid,
                             new PrioritySelector(
                                 MoveToActorOutsideRange(),
                                 UseActorIfInRange()
                             )
                         ),
-                        new Decorator(ret => miniMapMarker != null && actor == null,
+                        new Decorator(ret => _miniMapMarker != null && _actor == null,
                             new PrioritySelector(
                                 MoveToMapMarkerOnly(),
                                 MoveToMapMarkerSuccess()
@@ -275,87 +270,87 @@ namespace QuestTools
             // Special condition for Rift portals
             if (MapMarkerNameHash == 0 && Position == Vector3.Zero && ActorId == 0 && IsPortal && DestinationWorldId == -1)
             {
-                miniMapMarker = GetRiftExitMarker();
-                if (miniMapMarker != null)
+                _miniMapMarker = GetRiftExitMarker();
+                if (_miniMapMarker != null)
                 {
-                    MapMarkerNameHash = miniMapMarker.NameHash;
+                    MapMarkerNameHash = _miniMapMarker.NameHash;
                     Logger.Log("Using Rift Style Minimap Marker: {0} dist: {1:0} isExit: {2}",
-                        miniMapMarker.NameHash,
-                        miniMapMarker.Position.Distance2D(ZetaDia.Me.Position),
-                        miniMapMarker.IsPortalExit);
+                        _miniMapMarker.NameHash,
+                        _miniMapMarker.Position.Distance2D(ZetaDia.Me.Position),
+                        _miniMapMarker.IsPortalExit);
                 }
             }
 
             // find our map marker
-            if (miniMapMarker == null)
+            if (_miniMapMarker == null)
             {
                 if (Position != Vector3.Zero)
                 {
-                    miniMapMarker = ZetaDia.Minimap.Markers.CurrentWorldMarkers
+                    _miniMapMarker = ZetaDia.Minimap.Markers.CurrentWorldMarkers
                         .Where(marker => marker != null && marker.NameHash == MapMarkerNameHash &&
                             Position.Distance(marker.Position) < MaxSearchDistance)
                         .OrderBy(o => o.Position.Distance(ZetaDia.Me.Position)).FirstOrDefault();
                 }
                 else
                 {
-                    miniMapMarker = ZetaDia.Minimap.Markers.CurrentWorldMarkers
+                    _miniMapMarker = ZetaDia.Minimap.Markers.CurrentWorldMarkers
                         .Where(marker => marker != null && marker.NameHash == MapMarkerNameHash)
                         .OrderBy(o => o.Position.Distance(ZetaDia.Me.Position)).FirstOrDefault();
                 }
             }
-            if (miniMapMarker != null && miniMapMarker.Position != Vector3.Zero)
+            if (_miniMapMarker != null && _miniMapMarker.Position != Vector3.Zero)
             {
-                mapMarkerLastPosition = miniMapMarker.Position;
+                _mapMarkerLastPosition = _miniMapMarker.Position;
             }
 
         }
         private PrioritySelector CheckStuck()
         {
             return new PrioritySelector(
-                new Decorator(ret => currentStuckCount > 0 && DateTime.UtcNow.Subtract(stuckStart).TotalSeconds > maxStuckCountSeconds,
+                new Decorator(ret => _currentStuckCount > 0 && DateTime.UtcNow.Subtract(_stuckStart).TotalSeconds > MaxStuckCountSeconds,
                     new Action(delegate
                     {
-                        Logger.Debug("Looks like we're stuck since it's been {0} seconds stuck... finishing", DateTime.UtcNow.Subtract(stuckStart).TotalSeconds);
-                        isDone = true;
+                        Logger.Debug("Looks like we're stuck since it's been {0} seconds stuck... finishing", DateTime.UtcNow.Subtract(_stuckStart).TotalSeconds);
+                        _isDone = true;
                         return RunStatus.Success;
                     })
                 ),
-                new Decorator(ret => DateTime.UtcNow.Subtract(lastCheckedStuck).TotalMilliseconds < 500,
+                new Decorator(ret => DateTime.UtcNow.Subtract(_lastCheckedStuck).TotalMilliseconds < 500,
                     new Action(delegate
                         {
                             return RunStatus.Success;
                         }
                     )
                 ),
-                new Decorator(ret => ZetaDia.Me.Position.Distance(lastPosition) < maxStuckRange,
+                new Decorator(ret => ZetaDia.Me.Position.Distance(_lastPosition) < MaxStuckRange,
                     new Action(delegate
                     {
-                        currentStuckCount++;
-                        lastCheckedStuck = DateTime.UtcNow;
-                        lastPosition = ZetaDia.Me.Position;
-                        if (currentStuckCount > DateTime.UtcNow.Subtract(stuckStart).TotalSeconds * .5)
-                            clientNavFailed = true;
+                        _currentStuckCount++;
+                        _lastCheckedStuck = DateTime.UtcNow;
+                        _lastPosition = ZetaDia.Me.Position;
+                        if (_currentStuckCount > DateTime.UtcNow.Subtract(_stuckStart).TotalSeconds * .5)
+                            _clientNavFailed = true;
 
                         if (QuestTools.EnableDebugLogging)
                         {
-                            Logger.Debug("Stuck count: {0}", currentStuckCount);
+                            Logger.Debug("Stuck count: {0}", _currentStuckCount);
                         }
                         return RunStatus.Success;
                     })
                 ),
-                new Decorator(ret => ZetaDia.Me.Position.Distance(lastPosition) > maxStuckRange,
+                new Decorator(ret => ZetaDia.Me.Position.Distance(_lastPosition) > MaxStuckRange,
                     new Action(delegate
                     {
-                        currentStuckCount = 0;
-                        lastCheckedStuck = DateTime.UtcNow;
-                        lastPosition = ZetaDia.Me.Position;
+                        _currentStuckCount = 0;
+                        _lastCheckedStuck = DateTime.UtcNow;
+                        _lastPosition = ZetaDia.Me.Position;
 
                         return RunStatus.Success;
                     })
                 ),
                 new Action(delegate
                     {
-                        lastPosition = ZetaDia.Me.Position;
+                        _lastPosition = ZetaDia.Me.Position;
                         return RunStatus.Success;
                     }
                 )
@@ -364,9 +359,9 @@ namespace QuestTools
         private DecoratorContinue CheckTimeout()
         {
             return
-            new DecoratorContinue(ret => Math.Abs(DateTime.UtcNow.Subtract(behaviorStartTime).TotalSeconds) > TimeoutSeconds,
+            new DecoratorContinue(ret => Math.Abs(DateTime.UtcNow.Subtract(_behaviorStartTime).TotalSeconds) > TimeoutSeconds,
                 new Sequence(
-                    new Action(ret => isDone = true),
+                    new Action(ret => _isDone = true),
                     new Action(ret => Logger.Log("Timeout of {0} seconds exceeded in current behavior", TimeoutSeconds)),
                     new Action(ret => { return RunStatus.Failure; })
                 )
@@ -376,11 +371,11 @@ namespace QuestTools
         private Decorator MoveToMapMarkerSuccess()
         {
             return // moved to map marker successfully
-            new Decorator(ret => miniMapMarker != null && miniMapMarker.Position.Distance(ZetaDia.Me.Position) < PathPrecision,
+            new Decorator(ret => _miniMapMarker != null && _miniMapMarker.Position.Distance(ZetaDia.Me.Position) < PathPrecision,
                 new Action(delegate
                     {
-                        Logger.Debug("Successfully Moved to Map Marker {0}, distance: {1} {2}", miniMapMarker.NameHash, miniMapMarker.Position.Distance(ZetaDia.Me.Position), Status());
-                        isDone = true;
+                        Logger.Debug("Successfully Moved to Map Marker {0}, distance: {1} {2}", _miniMapMarker.NameHash, _miniMapMarker.Position.Distance(ZetaDia.Me.Position), Status());
+                        _isDone = true;
                         return RunStatus.Success;
                     }
                 )
@@ -390,55 +385,55 @@ namespace QuestTools
         {
             Vector3 myPos = ZetaDia.Me.Position;
 
-            if ((actor == null || (actor != null && !actor.IsValid)) && ActorId != 0)
+            if ((_actor == null || (_actor != null && !_actor.IsValid)) && ActorId != 0)
             {
-                actor = ZetaDia.Actors.GetActorsOfType<DiaObject>(true, false)
+                _actor = ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
                     .Where(o => o.IsValid && o.ActorSNO == ActorId && ActorWithinRangeOfMarker(o))
-                    .OrderBy(o => DistanceToMapMarker(o))
+                    .OrderBy(DistanceToMapMarker)
                     .FirstOrDefault();
             }
-            if (actor != null && actor.IsValid)
+            if (_actor != null && _actor.IsValid)
             {
                 if (QuestTools.EnableDebugLogging)
                 {
                     Logger.Debug("Found actor {0} {1} {2} of distance {3} from point {4}",
-                                        actor.ActorSNO, actor.Name, actor.ActorType, actor.Position.Distance(mapMarkerLastPosition), mapMarkerLastPosition);
+                                        _actor.ActorSNO, _actor.Name, _actor.ActorType, _actor.Position.Distance(_mapMarkerLastPosition), _mapMarkerLastPosition);
                 }
             }
-            else if (ActorId != 0 && Position != Vector3.Zero && position.Distance(ZetaDia.Me.Position) <= PathPrecision)
+            else if (ActorId != 0 && Position != Vector3.Zero && _position.Distance(ZetaDia.Me.Position) <= PathPrecision)
             {
-                actor = ZetaDia.Actors.GetActorsOfType<DiaObject>(true, false).Where(o => o != null && o.IsValid && o.ActorSNO == ActorId
+                _actor = ZetaDia.Actors.GetActorsOfType<DiaObject>(true).Where(o => o.IsValid && o.ActorSNO == ActorId
                    && o.Position.Distance2D(Position) <= PathPrecision).OrderBy(o => o.Distance).FirstOrDefault();
             }
-            else if (ActorId != 0 && mapMarkerLastPosition != Vector3.Zero && mapMarkerLastPosition.Distance(myPos) <= PathPrecision)
+            else if (ActorId != 0 && _mapMarkerLastPosition != Vector3.Zero && _mapMarkerLastPosition.Distance(myPos) <= PathPrecision)
             {
                 // No ActorID defined, using Marker position to find actor
-                actor = ZetaDia.Actors.GetActorsOfType<DiaObject>(true, false).Where(o => o != null && o.IsValid && o.ActorSNO == ActorId
-                   && o.Position.Distance2D(mapMarkerLastPosition) <= PathPrecision).OrderBy(o => o.Distance).FirstOrDefault();
+                _actor = ZetaDia.Actors.GetActorsOfType<DiaObject>(true).Where(o => o != null && o.IsValid && o.ActorSNO == ActorId
+                   && o.Position.Distance2D(_mapMarkerLastPosition) <= PathPrecision).OrderBy(o => o.Distance).FirstOrDefault();
             }
-            else if (ActorId == 0 && mapMarkerLastPosition != Vector3.Zero && mapMarkerLastPosition.Distance2D(myPos) <= 90)
+            else if (ActorId == 0 && _mapMarkerLastPosition != Vector3.Zero && _mapMarkerLastPosition.Distance2D(myPos) <= 90)
             {
-                actor = ZetaDia.Actors.GetActorsOfType<DiaObject>(true, false)
-                    .Where(a => a.Position.Distance2D(mapMarkerLastPosition) <= MaxSearchDistance)
-                    .OrderBy(a => a.Position.Distance2D(mapMarkerLastPosition)).FirstOrDefault();
+                _actor = ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
+                    .Where(a => a.Position.Distance2D(_mapMarkerLastPosition) <= MaxSearchDistance)
+                    .OrderBy(a => a.Position.Distance2D(_mapMarkerLastPosition)).FirstOrDefault();
 
-                if (actor != null)
+                if (_actor != null)
                 {
-                    InteractRange = actor.CollisionSphere.Radius;
+                    InteractRange = _actor.CollisionSphere.Radius;
                     Logger.Debug("Found Actor from Map Marker! mapMarkerPos={0} actor={1} {2} {3} {4}",
-                        mapMarkerLastPosition, actor.ActorSNO, actor.Name, actor.ActorType, actor.Position);
+                        _mapMarkerLastPosition, _actor.ActorSNO, _actor.Name, _actor.ActorType, _actor.Position);
                 }
             }
-            else if (mapMarkerLastPosition.Distance(ZetaDia.Me.Position) < PathPrecision)
+            else if (_mapMarkerLastPosition.Distance(ZetaDia.Me.Position) < PathPrecision)
             {
                 if (QuestTools.EnableDebugLogging)
                 {
                     Logger.Debug("Could not find an actor {0} within range {1} from point {2}",
-                                       ActorId, PathPrecision, mapMarkerLastPosition);
+                                       ActorId, PathPrecision, _mapMarkerLastPosition);
                 }
             }
 
-            if (actor != null && actor is GizmoPortal && !IsPortal)
+            if (_actor is GizmoPortal && !IsPortal)
             {
                 IsPortal = true;
             }
@@ -446,16 +441,16 @@ namespace QuestTools
 
         private float DistanceToMapMarker(DiaObject o)
         {
-            return o.Position.Distance(miniMapMarker.Position);
+            return o.Position.Distance(_miniMapMarker.Position);
         }
 
         private bool ActorWithinRangeOfMarker(DiaObject o)
         {
             bool test = false;
 
-            if (o != null && o.Position != null && miniMapMarker != null && miniMapMarker.Position != null)
+            if (o != null && _miniMapMarker != null)
             {
-                test = o.Position.Distance(miniMapMarker.Position) <= PathPrecision;
+                test = o.Position.Distance(_miniMapMarker.Position) <= PathPrecision;
             }
             return test;
         }
@@ -463,15 +458,15 @@ namespace QuestTools
         private Decorator MoveToActorOutsideRange()
         {
             return // move to the actor if defined and outside of InteractRange
-            new Decorator(ret => actor.Position.Distance2D(ZetaDia.Me.Position) > InteractRange,
+            new Decorator(ret => _actor.Position.Distance2D(ZetaDia.Me.Position) > InteractRange,
                 new Action(
                     delegate
                     {
-                        Logger.Debug("Moving to actor {0}, distance: {1} {2}", actor.ActorSNO, actor.Position.Distance(ZetaDia.Me.Position), Status());
-                        if (!Move(actor.Position))
+                        Logger.Debug("Moving to actor {0}, distance: {1} {2}", _actor.ActorSNO, _actor.Position.Distance(ZetaDia.Me.Position), Status());
+                        if (!Move(_actor.Position))
                         {
                             Logger.Debug("Move result failed, we're done {0}", Status());
-                            isDone = true;
+                            _isDone = true;
                             return RunStatus.Failure;
                         }
 
@@ -481,17 +476,16 @@ namespace QuestTools
             );
         }
 
-        private DateTime lastInteractTime = DateTime.MinValue;
         private Decorator UseActorIfInRange()
         {
             return // use the actor if defined and within range
-            new Wait(2, ret => actor.Position.Distance(ZetaDia.Me.Position) <= InteractRange && InteractAttempts > -1 && (completedInteractAttempts < InteractAttempts || IsPortal),
+            new Wait(2, ret => _actor.Position.Distance(ZetaDia.Me.Position) <= InteractRange && InteractAttempts > -1 && (_completedInteractAttempts < InteractAttempts || IsPortal),
                 new Sequence(
-                    new Action(ret => lastPosition = ZetaDia.Me.Position),
-                    new Action(ret => actor.Interact()),
-                    new Action(ret => completedInteractAttempts++),
+                    new Action(ret => _lastPosition = ZetaDia.Me.Position),
+                    new Action(ret => _actor.Interact()),
+                    new Action(ret => _completedInteractAttempts++),
                     new DecoratorContinue(ret => QuestTools.EnableDebugLogging,
-                        new Action(ret => Logger.Debug("Interacting with portal object {0}, result: {1}", actor.ActorSNO, Status()))
+                        new Action(ret => Logger.Debug("Interacting with portal object {0}, result: {1}", _actor.ActorSNO, Status()))
                     ),
                     new Sleep(500),
                     new Action(ret => GameEvents.FireWorldTransferStart())
@@ -502,11 +496,10 @@ namespace QuestTools
         private Decorator MoveToMapMarkerOnly()
         {
             return // just move to the map marker
-            new Decorator(ret => miniMapMarker != null && miniMapMarker.Position.Distance(ZetaDia.Me.Position) > PathPrecision,
+            new Decorator(ret => _miniMapMarker != null && _miniMapMarker.Position.Distance(ZetaDia.Me.Position) > PathPrecision,
                 new Action(delegate
                     {
-                        bool success = false;
-                        success = Move(miniMapMarker.Position, String.Format("Minimap Marker {0}", miniMapMarker.NameHash));
+                        bool success = Move(_miniMapMarker.Position, String.Format("Minimap Marker {0}", _miniMapMarker.NameHash));
 
                         if (!success)
                         {
@@ -516,7 +509,7 @@ namespace QuestTools
                         {
                             if (QuestTools.EnableDebugLogging)
                             {
-                                Logger.Debug("Moving to Map Marker {0}, distance: {1:0} {2}", miniMapMarker.NameHash, miniMapMarker.Position.Distance(ZetaDia.Me.Position), Status());
+                                Logger.Debug("Moving to Map Marker {0}, distance: {1:0} {2}", _miniMapMarker.NameHash, _miniMapMarker.Position.Distance(ZetaDia.Me.Position), Status());
                             }
                         }
 
@@ -529,7 +522,7 @@ namespace QuestTools
         private Decorator MoveToPosition()
         {
             return //Position defined only - can't find map marker nor actor
-            new Decorator(ret => miniMapMarker == null && Position != Vector3.Zero,
+            new Decorator(ret => _miniMapMarker == null && Position != Vector3.Zero,
                 new Action(delegate
                     {
                         bool moveStatus = false;
@@ -541,7 +534,7 @@ namespace QuestTools
                         else
                         {
                             Logger.Debug("Position Defined only - Within {0} of destination {1}", PathPrecision, Position);
-                            isDone = true;
+                            _isDone = true;
                         }
                         if (!moveStatus)
                         {
@@ -568,6 +561,10 @@ namespace QuestTools
         List<Vector3> validPoints = new List<Vector3>();
         private QTNavigator QTNavigator = new QTNavigator();
 
+        public MoveToMapMarker(Point destination2DPoint)
+        {
+        }
+
         /// <summary>
         /// Safely Moves the player to the requested destination <seealso cref="MoveToMapMarker.PathPointLimit"/>
         /// </summary>
@@ -581,17 +578,17 @@ namespace QuestTools
             if (StraightLinePathing)
             {
                 Navigator.PlayerMover.MoveTowards(newpos);
-                lastMoveResult = MoveResult.Moved;
+                _lastMoveResult = MoveResult.Moved;
                 result = true;
             }
 
             if (!ZetaDia.WorldInfo.IsGenerated)
             {
-                if (clientNavFailed && PathPointLimit > 20)
+                if (_clientNavFailed && PathPointLimit > 20)
                 {
                     PathPointLimit = PathPointLimit - 10;
                 }
-                else if (clientNavFailed && PathPointLimit <= 20)
+                else if (_clientNavFailed && PathPointLimit <= 20)
                 {
                     PathPointLimit = 250;
                 }
@@ -603,14 +600,14 @@ namespace QuestTools
             }
             float destinationDistance = newpos.Distance(ZetaDia.Me.Position);
 
-            lastMoveResult = QTNavigator.MoveTo(newpos, destinationName + String.Format(" distance={0:0}", destinationDistance), true);
+            _lastMoveResult = QTNavigator.MoveTo(newpos, destinationName + String.Format(" distance={0:0}", destinationDistance), true);
 
-            switch (lastMoveResult)
+            switch (_lastMoveResult)
             {
                 case MoveResult.Moved:
                 case MoveResult.ReachedDestination:
                 case MoveResult.UnstuckAttempt:
-                    clientNavFailed = false;
+                    _clientNavFailed = false;
                     result = true;
                     break;
                 case MoveResult.PathGenerated:
@@ -619,14 +616,14 @@ namespace QuestTools
                 case MoveResult.Failed:
                     Navigator.PlayerMover.MoveTowards(Position);
                     result = false;
-                    clientNavFailed = true;
+                    _clientNavFailed = true;
                     break;
             }
 
             if (QuestTools.EnableDebugLogging)
             {
                 Logger.Debug("MoveResult: {0}, newpos={1} Distance={2}, destinationName={3}",
-                    lastMoveResult.ToString(), newpos, newpos.Distance(ZetaDia.Me.Position), destinationName);
+                    _lastMoveResult.ToString(), newpos, newpos.Distance(ZetaDia.Me.Position), destinationName);
             }
             return result;
         }
@@ -667,8 +664,7 @@ namespace QuestTools
 
         public override void ResetCachedDone()
         {
-            isDone = false;
-            initialized = false;
+            _isDone = false;
             base.ResetCachedDone();
         }
 

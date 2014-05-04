@@ -33,6 +33,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "db-bounty-profiles", "..\..
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Trinity", "..\Trinity\Trinity\Trinity.csproj", "{997F24E1-4CD7-42C7-A5B5-4983636D5F2B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GearSwap", "..\GearSwap\GearSwap.csproj", "{42E23F72-7A47-4719-A5B4-E1A001CB90D6}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -217,6 +219,18 @@ Global
 		{997F24E1-4CD7-42C7-A5B5-4983636D5F2B}.Release|Mixed Platforms.Build.0 = Release|x86
 		{997F24E1-4CD7-42C7-A5B5-4983636D5F2B}.Release|x86.ActiveCfg = Release|x86
 		{997F24E1-4CD7-42C7-A5B5-4983636D5F2B}.Release|x86.Build.0 = Release|x86
+		{42E23F72-7A47-4719-A5B4-E1A001CB90D6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{42E23F72-7A47-4719-A5B4-E1A001CB90D6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{42E23F72-7A47-4719-A5B4-E1A001CB90D6}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{42E23F72-7A47-4719-A5B4-E1A001CB90D6}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{42E23F72-7A47-4719-A5B4-E1A001CB90D6}.Debug|x86.ActiveCfg = Debug|x86
+		{42E23F72-7A47-4719-A5B4-E1A001CB90D6}.Debug|x86.Build.0 = Debug|x86
+		{42E23F72-7A47-4719-A5B4-E1A001CB90D6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{42E23F72-7A47-4719-A5B4-E1A001CB90D6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{42E23F72-7A47-4719-A5B4-E1A001CB90D6}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{42E23F72-7A47-4719-A5B4-E1A001CB90D6}.Release|Mixed Platforms.Build.0 = Release|x86
+		{42E23F72-7A47-4719-A5B4-E1A001CB90D6}.Release|x86.ActiveCfg = Release|x86
+		{42E23F72-7A47-4719-A5B4-E1A001CB90D6}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

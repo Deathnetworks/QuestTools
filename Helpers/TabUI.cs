@@ -8,6 +8,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using QuestTools.Helpers;
 using Zeta.Bot;
 using Zeta.Bot.Dungeons;
 using Zeta.Bot.Logic;
@@ -268,11 +269,11 @@ namespace QuestTools
                         return;
                     if (!ZetaDia.Me.IsValid)
                         return; ZetaDia.Actors.Update();
-                    string levelAreaName = ZetaDia.SNO.LookupSNOName(SNOGroup.LevelArea, QuestTools.LevelAreaId);
+                    string levelAreaName = ZetaDia.SNO.LookupSNOName(SNOGroup.LevelArea, Player.LevelAreaId);
                     string worldName = ZetaDia.WorldInfo.Name;
 
                     string tagText = string.Format("\n<WaitTimer questId=\"{3}\" stepId=\"{4}\" waitTime=\"500\" />\n",
-                        ZetaDia.CurrentQuest.Name, worldName, levelAreaName, ZetaDia.CurrentQuest.QuestSNO, ZetaDia.CurrentQuest.StepId, ZetaDia.CurrentWorldId, QuestTools.LevelAreaId);
+                        ZetaDia.CurrentQuest.Name, worldName, levelAreaName, ZetaDia.CurrentQuest.QuestSNO, ZetaDia.CurrentQuest.StepId, ZetaDia.CurrentWorldId, Player.LevelAreaId);
                     Clipboard.SetText(tagText);
                     Logger.Log(tagText);
                 }
@@ -310,10 +311,13 @@ namespace QuestTools
 
                     string tagText =
 "\n" + questHeader +
-"\n<TrinityExploreDungeon " + questInfo + " until=\"ExitFound\" exitNameHash=\"0\" actorId=\"0\" pathPrecision=\"25\" boxSize=\"25\" boxTolerance=\"0.01\" objectDistance=\"45\">" +
+"\n<TrinityExploreDungeon " + questInfo + " until=\"ExitFound\" exitNameHash=\"0\" actorId=\"0\" pathPrecision=\"45\" boxSize=\"60\" boxTolerance=\"0.01\" objectDistance=\"45\">" +
 "\n    <AlternateActors>" +
 "\n        <AlternateActor actorId=\"0\" objectDistance=\"45\" />" +
 "\n    </AlternateActors>" +
+"\n    <AlternateMarkers>" +
+"\n        <AlternateMarker markerNameHash=\"0\" markerDistance=\"45\" />" +
+"\n    </AlternateMarkers>" +
 "\n    <PriorityScenes>" +
 "\n        <PriorityScene sceneName=\"Exit\" />" +
 "\n    </PriorityScenes>" +
@@ -336,7 +340,7 @@ namespace QuestTools
 
         private static void GetQuestInfoText(out string questInfo, out string questHeader)
         {
-            string levelAreaName = ZetaDia.SNO.LookupSNOName(SNOGroup.LevelArea, QuestTools.LevelAreaId);
+            string levelAreaName = ZetaDia.SNO.LookupSNOName(SNOGroup.LevelArea, Player.LevelAreaId);
             string worldName = ZetaDia.WorldInfo.Name;
 
 
@@ -383,7 +387,7 @@ namespace QuestTools
                     if (!ZetaDia.Me.IsValid)
                         return;
                     ZetaDia.Actors.Update();
-                    string levelAreaName = ZetaDia.SNO.LookupSNOName(SNOGroup.LevelArea, QuestTools.LevelAreaId);
+                    string levelAreaName = ZetaDia.SNO.LookupSNOName(SNOGroup.LevelArea, Player.LevelAreaId);
                     string worldName = ZetaDia.WorldInfo.Name;
 
                     string tagText;
@@ -395,17 +399,17 @@ namespace QuestTools
                     if (ZetaDia.CurrentAct == Act.OpenWorld && ZetaDia.ActInfo.ActiveBounty != null)
                     {
                         tagText = string.Format(questHeader + "\n<If condition=\"HasQuest({5}) and CurrentWorldId=={6} and CurrentLevelAreaId=={7}\">\n\n</If>",
-                             ZetaDia.ActInfo.ActiveBounty.Info.Quest, worldName, ZetaDia.CurrentWorldId, levelAreaName, ZetaDia.CurrentLevelAreaId, ZetaDia.ActInfo.ActiveBounty.Info.QuestSNO, ZetaDia.CurrentWorldId, QuestTools.LevelAreaId);
+                             ZetaDia.ActInfo.ActiveBounty.Info.Quest, worldName, ZetaDia.CurrentWorldId, levelAreaName, ZetaDia.CurrentLevelAreaId, ZetaDia.ActInfo.ActiveBounty.Info.QuestSNO, ZetaDia.CurrentWorldId, Player.LevelAreaId);
                     }
                     else if (ZetaDia.CurrentAct == Act.OpenWorld && ZetaDia.IsInTown)
                     {
                         tagText = string.Format(questHeader + "\n<If condition=\"HasQuest(0) and CurrentWorldId=={6} and CurrentLevelAreaId=={7}\">\n\n</If>",
-                            ZetaDia.ActInfo.ActiveBounty.Info.Quest, worldName, ZetaDia.CurrentWorldId, levelAreaName, ZetaDia.CurrentLevelAreaId, ZetaDia.ActInfo.ActiveBounty.Info.QuestSNO, ZetaDia.CurrentWorldId, QuestTools.LevelAreaId);
+                            ZetaDia.ActInfo.ActiveBounty.Info.Quest, worldName, ZetaDia.CurrentWorldId, levelAreaName, ZetaDia.CurrentLevelAreaId, ZetaDia.ActInfo.ActiveBounty.Info.QuestSNO, ZetaDia.CurrentWorldId, Player.LevelAreaId);
                     }
                     else
                     {
                         tagText = string.Format(questHeader + "\n<If condition=\"IsActiveQuest({3}) and IsActiveQuestStep({4}) and CurrentWorldId=={5} and CurrentLevelAreaId=={6}\">\n\n</If>",
-                            ZetaDia.CurrentQuest.Name, worldName, levelAreaName, ZetaDia.CurrentQuest.QuestSNO, ZetaDia.CurrentQuest.StepId, ZetaDia.CurrentWorldId, QuestTools.LevelAreaId);
+                            ZetaDia.CurrentQuest.Name, worldName, levelAreaName, ZetaDia.CurrentQuest.QuestSNO, ZetaDia.CurrentQuest.StepId, ZetaDia.CurrentWorldId, Player.LevelAreaId);
 
                     }
                     Logger.Log(tagText);
@@ -419,7 +423,7 @@ namespace QuestTools
 
         private static void btnMoveToMapMarker_Click(object sender, RoutedEventArgs e)
         {
-            if (Zeta.Bot.BotMain.IsRunning)
+            if (BotMain.IsRunning)
             {
                 BotMain.Stop();
             }
@@ -427,7 +431,7 @@ namespace QuestTools
             Thread.Sleep(500);
             try
             {
-                using (var helper = new ZetaCacheHelper())
+                using (new ZetaCacheHelper())
                 {
                     if (!ZetaDia.IsInGame)
                         return;
@@ -440,36 +444,33 @@ namespace QuestTools
 
                     MinimapMarker marker = ZetaDia.Minimap.Markers.CurrentWorldMarkers.OrderBy(m => m.Position.Distance2D(ZetaDia.Me.Position)).FirstOrDefault();
 
-                    DiaObject portal = (from o in ZetaDia.Actors.GetActorsOfType<GizmoPortal>(true, false)
-                                        orderby o.Position.Distance(ZetaDia.Me.Position)
-                                        select o).FirstOrDefault();
-                    if (portal == null)
-                        portal = (from o in ZetaDia.Actors.GetActorsOfType<DiaObject>(true, false)
-                                  orderby o.Position.Distance(marker.Position)
-                                  select o).FirstOrDefault();
+                    DiaObject portal = (from o in ZetaDia.Actors.GetActorsOfType<GizmoPortal>(true)
+                        orderby o.Position.Distance(ZetaDia.Me.Position)
+                        select o).FirstOrDefault() ?? (from o in ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
+                            orderby o.Position.Distance(marker.Position)
+                            select o).FirstOrDefault();
 
 
+                    if (marker == null)
+                        return;
 
-                    if (marker != null)
+                    string questInfo;
+                    string questHeader;
+                    GetQuestInfoText(out questInfo, out questHeader);
+
+                    string locationInfo = "";
+
+                    if (!ZetaDia.WorldInfo.IsGenerated)
                     {
-                        string questInfo;
-                        string questHeader;
-                        GetQuestInfoText(out questInfo, out questHeader);
-
-                        string locationInfo = "";
-
-                        if (!ZetaDia.WorldInfo.IsGenerated)
-                        {
-                            locationInfo = string.Format("x=\"{0:0}\" y=\"{1:0}\" z=\"{2:0}\" ",
-                                portal.Position.X, portal.Position.Y, portal.Position.Z);
-                        }
-
-                        string tagText = string.Format(questHeader + "\n<MoveToMapMarker " + questInfo + " " + locationInfo + "markerNameHash=\"{0}\" actorId=\"{1}\" interactRange=\"{2}\" \n" +
-                                    Indent3Hang + "pathPrecision=\"5\" pathPointLimit=\"250\" isPortal=\"True\" destinationWorldId=\"-1\" statusText=\"\" /> \n",
-                                        marker.NameHash, portal.ActorSNO, portal.CollisionSphere.Radius);
-                        Clipboard.SetText(tagText);
-                        Logger.Log(tagText);
+                        locationInfo = string.Format("x=\"{0:0}\" y=\"{1:0}\" z=\"{2:0}\" ",
+                            portal.Position.X, portal.Position.Y, portal.Position.Z);
                     }
+
+                    string tagText = string.Format(questHeader + "\n<MoveToMapMarker " + questInfo + " " + locationInfo + "markerNameHash=\"{0}\" actorId=\"{1}\" interactRange=\"{2}\" \n" +
+                                                   Indent3Hang + "pathPrecision=\"5\" pathPointLimit=\"250\" isPortal=\"True\" destinationWorldId=\"-1\" statusText=\"\" /> \n",
+                        marker.NameHash, portal.ActorSNO, portal.CollisionSphere.Radius);
+                    Clipboard.SetText(tagText);
+                    Logger.Log(tagText);
                 }
             }
             catch (Exception ex)
@@ -722,8 +723,8 @@ namespace QuestTools
                 try
                 {
                     Logger.Log("\nUnit ActorSNO: {0} Name: {1} Type: {2} Radius: {7:0.00} Position: {3} ({4}) Animation: {5} has Attributes:\n{6}\nProperties:\n{8}\n\n",
-                                        o.ActorSNO, o.Name, o.ActorInfo.GizmoType, QuestTools.GetProfilePosition(o.Position),
-                                        QuestTools.GetSimplePosition(o.Position),
+                                        o.ActorSNO, o.Name, o.ActorInfo.GizmoType, StringUtils.GetProfileCoordinates(o.Position),
+                                        StringUtils.GetSimplePosition(o.Position),
                                         o.CommonData.CurrentAnimation, attributesFound, o.CollisionSphere.Radius, propertiesFound);
                 }
                 catch { }
@@ -808,7 +809,7 @@ namespace QuestTools
                 try
                 {
                     Logger.Log("\nObject ActorSNO: {0} Name: {1} Type: {2} Radius: {3:0.00} Position: {4} ({5}) Animation: {6} Distance: {7:0.0} has Attributes: {8}\n\n",
-                        o.ActorSNO, o.Name, o.ActorType, o.CollisionSphere.Radius, QuestTools.GetProfilePosition(o.Position), QuestTools.GetSimplePosition(o.Position), o.CommonData.CurrentAnimation, o.Position.Distance(myPos),
+                        o.ActorSNO, o.Name, o.ActorType, o.CollisionSphere.Radius, StringUtils.GetProfileCoordinates(o.Position), StringUtils.GetSimplePosition(o.Position), o.CommonData.CurrentAnimation, o.Position.Distance(myPos),
                         attributesFound);
                 }
                 catch { }
@@ -857,7 +858,7 @@ namespace QuestTools
                 try
                 {
                     Logger.Log("\nGizmo ActorSNO: {0} Name: {1} Type: {2} Radius: {3:0.00} Position: {4} ({5}) Distance: {6:0} Animation: {7} AppearanceSNO: {8} has Attributes: {9}\n\n",
-                        o.ActorSNO, o.Name, o.ActorInfo.GizmoType, o.CollisionSphere.Radius, QuestTools.GetProfilePosition(o.Position), QuestTools.GetSimplePosition(o.Position), o.Distance, o.CommonData.CurrentAnimation, o.AppearanceSNO, attributesFound);
+                        o.ActorSNO, o.Name, o.ActorInfo.GizmoType, o.CollisionSphere.Radius, StringUtils.GetProfileCoordinates(o.Position), StringUtils.GetSimplePosition(o.Position), o.Distance, o.CommonData.CurrentAnimation, o.AppearanceSNO, attributesFound);
                 }
                 catch { }
             }
@@ -888,7 +889,7 @@ namespace QuestTools
                 try
                 {
                     Logger.Log("\nItem ActorSNO: {0} Name: {1} Type: {2} Radius: {3:0.00} Position: {4} ({5}) Distance: {6:0} Animation: {7} AppearanceSNO: {8} has Attributes: {9}\n\n",
-                        o.ActorSNO, o.Name, o.ActorInfo.GizmoType, o.CollisionSphere.Radius, QuestTools.GetProfilePosition(o.Position), QuestTools.GetSimplePosition(o.Position), o.Distance, o.CommonData.CurrentAnimation, o.AppearanceSNO, attributesFound);
+                        o.ActorSNO, o.Name, o.ActorInfo.GizmoType, o.CollisionSphere.Radius, StringUtils.GetProfileCoordinates(o.Position), StringUtils.GetSimplePosition(o.Position), o.Distance, o.CommonData.CurrentAnimation, o.AppearanceSNO, attributesFound);
                 }
                 catch { }
             }
@@ -931,7 +932,7 @@ namespace QuestTools
                 {
                     Logger.Log("\nPlayer ActorSNO: {0} Name: {1} Type: {2} Radius: {3:0.00} Position: {4} ({5}) RActorGUID: {6} ACDGuid: {7} SummonerId: {8} " +
                         "SummonedByAcdId: {9} Animation: {10} isHidden: {11} SNOApperance: {12} has Attributes: {13}\nProperties:\n{14}\n\n",
-                    o.ActorSNO, o.Name, o.ActorInfo.GizmoType, o.CollisionSphere.Radius, QuestTools.GetProfilePosition(o.Position), QuestTools.GetSimplePosition(o.Position),
+                    o.ActorSNO, o.Name, o.ActorInfo.GizmoType, o.CollisionSphere.Radius, StringUtils.GetProfileCoordinates(o.Position), StringUtils.GetSimplePosition(o.Position),
                     o.RActorGuid, o.ACDGuid, o.SummonerId, o.SummonedByACDId,
                     o.CommonData.CurrentAnimation, o.IsHidden, o.ActorInfo.SNOApperance, attributesFound, propertiesFound);
                 }

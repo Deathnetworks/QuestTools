@@ -27,6 +27,21 @@ namespace QuestTools
             Log(message, string.Empty);
         }
 
+
+        public static void LogError(string message)
+        {
+            LogError(message, string.Empty);
+        }
+
+        public static void LogError(string message, params object[] args)
+        {
+            StackFrame frame = new StackFrame(1);
+            var method = frame.GetMethod();
+            var type = method.DeclaringType;
+
+            Logging.ErrorFormat("[{0}] " + string.Format(message, args), type.Name);
+        }
+
         /// <summary>
         /// Log Verbose
         /// </summary>

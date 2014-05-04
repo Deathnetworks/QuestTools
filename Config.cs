@@ -12,51 +12,53 @@ namespace QuestTools
     {
         public int ServerPort { get; set; }
 
-        private static Window configWindow;
+        private static Window _configWindow;
 
         public static void CloseWindow()
         {
-            configWindow.Close();
+            _configWindow.Close();
         }
 
         public static Window GetDisplayWindow()
         {
-            if (configWindow == null)
+            if (_configWindow == null)
             {
-                configWindow = new Window();
+                _configWindow = new Window();
             }
 
             string assemblyPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            string xamlPath = Path.Combine(assemblyPath, "Plugins", "QuestTools", "Config.xaml");
+            if (assemblyPath != null)
+            {
+                string xamlPath = Path.Combine(assemblyPath, "Plugins", "QuestTools", "Config.xaml");
 
-            string xamlContent = File.ReadAllText(xamlPath);
+                string xamlContent = File.ReadAllText(xamlPath);
 
-            // This hooks up our object with our UserControl DataBinding
-            configWindow.DataContext = QuestToolsSettings.Instance;
+                // This hooks up our object with our UserControl DataBinding
+                _configWindow.DataContext = QuestToolsSettings.Instance;
 
-            UserControl mainControl = (UserControl)XamlReader.Load(new MemoryStream(Encoding.UTF8.GetBytes(xamlContent)));
-            configWindow.Content = mainControl;
-            configWindow.Width = 200;
-            configWindow.Height = 175;
-            configWindow.ResizeMode = ResizeMode.NoResize;
-            configWindow.Background = Brushes.DarkGray;
+                UserControl mainControl = (UserControl)XamlReader.Load(new MemoryStream(Encoding.UTF8.GetBytes(xamlContent)));
+                _configWindow.Content = mainControl;
+            }
+            _configWindow.Width = 200;
+            _configWindow.Height = 175;
+            _configWindow.ResizeMode = ResizeMode.NoResize;
+            _configWindow.Background = Brushes.DarkGray;
 
-            configWindow.Title = "QuestTools";
+            _configWindow.Title = "QuestTools";
 
-            configWindow.Closed += ConfigWindow_Closed;
-            Demonbuddy.App.Current.Exit += ConfigWindow_Closed;
+            _configWindow.Closed += ConfigWindow_Closed;
+            Application.Current.Exit += ConfigWindow_Closed;
 
-            return configWindow;
+            return _configWindow;
         }
 
         static void ConfigWindow_Closed(object sender, System.EventArgs e)
         {
             QuestToolsSettings.Instance.Save();
-            if (configWindow != null)
-            {
-                configWindow.Closed -= ConfigWindow_Closed;
-                configWindow = null;
-            }
+            if (_configWindow == null)
+                return;
+            _configWindow.Closed -= ConfigWindow_Closed;
+            _configWindow = null;
         }
     }
 }
