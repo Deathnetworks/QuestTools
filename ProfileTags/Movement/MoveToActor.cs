@@ -431,7 +431,7 @@ namespace QuestTools.ProfileTags
             if (ZetaDia.Me.HitpointsCurrent <= 0)
                 return false;
 
-            if (actor != null)
+            if (actor != null && actor.IsValid)
             {
                 float distance = ZetaDia.Me.Position.Distance2D(actor.Position);
                 float radiusDistance = actor.Distance - actor.CollisionSphere.Radius;

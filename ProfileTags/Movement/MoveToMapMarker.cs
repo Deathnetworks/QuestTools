@@ -230,7 +230,7 @@ namespace QuestTools.ProfileTags.Movement
                                 new Action(ret => _isDone = true)
                             )
                         ),
-                        new Decorator(ret => _completedInteractAttempts > 1 && _lastPosition.Distance(ZetaDia.Me.Position) > 4f,
+                        new Decorator(ret => _completedInteractAttempts > 1 && _lastPosition.Distance(ZetaDia.Me.Position) > 4f && DestinationWorldId != _startWorldId,
                             new Sequence(
                                 new Action(ret => _isDone = true),
                                 new Action(ret => Logger.Log("Moved {0:0} yards after interaction, finished {1}", _lastPosition.Distance(ZetaDia.Me.Position), Status()))
