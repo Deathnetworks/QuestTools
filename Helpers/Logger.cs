@@ -1,10 +1,14 @@
-﻿using System.Diagnostics;
+﻿using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace QuestTools
 {
     public static class Logger
     {
         private static readonly log4net.ILog Logging = Zeta.Common.Logger.GetLoggerInstanceForType();
+
+        private static string _lastLogMessage = "";
+
         /// <summary>
         /// Log Normal
         /// </summary>
@@ -16,7 +20,13 @@ namespace QuestTools
             var method = frame.GetMethod();
             var type = method.DeclaringType;
 
-            Logging.InfoFormat("[{0}] " + string.Format(message, args), type.Name);
+            string msg = string.Format("[{0}] " + string.Format(message, args), type.Name);
+
+            if (_lastLogMessage == msg)
+                return;
+
+            _lastLogMessage = msg;
+            Logging.Info(msg);
         }
         /// <summary>
         /// Log Normal
@@ -24,13 +34,33 @@ namespace QuestTools
         /// <param name="message"></param>
         public static void Log(string message)
         {
-            Log(message, string.Empty);
+            StackFrame frame = new StackFrame(1);
+            var method = frame.GetMethod();
+            var type = method.DeclaringType;
+
+            string msg = string.Format("[{0}] " + message, type.Name);
+
+            if (_lastLogMessage == msg)
+                return;
+
+            _lastLogMessage = msg;
+            Logging.Info(msg);
         }
 
 
         public static void LogError(string message)
         {
-            LogError(message, string.Empty);
+            StackFrame frame = new StackFrame(1);
+            var method = frame.GetMethod();
+            var type = method.DeclaringType;
+
+            string msg = string.Format("[{0}] " + message, type.Name);
+
+            if (_lastLogMessage == msg)
+                return;
+
+            _lastLogMessage = msg;
+            Logging.Error(msg);
         }
 
         public static void LogError(string message, params object[] args)
@@ -39,7 +69,13 @@ namespace QuestTools
             var method = frame.GetMethod();
             var type = method.DeclaringType;
 
-            Logging.ErrorFormat("[{0}] " + string.Format(message, args), type.Name);
+            string msg = string.Format("[{0}] " + string.Format(message, args), type.Name);
+
+            if (_lastLogMessage == msg)
+                return;
+
+            _lastLogMessage = msg;
+            Logging.Error(msg);
         }
 
         /// <summary>
@@ -49,14 +85,19 @@ namespace QuestTools
         /// <param name="args"></param>
         public static void Verbose(string message, params object[] args)
         {
-            if (QuestToolsSettings.Instance.DebugEnabled)
-            {
-                StackFrame frame = new StackFrame(1);
-                var method = frame.GetMethod();
-                var type = method.DeclaringType;
+            if (!QuestToolsSettings.Instance.DebugEnabled)
+                return;
+            StackFrame frame = new StackFrame(1);
+            var method = frame.GetMethod();
+            var type = method.DeclaringType;
 
-                Logging.InfoFormat("[{0}] " + string.Format(message, args), type.Name);
-            }
+            string msg = string.Format("[{0}] " + string.Format(message, args), type.Name);
+
+            if (_lastLogMessage == msg)
+                return;
+
+            _lastLogMessage = msg;
+            Logging.Info(msg);
         }
         /// <summary>
         /// Log Verbose
@@ -64,9 +105,22 @@ namespace QuestTools
         /// <param name="message"></param>
         public static void Verbose(string message)
         {
-            Verbose(message, string.Empty);
-        }        
-        
+
+            if (!QuestToolsSettings.Instance.DebugEnabled)
+                return;
+            StackFrame frame = new StackFrame(1);
+            var method = frame.GetMethod();
+            var type = method.DeclaringType;
+
+            string msg = string.Format("[{0}] " + message, type.Name);
+
+            if (_lastLogMessage == msg)
+                return;
+
+            _lastLogMessage = msg;
+            Logging.Info(msg);
+        }
+
         /// <summary>
         /// Log Debug
         /// </summary>
@@ -74,14 +128,19 @@ namespace QuestTools
         /// <param name="args"></param>
         public static void Debug(string message, params object[] args)
         {
-            if (QuestToolsSettings.Instance.DebugEnabled)
-            {
-                StackFrame frame = new StackFrame(1);
-                var method = frame.GetMethod();
-                var type = method.DeclaringType;
+            if (!QuestToolsSettings.Instance.DebugEnabled)
+                return;
+            StackFrame frame = new StackFrame(1);
+            var method = frame.GetMethod();
+            var type = method.DeclaringType;
 
-                Logging.DebugFormat("[{0}] " + string.Format(message, args), type.Name);
-            }
+            string msg = string.Format("[{0}] " + string.Format(message, args), type.Name);
+
+            if (_lastLogMessage == msg)
+                return;
+
+            _lastLogMessage = msg;
+            Logging.Debug(msg);
         }
         /// <summary>
         /// Log Debug
@@ -89,7 +148,19 @@ namespace QuestTools
         /// <param name="message"></param>
         public static void Debug(string message)
         {
-            Debug(message, string.Empty);
+            if (!QuestToolsSettings.Instance.DebugEnabled)
+                return;
+            StackFrame frame = new StackFrame(1);
+            var method = frame.GetMethod();
+            var type = method.DeclaringType;
+
+            string msg = string.Format("[{0}] " + message, type.Name);
+
+            if (_lastLogMessage == msg)
+                return;
+
+            _lastLogMessage = msg;
+            Logging.Debug(msg);
         }
 
     }

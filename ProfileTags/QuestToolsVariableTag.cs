@@ -31,18 +31,7 @@ namespace QuestTools.ProfileTags
 
         protected override Composite CreateBehavior()
         {
-            return 
-            new PrioritySelector(
-                new Decorator(ret => SafeCompareKey(Key, Keys.DebugLogging),
-                    new Sequence(
-                        new Action(ret => QuestTools.EnableDebugLogging = Boolean.Parse(Value)),
-                        new Action(ret => Logger.Log("Debug Logging set to {0}", QuestTools.EnableDebugLogging)),
-                        new Action(ret => _isDone = true)
-                    )
-                ),
-                //new Action(ret => Logger.Log("WARNING: No variable set, key {0} not found", Key)),
-                new Action(ret => _isDone = true)
-            );
+            return new Action(ret => _isDone = true);
         }
 
         public bool SafeCompareKey(string input, Keys key)

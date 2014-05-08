@@ -31,6 +31,8 @@ namespace QuestTools.ProfileTags
     public class ExploreDungeonTag : ProfileBehavior
     {
         public ExploreDungeonTag() { }
+
+        #region XML Attributes
         /// <summary>
         /// The SNOId of the Actor that we're looking for, used with until="ObjectFound"
         /// </summary>
@@ -89,6 +91,93 @@ namespace QuestTools.ProfileTags
         [XmlAttribute("until")]
         public TrinityExploreEndType EndType { get; set; }
 
+        /// <summary>
+        /// The Scene SNOId, used with ExploreUntil="SceneFound"
+        /// </summary>
+        [XmlAttribute("sceneId")]
+        public int SceneId { get; set; }
+
+        /// <summary>
+        /// The Scene Name, used with ExploreUntil="SceneFound", a sub-string match will work
+        /// </summary>
+        [XmlAttribute("sceneName")]
+        public string SceneName { get; set; }
+
+        /// <summary>
+        /// The distance the bot will mark dungeon nodes as "visited" (default is 1/2 of box size, minimum 10)
+        /// </summary>
+        [XmlAttribute("pathPrecision")]
+        public float PathPrecision { get; set; }
+
+        /// <summary>
+        /// The distance before reaching a MiniMapMarker before marking it as visited
+        /// </summary>
+        [XmlAttribute("markerDistance")]
+        public float MarkerDistance { get; set; }
+
+        /// <summary>
+        /// Disable Mini Map Marker Scouting
+        /// </summary>
+        [XmlAttribute("ignoreMarkers")]
+        public bool IgnoreMarkers { get; set; }
+
+        public enum TimeoutType
+        {
+            Timer,
+            GoldInactivity,
+            None,
+        }
+
+        /// <summary>
+        /// The TimeoutType to use (default None, no timeout)
+        /// </summary>
+        [XmlAttribute("timeoutType")]
+        public TimeoutType ExploreTimeoutType { get; set; }
+
+        /// <summary>
+        /// Value in Seconds. 
+        /// The timeout value to use, when used with Timer will force-end the tag after a certain time. When used with GoldInactivity will end the tag after coinages doesn't change for the given period
+        /// </summary>
+        [XmlAttribute("timeoutValue")]
+        public int TimeoutValue { get; set; }
+
+        /// <summary>
+        /// If we want to use a townportal before ending the tag when a timeout happens
+        /// </summary>
+        [XmlAttribute("townPortalOnTimeout")]
+        public bool TownPortalOnTimeout { get; set; }
+
+        /// <summary>
+        /// Ignore last N nodes of dungeon explorer, when using endType=FullyExplored
+        /// </summary>
+        [XmlAttribute("ignoreLastNodes")]
+        public int IgnoreLastNodes { get; set; }
+
+        /// <summary>
+        /// Used with IgnoreLastNodes, minimum visited node count before tag can end. 
+        /// The minVisistedNodes is purely, and only for use with ignoreLastNodes - it does not serve any other function like you expect. 
+        /// The reason this attribute exists, is to prevent prematurely exiting the dungeon exploration when used with ignoreLastNodes. 
+        /// For example, when the bot first starts exploring an area, it needs to navigate a few dungeon nodes first before other dungeon nodes even appear - otherwise with ignoreLastNodes > 2, 
+        /// the bot would immediately exit from navigation without exploring anything at all.
+        /// </summary>
+        [XmlAttribute("minVisitedNodes")]
+        public int MinVisistedNodes { get; set; }
+
+        [XmlAttribute("SetNodesExploredAutomatically")]
+        [XmlAttribute("setNodesExploredAutomatically")]
+        public bool SetNodesExploredAutomatically { get; set; }
+
+        [XmlAttribute("minObjectOccurances")]
+        public int MinOccurances { get; set; }
+
+        [XmlAttribute("interactWithObject")]
+        public bool InteractWithObject { get; set; }
+
+        [XmlAttribute("interactRange")]
+        public float ObjectInteractRange { get; set; }
+        #endregion
+
+        #region XML Elements
         /// <summary>
         /// The list of Scene SNOId's or Scene Names that the bot will ignore dungeon nodes in
         /// </summary>
@@ -160,7 +249,6 @@ namespace QuestTools.ProfileTags
                     ? new Area(new Vector2(float.MinValue, float.MinValue), new Vector2(float.MaxValue, float.MaxValue))
                     : new Area(scn.Mesh.Zone.ZoneMin, scn.Mesh.Zone.ZoneMax))
                     .ToList();
-            Logger.Debug("Returning {0} ignored areas", ignoredScenes.Count());
             return ignoredScenes;
         }
 
@@ -251,7 +339,7 @@ namespace QuestTools.ProfileTags
             }
             public AlternateScene(int id)
             {
-                this.SceneId = id;
+                SceneId = id;
             }
             public bool Equals(Scene other)
             {
@@ -300,7 +388,6 @@ namespace QuestTools.ProfileTags
             }
         }
 
-
         [XmlElement("Objectives")]
         public List<Objective> Objectives { get; set; }
 
@@ -327,91 +414,7 @@ namespace QuestTools.ProfileTags
 
             }
         }
-
-        /// <summary>
-        /// The Scene SNOId, used with ExploreUntil="SceneFound"
-        /// </summary>
-        [XmlAttribute("sceneId")]
-        public int SceneId { get; set; }
-
-        /// <summary>
-        /// The Scene Name, used with ExploreUntil="SceneFound", a sub-string match will work
-        /// </summary>
-        [XmlAttribute("sceneName")]
-        public string SceneName { get; set; }
-
-        /// <summary>
-        /// The distance the bot will mark dungeon nodes as "visited" (default is 1/2 of box size, minimum 10)
-        /// </summary>
-        [XmlAttribute("pathPrecision")]
-        public float PathPrecision { get; set; }
-
-        /// <summary>
-        /// The distance before reaching a MiniMapMarker before marking it as visited
-        /// </summary>
-        [XmlAttribute("markerDistance")]
-        public float MarkerDistance { get; set; }
-
-        /// <summary>
-        /// Disable Mini Map Marker Scouting
-        /// </summary>
-        [XmlAttribute("ignoreMarkers")]
-        public bool IgnoreMarkers { get; set; }
-
-        public enum TimeoutType
-        {
-            Timer,
-            GoldInactivity,
-            None,
-        }
-
-        /// <summary>
-        /// The TimeoutType to use (default None, no timeout)
-        /// </summary>
-        [XmlAttribute("timeoutType")]
-        public TimeoutType ExploreTimeoutType { get; set; }
-
-        /// <summary>
-        /// Value in Seconds. 
-        /// The timeout value to use, when used with Timer will force-end the tag after a certain time. When used with GoldInactivity will end the tag after coinages doesn't change for the given period
-        /// </summary>
-        [XmlAttribute("timeoutValue")]
-        public int TimeoutValue { get; set; }
-
-        /// <summary>
-        /// If we want to use a townportal before ending the tag when a timeout happens
-        /// </summary>
-        [XmlAttribute("townPortalOnTimeout")]
-        public bool TownPortalOnTimeout { get; set; }
-
-        /// <summary>
-        /// Ignore last N nodes of dungeon explorer, when using endType=FullyExplored
-        /// </summary>
-        [XmlAttribute("ignoreLastNodes")]
-        public int IgnoreLastNodes { get; set; }
-
-        /// <summary>
-        /// Used with IgnoreLastNodes, minimum visited node count before tag can end. 
-        /// The minVisistedNodes is purely, and only for use with ignoreLastNodes - it does not serve any other function like you expect. 
-        /// The reason this attribute exists, is to prevent prematurely exiting the dungeon exploration when used with ignoreLastNodes. 
-        /// For example, when the bot first starts exploring an area, it needs to navigate a few dungeon nodes first before other dungeon nodes even appear - otherwise with ignoreLastNodes > 2, 
-        /// the bot would immediately exit from navigation without exploring anything at all.
-        /// </summary>
-        [XmlAttribute("minVisitedNodes")]
-        public int MinVisistedNodes { get; set; }
-
-        [XmlAttribute("SetNodesExploredAutomatically")]
-        [XmlAttribute("setNodesExploredAutomatically")]
-        public bool SetNodesExploredAutomatically { get; set; }
-
-        [XmlAttribute("minObjectOccurances")]
-        public int MinOccurances { get; set; }
-
-        [XmlAttribute("interactWithObject")]
-        public bool InteractWithObject { get; set; }
-
-        [XmlAttribute("interactRange")]
-        public float ObjectInteractRange { get; set; }
+        #endregion
 
         readonly HashSet<Tuple<int, Vector3>> _foundObjects = new HashSet<Tuple<int, Vector3>>();
 
@@ -427,14 +430,20 @@ namespace QuestTools.ProfileTags
                     return PrioritySceneTarget;
                 }
 
+                if (GetIsInPandemoniumFortress() && GridSegmentation.Nodes.Any(n => !n.Visited))
+                {
+                    return GridSegmentation.Nodes
+                        .Where(n => !n.Visited)
+                        .OrderBy(n => n.NavigableCenter.Distance2DSqr(_myPosition))
+                        .Select(n => n.NavigableCenter)
+                        .FirstOrDefault();
+                }
+
                 if (GetRouteUnvisitedNodeCount() > 0)
                 {
                     return BrainBehavior.DungeonExplorer.CurrentNode.NavigableCenter;
                 }
-                else
-                {
-                    return Vector3.Zero;
-                }
+                return Vector3.Zero;
             }
         }
 
@@ -443,29 +452,17 @@ namespace QuestTools.ProfileTags
         public float Y { get { return CurrentNavTarget.Y; } }
         public float Z { get { return CurrentNavTarget.Z; } }
 
-        private bool InitDone = false;
-        private DungeonNode NextNode;
+        private bool InitDone;
 
         /// <summary>
         /// The current player position
         /// </summary>
-        private Vector3 myPos { get { return ZetaDia.Me.Position; } }
-        private static MainGridProvider MainGridProvider
-        {
-            get
-            {
-                return (MainGridProvider)Navigator.SearchGridProvider;
-            }
-        }
+        private Vector3 _myPosition { get { return ZetaDia.Me.Position; } }
 
         /// <summary>
-        /// The last scene SNOId we entered
+        /// The last position we updated the SearchGridProvider at
         /// </summary>
-        private int mySceneId = -1;
-        /// <summary>
-        /// The last position we updated the ISearchGridProvider at
-        /// </summary>
-        private Vector3 GPUpdatePosition = Vector3.Zero;
+        private Vector3 GridProviderUpdatePosition = Vector3.Zero;
 
         /// <summary>
         /// Called when the profile behavior starts
@@ -500,8 +497,8 @@ namespace QuestTools.ProfileTags
             {
                 Init();
             }
-            TagTimer.Reset();
-            timesForcedReset = 0;
+            _tagTimer.Reset();
+            _timesForcedReset = 0;
 
             if (Objectives == null)
                 Objectives = new List<Objective>();
@@ -509,39 +506,11 @@ namespace QuestTools.ProfileTags
             if (ObjectDistance < 1f)
                 ObjectDistance = 25f;
 
-            var nearbyExitMarkers = (from m in ZetaDia.Minimap.Markers.CurrentWorldMarkers
-                                     where m.IsPortalExit &&
-                                     m.Position.Distance2D(myPos) <= 25f
-                                     orderby m.Position.Distance2D(myPos)
-                                     select m);
+            NavigationProvider.EnableDebugLogging = true;
 
             PrintNodeCounts("PostInit");
         }
 
-        /// <summary>
-        /// Re-sets the DungeonExplorer, BoxSize, BoxTolerance, and Updates the current route
-        /// </summary>
-        private void CheckResetDungeonExplorer()
-        {
-            if (!ZetaDia.IsInGame || ZetaDia.IsLoadingWorld || !ZetaDia.WorldInfo.IsValid || !ZetaDia.Scenes.IsValid || !ZetaDia.Service.IsValid)
-                return;
-
-            // I added this because GridSegmentation may (rarely) reset itself without us doing it to 15/.55.
-            if ((BoxSize != 0 && BoxTolerance != 0) && (GridSegmentation.BoxSize != BoxSize || GridSegmentation.BoxTolerance != BoxTolerance) || (GetGridSegmentationNodeCount() == 0))
-            {
-                Logger.Debug("Box Size or Tolerance has been changed! {0}/{1}", GridSegmentation.BoxSize, GridSegmentation.BoxTolerance);
-
-                BrainBehavior.DungeonExplorer.Reset();
-                PrintNodeCounts("BrainBehavior.DungeonExplorer.Reset");
-
-                GridSegmentation.BoxSize = BoxSize;
-                GridSegmentation.BoxTolerance = BoxTolerance;
-                PrintNodeCounts("SetBoxSize+Tolerance");
-
-                BrainBehavior.DungeonExplorer.Update();
-                PrintNodeCounts("BrainBehavior.DungeonExplorer.Update");
-            }
-        }
 
         /// <summary>
         /// The main profile behavior
@@ -553,19 +522,24 @@ namespace QuestTools.ProfileTags
             new Sequence(
                 new DecoratorContinue(ret => !IgnoreMarkers,
                     new Sequence(
-                        MiniMapMarker.DetectMiniMapMarkers(0),
+                        MiniMapMarker.DetectMiniMapMarkers(),
                         MiniMapMarker.DetectMiniMapMarkers(ExitNameHash),
                         MiniMapMarker.DetectMiniMapMarkers(Objectives),
                         MiniMapMarker.DetectMiniMapMarkers(AlternateMarkers)
                     )
                 ),
+                // I dunno if this will work...
+                new DecoratorContinue(ret => Navigator.StuckHandler.IsStuck,
+                    new Action(ret => stuckCount++)),
+                new DecoratorContinue(ret => !Navigator.StuckHandler.IsStuck,
+                    new Action(ret => stuckCount = 0)),
                 UpdateSearchGridProvider(),
                 new Action(ret => CheckResetDungeonExplorer()),
                 new PrioritySelector(
                     CheckIsObjectiveFinished(),
                     PrioritySceneCheck(),
                     new Decorator(ret => !IgnoreMarkers,
-                        MiniMapMarker.VisitMiniMapMarkers(myPos, MarkerDistance)
+                        MiniMapMarker.VisitMiniMapMarkers(_myPosition, MarkerDistance)
                     ),
                     new Decorator(ret => ShouldInvestigateActor(),
                         new PrioritySelector(
@@ -590,13 +564,72 @@ namespace QuestTools.ProfileTags
                             CheckNodeFinished(),
                             new Sequence(
                                 new Action(ret => PrintNodeCounts("MainBehavior")),
-                                new Action(ret => MoveToNextNode())
+                                new PrioritySelector(
+                                    MoveToAndUseDeathGate(),
+                                    new Action(ret => MoveToNextNode())
+                                )
                             )
                         )
                     ),
                     new Action(ret => Logger.Debug("Error 1: Unknown error occured!"))
                 )
             );
+        }
+
+        private Vector3 _lastPathCheckTarget = Vector3.Zero;
+        private bool _lastPathCheckResult;
+        private bool CanFullPathToCurrentNavTarget()
+        {
+            var navTarget = CurrentNavTarget;
+
+            // too far away to actually know...
+            if (navTarget.Distance2D(ZetaDia.Me.Position) > 500)
+                return true;
+
+            if (navTarget == Vector3.Zero)
+                return false;
+
+            if (_lastPathCheckTarget == navTarget)
+                return _lastPathCheckResult;
+
+            _lastPathCheckTarget = navTarget;
+            _lastPathCheckResult = NavigationProvider.CanPathWithinDistance(navTarget, PathPrecision);
+            if (!_lastPathCheckResult)
+                Logger.Debug("Unable to fully path to {0} with precision {1}, distance {2:0}", navTarget, PathPrecision, navTarget.Distance2D(ZetaDia.Me.Position));
+
+            return _lastPathCheckResult;
+        }
+
+        private static MainGridProvider MainGridProvider
+        {
+            get
+            {
+                return (MainGridProvider)Navigator.SearchGridProvider;
+            }
+        }
+        /// <summary>
+        /// Re-sets the DungeonExplorer, BoxSize, BoxTolerance, and Updates the current route
+        /// </summary>
+        private void CheckResetDungeonExplorer()
+        {
+            if (!ZetaDia.IsInGame || ZetaDia.IsLoadingWorld || !ZetaDia.WorldInfo.IsValid || !ZetaDia.Scenes.IsValid || !ZetaDia.Service.IsValid)
+                return;
+
+            // I added this because GridSegmentation may (rarely) reset itself without us doing it to 15/.55.
+            if ((BoxSize != 0 && BoxTolerance != 0) && (GridSegmentation.BoxSize != BoxSize || GridSegmentation.BoxTolerance != BoxTolerance) || (GetGridSegmentationNodeCount() == 0))
+            {
+                Logger.Debug("Box Size or Tolerance has been changed! {0}/{1}", GridSegmentation.BoxSize, GridSegmentation.BoxTolerance);
+
+                BrainBehavior.DungeonExplorer.Reset();
+                PrintNodeCounts("BrainBehavior.DungeonExplorer.Reset");
+
+                GridSegmentation.BoxSize = BoxSize;
+                GridSegmentation.BoxTolerance = BoxTolerance;
+                PrintNodeCounts("SetBoxSize+Tolerance");
+
+                BrainBehavior.DungeonExplorer.Update();
+                PrintNodeCounts("BrainBehavior.DungeonExplorer.Update");
+            }
         }
 
         private static bool DungeonRouteIsValid()
@@ -623,7 +656,7 @@ namespace QuestTools.ProfileTags
             {
                 var actor =
                 ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
-                .Where(diaObj => (diaObj.ActorSNO == ActorId ||
+                .Where(diaObj => diaObj.IsValid && (diaObj.ActorSNO == ActorId ||
                     Objectives.Any(o => o.ActorID != 0 && o.ActorID == diaObj.ActorSNO)) &&
                     PositionCache.Cache.Any(pos => pos.Distance2DSqr(diaObj.Position) >= ObjectDistance * ObjectDistance) &&
                     _foundObjects.All(fo => fo.Equals(new Tuple<int, Vector3>(diaObj.ActorSNO, diaObj.Position))))
@@ -643,9 +676,9 @@ namespace QuestTools.ProfileTags
             {
                 RecordPosition();
 
-                var actor = ZetaDia.Actors.GetActorsOfType<DiaObject>(true).FirstOrDefault(a => a.ActorSNO == ActorId);
+                var actor = ZetaDia.Actors.GetActorsOfType<DiaObject>(true).FirstOrDefault(a => a.IsValid && a.ActorSNO == ActorId);
 
-                if (actor != null && actor.IsValid && actor.Position.Distance2DSqr(myPos) >= ObjectDistance * ObjectDistance)
+                if (actor != null && actor.IsValid && actor.Position.Distance2DSqr(_myPosition) >= ObjectDistance * ObjectDistance)
                     Navigator.MoveTo(actor.Position, string.Format("InvestigateActor {0} {1} {2}", actor.ActorSNO, actor.Name, actor.ActorType));
             });
         }
@@ -656,15 +689,12 @@ namespace QuestTools.ProfileTags
                 return false;
 
             var actors = ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
-                .Where(diaObj => (diaObj.ActorSNO == ActorId ||
+                .Where(diaObj => diaObj.IsValid && (diaObj.ActorSNO == ActorId ||
                     AlternateActors.Any(alternateActor => alternateActor.ActorId != 0 && alternateActor.ActorId == diaObj.ActorSNO) ||
                     Objectives.Any(objective => objective.ActorID != 0 && objective.ActorID == diaObj.ActorSNO) ||
                     diaObj.CommonData.GetAttribute<int>(ActorAttributeType.BountyObjective) > 0) &&
                     PositionCache.Cache.Any(pos => pos.Distance2DSqr(diaObj.Position) >= ObjectDistance * ObjectDistance) &&
                     _foundObjects.All(fo => fo.Equals(new Tuple<int, Vector3>(diaObj.ActorSNO, diaObj.Position)))).ToList();
-
-            if (actors == null)
-                return false;
 
             if (!actors.Any())
                 return false;
@@ -677,7 +707,10 @@ namespace QuestTools.ProfileTags
             return true;
         }
 
-
+        /// <summary>
+        /// The last scene SNOId we entered
+        /// </summary>
+        private int _lastSceneId = -1;
         /// <summary>
         /// Updates the search grid provider as needed
         /// </summary>
@@ -685,11 +718,11 @@ namespace QuestTools.ProfileTags
         private Composite UpdateSearchGridProvider()
         {
             return
-            new DecoratorContinue(ret => mySceneId != ZetaDia.Me.SceneId || Vector3.Distance(myPos, GPUpdatePosition) > 150,
+            new DecoratorContinue(ret => _lastSceneId != ZetaDia.Me.SceneId || Vector3.Distance(_myPosition, GridProviderUpdatePosition) > 150,
                 new Sequence(
-                    new Action(ret => mySceneId = ZetaDia.Me.SceneId),
+                    new Action(ret => _lastSceneId = ZetaDia.Me.SceneId),
                     new Action(ret => Navigator.SearchGridProvider.Update()),
-                    new Action(ret => GPUpdatePosition = myPos),
+                    new Action(ret => GridProviderUpdatePosition = _myPosition),
                     new Action(ret => MiniMapMarker.UpdateFailedMarkers())
                 )
             );
@@ -703,21 +736,21 @@ namespace QuestTools.ProfileTags
         {
             return
             new PrioritySelector(
-                new Decorator(ret => timeoutBreached,
+                new Decorator(ret => _timeoutBreached,
                     new Sequence(
                         new DecoratorContinue(ret => TownPortalOnTimeout && !ZetaDia.IsInTown,
                             new Sequence(
                                 new Action(ret => Logger.Log(
                                     "TrinityExploreDungeon timer tripped ({0}), tag finished, Using Town Portal!", TimeoutValue)),
                                 Zeta.Bot.CommonBehaviors.CreateUseTownPortal(),
-                                new Action(ret => isDone = true)
+                                new Action(ret => _isDone = true)
                             )
                         ),
                         new DecoratorContinue(ret => !TownPortalOnTimeout,
                             new Sequence(
                                 new Action(ret => Logger.Log(
                                     "TrinityExploreDungeon timer tripped ({0}), tag finished!", TimeoutValue)),
-                                new Action(ret => isDone = true)
+                                new Action(ret => _isDone = true)
                             )
                         )
                     )
@@ -731,8 +764,8 @@ namespace QuestTools.ProfileTags
             );
         }
 
-        bool timeoutBreached = false;
-        Stopwatch TagTimer = new Stopwatch();
+        bool _timeoutBreached;
+        readonly Stopwatch _tagTimer = new Stopwatch();
         /// <summary>
         /// Will start the timer if needed, and end the tag if the timer has exceeded the TimeoutValue
         /// </summary>
@@ -740,21 +773,21 @@ namespace QuestTools.ProfileTags
         /// <returns></returns>
         private RunStatus CheckSetTimer(object ctx)
         {
-            if (!TagTimer.IsRunning)
+            if (!_tagTimer.IsRunning)
             {
-                TagTimer.Start();
+                _tagTimer.Start();
                 return RunStatus.Failure;
             }
-            if (ExploreTimeoutType == TimeoutType.Timer && TagTimer.Elapsed.TotalSeconds > TimeoutValue)
+            if (ExploreTimeoutType == TimeoutType.Timer && _tagTimer.Elapsed.TotalSeconds > TimeoutValue)
             {
                 Logger.Log("TrinityExploreDungeon timer ended ({0}), tag finished!", TimeoutValue);
-                timeoutBreached = true;
+                _timeoutBreached = true;
                 return RunStatus.Success;
             }
             return RunStatus.Failure;
         }
 
-        private int lastCoinage = -1;
+        private int _lastCoinage = -1;
         /// <summary>
         /// Will check if the bot has not picked up any gold within the allocated TimeoutValue
         /// </summary>
@@ -763,28 +796,28 @@ namespace QuestTools.ProfileTags
         private RunStatus CheckSetGoldInactive(object ctx)
         {
             CheckSetTimer(ctx);
-            if (lastCoinage == -1)
+            if (_lastCoinage == -1)
             {
-                lastCoinage = Player.Coinage;
+                _lastCoinage = Player.Coinage;
                 return RunStatus.Failure;
             }
-            else if (lastCoinage != Player.Coinage)
+            if (_lastCoinage != Player.Coinage)
             {
-                TagTimer.Restart();
+                _tagTimer.Restart();
                 return RunStatus.Failure;
             }
-            else if (lastCoinage == Player.Coinage && TagTimer.Elapsed.TotalSeconds > TimeoutValue)
+            if (_lastCoinage == Player.Coinage && _tagTimer.Elapsed.TotalSeconds > TimeoutValue)
             {
                 Logger.Log("TrinityExploreDungeon gold inactivity timer tripped ({0}), tag finished!", TimeoutValue);
-                timeoutBreached = true;
+                _timeoutBreached = true;
                 return RunStatus.Success;
             }
 
             return RunStatus.Failure;
         }
 
-        private int timesForcedReset = 0;
-        private int timesForceResetMax = 5;
+        private int _timesForcedReset = 0;
+        private const int TimesForceResetMax = 5;
 
         /// <summary>
         /// Checks to see if the tag is finished as needed
@@ -795,17 +828,17 @@ namespace QuestTools.ProfileTags
             return
             new PrioritySelector(
                 CheckIsObjectiveFinished(),
-                new Decorator(ret => GetRouteUnvisitedNodeCount() == 0 && timesForcedReset > timesForceResetMax,
+                new Decorator(ret => GetRouteUnvisitedNodeCount() == 0 && _timesForcedReset > TimesForceResetMax,
                     new Sequence(
                         new Action(ret => Logger.Log(
-                            "Visited all nodes but objective not complete, forced reset more than {0} times, finished!", timesForceResetMax)),
-                        new Action(ret => isDone = true)
+                            "Visited all nodes but objective not complete, forced reset more than {0} times, finished!", TimesForceResetMax)),
+                        new Action(ret => _isDone = true)
                     )
                 ),
                 new Decorator(ret => GetRouteUnvisitedNodeCount() == 0,
                     new Sequence(
                         new Action(ret => Logger.Log("Visited all nodes but objective not complete, forcing grid reset!")),
-                        new DecoratorContinue(ret => timesForcedReset > 2 && GetCurrentRouteNodeCount() == 1,
+                        new DecoratorContinue(ret => _timesForcedReset > 2 && GetCurrentRouteNodeCount() == 1,
                             new Sequence(
                                 new Action(ret => Logger.Log("Only 1 node found and 3 grid resets, falling back to failsafe!")),
                                 new Action(ret => BoxSize = 25),
@@ -813,7 +846,7 @@ namespace QuestTools.ProfileTags
                                 new Action(ret => IgnoreScenes.Clear())
                             )
                         ),
-                        new Action(ret => timesForcedReset++),
+                        new Action(ret => _timesForcedReset++),
                         new Action(ret => PositionCache.Cache.Clear()),
                         new Action(ret => MiniMapMarker.KnownMarkers.Clear()),
                         new Action(ret => ForceUpdateScenes()),
@@ -847,81 +880,81 @@ namespace QuestTools.ProfileTags
                 new Decorator(ret => EndType == TrinityExploreEndType.RiftComplete && GetIsRiftDone(),
                     new Sequence(
                         new Action(ret => Logger.Log("Rift is done. Tag Finished.")),
-                        new Action(ret => isDone = true)
+                        new Action(ret => _isDone = true)
                     )
                 ),
                 new Decorator(ret => EndType == TrinityExploreEndType.PortalExitFound &&
-                    PortalExitMarker() != null && PortalExitMarker().Position.Distance2D(myPos) <= MarkerDistance,
+                    PortalExitMarker() != null && PortalExitMarker().Position.Distance2D(_myPosition) <= MarkerDistance,
                     new Sequence(
                         new Action(ret => Logger.Log("Found portal exit! Tag Finished.")),
-                        new Action(ret => isDone = true)
+                        new Action(ret => _isDone = true)
                     )
                 ),
                 new Decorator(ret => EndType == TrinityExploreEndType.BountyComplete && GetIsBountyDone(),
                     new Sequence(
                         new Action(ret => Logger.Log("Bounty is done. Tag Finished.")),
-                        new Action(ret => isDone = true)
+                        new Action(ret => _isDone = true)
                     )
                 ),
                 new Decorator(ret => EndType == TrinityExploreEndType.FullyExplored && IgnoreLastNodes > 0 && GetRouteUnvisitedNodeCount() <= IgnoreLastNodes && GetGridSegmentationVisistedNodeCount() >= MinVisistedNodes,
                     new Sequence(
                         new Action(ret => Logger.Log("Fully explored area! Ignoring {0} nodes. Tag Finished.", IgnoreLastNodes)),
-                        new Action(ret => isDone = true)
+                        new Action(ret => _isDone = true)
                     )
                 ),
                 new Decorator(ret => EndType == TrinityExploreEndType.FullyExplored && GetRouteUnvisitedNodeCount() == 0,
                     new Sequence(
                         new Action(ret => Logger.Log("Fully explored area! Tag Finished.", 0)),
-                        new Action(ret => isDone = true)
+                        new Action(ret => _isDone = true)
                     )
                 ),
                 new Decorator(ret => EndType == TrinityExploreEndType.ExitFound && ExitNameHash != 0 && IsExitNameHashVisible(),
                     new Sequence(
                         new Action(ret => Logger.Log("Found exitNameHash {0}!", ExitNameHash)),
-                        new Action(ret => isDone = true)
+                        new Action(ret => _isDone = true)
                     )
                 ),
                 new Decorator(ret => (EndType == TrinityExploreEndType.ObjectFound || EndType == TrinityExploreEndType.SceneLeftOrActorFound) && ActorId != 0 && ZetaDia.Actors.GetActorsOfType<DiaObject>(true, false)
                     .Any(a => a.ActorSNO == ActorId && a.Distance <= ObjectDistance),
                     new Sequence(
                         new Action(ret => Logger.Log("Found Object {0}!", ActorId)),
-                        new Action(ret => isDone = true)
+                        new Action(ret => _isDone = true)
                     )
                 ),
                 new Decorator(ret => (EndType == TrinityExploreEndType.ObjectFound || EndType == TrinityExploreEndType.SceneLeftOrActorFound) && AlternateActorsFound(),
                     new Sequence(
                         new Action(ret => Logger.Log("Found Alternate Object {0}!", GetAlternateActor().ActorSNO)),
-                        new Action(ret => isDone = true)
+                        new Action(ret => _isDone = true)
                     )
                 ),
                 new Decorator(ret => EndType == TrinityExploreEndType.SceneFound && ZetaDia.Me.SceneId == SceneId,
                     new Sequence(
                         new Action(ret => Logger.Log("Found SceneId {0}!", SceneId)),
-                        new Action(ret => isDone = true)
+                        new Action(ret => _isDone = true)
                     )
                 ),
                 new Decorator(ret => EndType == TrinityExploreEndType.SceneFound && !string.IsNullOrWhiteSpace(SceneName) && ZetaDia.Me.CurrentScene.Name.ToLower().Contains(SceneName.ToLower()),
                     new Sequence(
                         new Action(ret => Logger.Log("Found SceneName {0}!", SceneName)),
-                        new Action(ret => isDone = true)
+                        new Action(ret => _isDone = true)
                     )
                 ),
                 new Decorator(ret => EndType == TrinityExploreEndType.SceneLeftOrActorFound && SceneId != 0 && SceneIdLeft(),
                     new Sequence(
                         new Action(ret => Logger.Log("Left SceneId {0}!", SceneId)),
-                        new Action(ret => isDone = true)
+                        new Action(ret => _isDone = true)
                     )
                 ),
                 new Decorator(ret => (EndType == TrinityExploreEndType.SceneFound || EndType == TrinityExploreEndType.SceneLeftOrActorFound) && !string.IsNullOrWhiteSpace(SceneName) && SceneNameLeft(),
                     new Sequence(
                         new Action(ret => Logger.Log("Left SceneName {0}!", SceneName)),
-                        new Action(ret => isDone = true)
+                        new Action(ret => _isDone = true)
                     )
                 ),
                 new Decorator(ret => ZetaDia.IsInTown,
                     new Sequence(
                         new Action(ret => Logger.Log("Cannot use TrinityExploreDungeon in town - tag finished!", SceneName)),
-                        new Action(ret => isDone = true)
+                        new Action(ret => _isDone = true)
                     )
                 )
             );
@@ -960,9 +993,10 @@ namespace QuestTools.ProfileTags
         /// <returns></returns>
         private bool IsExitNameHashVisible()
         {
-            return ZetaDia.Minimap.Markers.CurrentWorldMarkers.Any(m => m.NameHash == ExitNameHash && m.Position.Distance2D(myPos) <= MarkerDistance + 10f);
+            return ZetaDia.Minimap.Markers.CurrentWorldMarkers.Any(m => m.NameHash == ExitNameHash && m.Position.Distance2D(_myPosition) <= MarkerDistance + 10f);
         }
 
+        #region PriorityScenes
         private Vector3 PrioritySceneTarget = Vector3.Zero;
         private int PrioritySceneSNOId = -1;
         private Scene CurrentPriorityScene = null;
@@ -991,28 +1025,26 @@ namespace QuestTools.ProfileTags
                             new Action(ret => FindPrioritySceneTarget())
                         )
                     ),
-                // I dunno if this will work...
-                    new DecoratorContinue(ret => Navigator.StuckHandler.IsStuck,
-                        new Action(ret => stuckCount++)),
-                    new DecoratorContinue(ret => !Navigator.StuckHandler.IsStuck,
-                        new Action(ret => stuckCount = 0)),
                     new Decorator(ret => PrioritySceneTarget != Vector3.Zero,
                         new PrioritySelector(
                             new Decorator(ret => stuckCount > 3,
                                 new Sequence(
                                      new Action(ret => Logger.Log("Too many stuck attempts, canceling Priority Scene {0} {1} center {2} Distance {3:0}",
-                                        CurrentPriorityScene.Name, CurrentPriorityScene.SceneInfo.SNOId, PrioritySceneTarget, PrioritySceneTarget.Distance2D(myPos))),
+                                        CurrentPriorityScene.Name, CurrentPriorityScene.SceneInfo.SNOId, PrioritySceneTarget, PrioritySceneTarget.Distance2D(_myPosition))),
                                    new Action(ret => PrioritySceneMoveToFinished())
                                 )
                             ),
-                            new Decorator(ret => PrioritySceneTarget.Distance2D(myPos) <= PriorityScenePathPrecision,
+                            new Decorator(ret => PrioritySceneTarget.Distance2D(_myPosition) <= PriorityScenePathPrecision,
                                 new Sequence(
                                     new Action(ret => Logger.Log("Successfully navigated to priority scene {0} {1} center {2} Distance {3:0}",
-                                        CurrentPriorityScene.Name, CurrentPriorityScene.SceneInfo.SNOId, PrioritySceneTarget, PrioritySceneTarget.Distance2D(myPos))),
+                                        CurrentPriorityScene.Name, CurrentPriorityScene.SceneInfo.SNOId, PrioritySceneTarget, PrioritySceneTarget.Distance2D(_myPosition))),
                                     new Action(ret => PrioritySceneMoveToFinished())
                                 )
                             ),
-                            new Action(ret => MoveToPriorityScene())
+                            new PrioritySelector(
+                                MoveToAndUseDeathGate(),
+                                new Action(ret => MoveToPriorityScene())
+                            )
                         )
                     )
                 )
@@ -1025,7 +1057,7 @@ namespace QuestTools.ProfileTags
         private void MoveToPriorityScene()
         {
             string info = string.Format("Moving to Priority Scene {0} - {1} Center {2} Distance {3:0}",
-                CurrentPriorityScene.Name, CurrentPriorityScene.SceneInfo.SNOId, PrioritySceneTarget, PrioritySceneTarget.Distance2D(myPos));
+                CurrentPriorityScene.Name, CurrentPriorityScene.SceneInfo.SNOId, PrioritySceneTarget, PrioritySceneTarget.Distance2D(_myPosition));
             Logger.Debug(info);
 
             MoveResult moveResult = Navigator.MoveTo(PrioritySceneTarget, info);
@@ -1033,7 +1065,7 @@ namespace QuestTools.ProfileTags
             if (moveResult == MoveResult.PathGenerationFailed || moveResult == MoveResult.ReachedDestination)
             {
                 Logger.Debug("Unable to navigate to Scene {0} - {1} Center {2} Distance {3:0}, cancelling!",
-                    CurrentPriorityScene.Name, CurrentPriorityScene.SceneInfo.SNOId, PrioritySceneTarget, PrioritySceneTarget.Distance2D(myPos));
+                    CurrentPriorityScene.Name, CurrentPriorityScene.SceneInfo.SNOId, PrioritySceneTarget, PrioritySceneTarget.Distance2D(_myPosition));
                 PrioritySceneMoveToFinished();
             }
         }
@@ -1117,7 +1149,7 @@ namespace QuestTools.ProfileTags
 
             if (foundPrioritySceneIndex.Any())
             {
-                KeyValuePair<int, Vector3> nearestPriorityScene = foundPrioritySceneIndex.OrderBy(s => s.Value.Distance2D(myPos)).FirstOrDefault();
+                KeyValuePair<int, Vector3> nearestPriorityScene = foundPrioritySceneIndex.OrderBy(s => s.Value.Distance2D(_myPosition)).FirstOrDefault();
 
                 PrioritySceneSNOId = nearestPriorityScene.Key;
                 PrioritySceneTarget = nearestPriorityScene.Value;
@@ -1125,7 +1157,7 @@ namespace QuestTools.ProfileTags
                 PriorityScenePathPrecision = GetPriorityScenePathPrecision(PScenes.FirstOrDefault(s => s.SceneInfo.SNOId == nearestPriorityScene.Key));
 
                 Logger.Debug("Found Priority Scene {0} - {1} Center {2} Distance {3:0}",
-                    CurrentPriorityScene.Name, CurrentPriorityScene.SceneInfo.SNOId, PrioritySceneTarget, PrioritySceneTarget.Distance2D(myPos));
+                    CurrentPriorityScene.Name, CurrentPriorityScene.SceneInfo.SNOId, PrioritySceneTarget, PrioritySceneTarget.Distance2D(_myPosition));
             }
 
             if (!foundPriorityScene)
@@ -1186,7 +1218,7 @@ namespace QuestTools.ProfileTags
         private Composite CheckIgnoredScenes()
         {
             return
-            new Decorator(ret => timesForcedReset == 0 && IgnoreScenes != null && IgnoreScenes.Any(),
+            new Decorator(ret => _timesForcedReset == 0 && IgnoreScenes != null && IgnoreScenes.Any(),
                 new PrioritySelector(
                     new Decorator(ret => IsPositionInsideIgnoredScene(CurrentNavTarget),
                         new Sequence(
@@ -1196,7 +1228,6 @@ namespace QuestTools.ProfileTags
                 )
             );
         }
-
 
         private bool IsPositionInsideIgnoredScene(Vector3 position)
         {
@@ -1231,6 +1262,7 @@ namespace QuestTools.ProfileTags
             return false;
         }
 
+        #region Grid and Routes
         /// <summary>
         /// Determines if the current node can be marked as Visited, and does so if needed
         /// </summary>
@@ -1239,10 +1271,10 @@ namespace QuestTools.ProfileTags
         {
             return
             new PrioritySelector(
-                new Decorator(ret => LastMoveResult == MoveResult.ReachedDestination,
+                new Decorator(ret => _lastMoveResult == MoveResult.ReachedDestination,
                     new Sequence(
                         new Action(ret => SetNodeVisited("Reached Destination")),
-                        new Action(ret => LastMoveResult = MoveResult.Moved),
+                        new Action(ret => _lastMoveResult = MoveResult.Moved),
                         new Action(ret => UpdateRoute())
                     )
                 ),
@@ -1259,31 +1291,19 @@ namespace QuestTools.ProfileTags
                         new Action(ret => UpdateRoute())
                     )
                 ),
-                new Decorator(ret => CurrentNavTarget.Distance2D(myPos) <= PathPrecision,
+                new Decorator(ret => CurrentNavTarget.Distance2D(_myPosition) <= PathPrecision,
                     new Sequence(
                         new Action(ret => SetNodeVisited(String.Format("Node {0} is within PathPrecision ({1:0}/{2:0})",
-                            CurrentNavTarget, CurrentNavTarget.Distance2D(myPos), PathPrecision))),
+                            CurrentNavTarget, CurrentNavTarget.Distance2D(_myPosition), PathPrecision))),
                         new Action(ret => UpdateRoute())
                     )
                 ),
-                new Decorator(ret => CurrentNavTarget.Distance2D(myPos) <= 90f && !MainGridProvider.CanStandAt(MainGridProvider.WorldToGrid(CurrentNavTarget.ToVector2())),
+                new Decorator(ret => CurrentNavTarget.Distance2D(_myPosition) <= 90f && !MainGridProvider.CanStandAt(MainGridProvider.WorldToGrid(CurrentNavTarget.ToVector2())),
                     new Sequence(
                         new Action(ret => SetNodeVisited("Center Not Navigable")),
                         new Action(ret => UpdateRoute())
                     )
                 ),
-                //new Decorator(ret => CacheData.NavigationObstacles.Any(o => o.Position.Distance2D(CurrentNavTarget) <= o.Radius * 2),
-                //    new Sequence(
-                //        new Action(ret => SetNodeVisited("Navigation obstacle detected at node point")),
-                //        new Action(ret => UpdateRoute())
-                //    )
-                //),
-                //new Decorator(ret => PlayerMover.MovementSpeed == 0 && myPos.Distance2D(CurrentNavTarget) <= 50f && !Navigator.Raycast(myPos, CurrentNavTarget),
-                //    new Sequence(
-                //        new Action(ret => SetNodeVisited("Stuck moving to node point, marking done (in LoS and nearby!)")),
-                //        new Action(ret => UpdateRoute())
-                //    )
-                //),
                 new Decorator(ret => PositionCache.Cache.Any(p => p.Distance2DSqr(CurrentNavTarget) <= PathPrecision * PathPrecision),
                     new Sequence(
                         new Action(ret => SetNodeVisited("Found node to be in position cache, marking done")),
@@ -1314,27 +1334,33 @@ namespace QuestTools.ProfileTags
         /// <param name="reason"></param>
         private void SetNodeVisited(string reason = "")
         {
-            Logger.Debug("Dequeueing current node {0} - {1}", BrainBehavior.DungeonExplorer.CurrentNode.NavigableCenter, reason);
+            Logger.Debug("Dequeueing current node {0} - {1}", CurrentNavTarget, reason);
             BrainBehavior.DungeonExplorer.CurrentNode.Visited = true;
             BrainBehavior.DungeonExplorer.CurrentRoute.Dequeue();
 
             MarkNearbyNodesVisited();
+            ClearDeathGateCheck();
 
             PrintNodeCounts("SetNodeVisited");
         }
 
         public void MarkNearbyNodesVisited()
         {
+            bool anyMarked = false;
             foreach (DungeonNode node in GridSegmentation.Nodes.Where(n => !n.Visited))
             {
-                float distance = node.NavigableCenter.Distance2D(myPos);
-                if (distance <= PathPrecision)
-                {
-                    node.Visited = true;
-                    string reason2 = String.Format("Node {0} is within path precision {1:0}/{2:0}", node.NavigableCenter, distance, PathPrecision);
-                    Logger.Debug("Marking unvisited nearby node as visited - {0}", reason2);
-                }
+                var navCenter = node.NavigableCenter;
+                float distance = navCenter.Distance2D(_myPosition);
+                if (distance > PathPrecision)
+                    continue;
+
+                anyMarked = true;
+                node.Visited = true;
+                string reason2 = String.Format("Node {0} is within path precision {1:0}/{2:0}", navCenter, distance, PathPrecision);
+                Logger.Debug("Marking unvisited nearby node as visited - {0}", reason2);
             }
+            if (anyMarked)
+                BrainBehavior.DungeonExplorer.Update();
         }
 
         /// <summary>
@@ -1354,22 +1380,22 @@ namespace QuestTools.ProfileTags
         /// <param name="step"></param>
         private void PrintNodeCounts(string step = "")
         {
-            if (QuestToolsSettings.Instance.DebugEnabled)
-            {
-                var log = String.Format("Nodes [Unvisited: Route:{1} Grid:{3} | Grid-Visited: {2}] Box:{4}/{5} Step:{6} PP:{7:0} Dir: {8} ",
-                    GetRouteVisistedNodeCount(),                                 // 0
-                    GetRouteUnvisitedNodeCount(),                                // 1
-                    GetGridSegmentationVisistedNodeCount(),                      // 2
-                    GetGridSegmentationUnvisitedNodeCount(),                     // 3
-                    GridSegmentation.BoxSize,                                    // 4
-                    GridSegmentation.BoxTolerance,                               // 5
-                    step,                                                        // 6
-                    PathPrecision,
-                    MathUtil.GetHeadingToPoint(CurrentNavTarget)
-                    );
+            if (!QuestToolsSettings.Instance.DebugEnabled)
+                return;
 
-                Logger.Debug(log);
-            }
+            var log = String.Format("Nodes [Unvisited: Route:{0} Grid:{2} | Grid-Visited: {1}] Box:{3}/{4} Step:{5} PP:{6:0} Dir: {7} Current: {8}",
+                GetRouteUnvisitedNodeCount(),                                // 0
+                GetGridSegmentationVisistedNodeCount(),                      // 1
+                GetGridSegmentationUnvisitedNodeCount(),                     // 2
+                GridSegmentation.BoxSize,                                    // 3
+                GridSegmentation.BoxTolerance,                               // 4
+                step,                                                        // 5
+                PathPrecision,                                               // 6
+                MathUtil.GetHeadingToPoint(CurrentNavTarget),                // 7
+                StringUtils.GetSimplePosition(CurrentNavTarget)              // 8
+                );
+
+            Logger.Debug(log);
         }
 
         /*
@@ -1379,12 +1405,11 @@ namespace QuestTools.ProfileTags
         /// Gets the number of unvisited nodes in the DungeonExplorer Route
         /// </summary>
         /// <returns></returns>
-        private int GetRouteUnvisitedNodeCount()
+        private static int GetRouteUnvisitedNodeCount()
         {
             if (GetCurrentRouteNodeCount() > 0)
                 return BrainBehavior.DungeonExplorer.CurrentRoute.Count(n => !n.Visited);
-            else
-                return 0;
+            return 0;
         }
 
         /// <summary>
@@ -1395,21 +1420,20 @@ namespace QuestTools.ProfileTags
         {
             if (GetCurrentRouteNodeCount() > 0)
                 return BrainBehavior.DungeonExplorer.CurrentRoute.Count(n => n.Visited);
-            else
-                return 0;
+            return 0;
         }
 
         /// <summary>
         /// Gets the number of nodes in the DungeonExplorer Route
         /// </summary>
         /// <returns></returns>
-        private int GetCurrentRouteNodeCount()
+        private static int GetCurrentRouteNodeCount()
         {
             if (BrainBehavior.DungeonExplorer.CurrentRoute != null)
                 return BrainBehavior.DungeonExplorer.CurrentRoute.Count();
-            else
-                return 0;
+            return 0;
         }
+
         /*
          *  Grid Segmentation Nodes
          */
@@ -1417,12 +1441,11 @@ namespace QuestTools.ProfileTags
         /// Gets the number of Unvisited nodes as reported by the Grid Segmentation provider
         /// </summary>
         /// <returns></returns>
-        private int GetGridSegmentationUnvisitedNodeCount()
+        private static int GetGridSegmentationUnvisitedNodeCount()
         {
             if (GetGridSegmentationNodeCount() > 0)
                 return GridSegmentation.Nodes.Count(n => !n.Visited);
-            else
-                return 0;
+            return 0;
         }
 
         /// <summary>
@@ -1433,57 +1456,69 @@ namespace QuestTools.ProfileTags
         {
             if (GetCurrentRouteNodeCount() > 0)
                 return GridSegmentation.Nodes.Count(n => n.Visited);
-            else
-                return 0;
+            return 0;
         }
 
         /// <summary>
         /// Gets the total number of nodes with the current BoxSize/Tolerance as reported by the Grid Segmentation Provider
         /// </summary>
         /// <returns></returns>
-        private int GetGridSegmentationNodeCount()
+        private static int GetGridSegmentationNodeCount()
         {
             if (GridSegmentation.Nodes != null)
                 return GridSegmentation.Nodes.Count();
-            else
-                return 0;
+            return 0;
         }
+        #endregion
 
-        private MoveResult LastMoveResult = MoveResult.Moved;
-        private DateTime lastGeneratedPath = DateTime.MinValue;
+        private MoveResult _lastMoveResult = MoveResult.Moved;
+        private DateTime _lastGeneratedPath = DateTime.MinValue;
+#endregion
+
+        private Vector3 _lastDestination;
+
         /// <summary>
         /// Moves the bot to the next DungeonExplorer node
         /// </summary>
         private void MoveToNextNode()
         {
-            NextNode = BrainBehavior.DungeonExplorer.CurrentNode;
-
-            //Vector3 lastPlayerMoverTarget = PlayerMover.LastMoveToTarget;
-            //bool isStuck = DateTime.UtcNow.Subtract(PlayerMover.LastRecordedAnyStuck).TotalMilliseconds < 500;
-
-            //if (isStuck && CacheData.NavigationObstacles.Any(o => MathUtil.IntersectsPath(o.Position, o.Radius, ZetaDia.Me.Position, lastPlayerMoverTarget)))
-            //{
-            //    SetNodeVisited("Nav Obstacle detected!");
-            //    UpdateRoute();
-
-            //    return;
-            //}
-
-            string nodeName = String.Format("DungeonNode {0} Distance: {1:0} Direction: {2}",
-                StringUtils.GetProfileCoordinates(NextNode.NavigableCenter), NextNode.NavigableCenter.Distance(ZetaDia.Me.Position), MathUtil.GetHeadingToPoint(NextNode.NavigableCenter));
-
             RecordPosition();
 
-            LastMoveResult = Navigator.MoveTo(CurrentNavTarget, nodeName);
-            //Navigator.MoveTo(CurrentNavTarget);
+            if (_lastDestination != CurrentNavTarget)
+            {
+                Navigator.Clear();
+                UpdateSearchGridProvider();
+                ClearDeathGateCheck();
+
+                Logger.Log("New Nav Target: {0}", CurrentNavTarget);
+                _lastDestination = CurrentNavTarget;
+            }
+
+            //if (QuestToolsSettings.Instance.DebugEnabled)
+            //{
+            //    //NavigationProvider.EnableDebugLogging = true;
+
+            //    nodeName = String.Format("DungeonNode {0} Distance: {1:0} Direction: {2}",
+            //     StringUtils.GetProfileCoordinates(CurrentNavTarget),
+            //     CurrentNavTarget.Distance(ZetaDia.Me.Position),
+            //     MathUtil.GetHeadingToPoint(CurrentNavTarget));
+            //}
+
+            //Logger.Log("MoveToNextNode {0}", CurrentNavTarget);
+
+            _lastMoveResult = Navigator.MoveTo(CurrentNavTarget);
         }
 
+        /// <summary>
+        /// Records current position to Position Cache
+        /// </summary>
         private void RecordPosition()
         {
             PositionCache.RecordPosition();
 
             MarkNearbyNodesVisited();
         }
+
         /// <summary>
         /// Initizializes the profile tag and sets defaults as needed
         /// </summary>
@@ -1512,7 +1547,7 @@ namespace QuestTools.ProfileTags
             if (TimeoutValue == 0 && ExploreTimeoutType != TimeoutType.None)
                 TimeoutValue = 1800;
 
-            PositionCache.Cache.Clear();
+            PositionCache.Cache = new HashSet<Vector3>();
             PriorityScenesInvestigated.Clear();
             MiniMapMarker.KnownMarkers.Clear();
             if (PriorityScenes == null)
@@ -1533,14 +1568,14 @@ namespace QuestTools.ProfileTags
             InitDone = true;
         }
 
-
-        private bool isDone = false;
+        #region ProfileBehavior
+        private bool _isDone;
         /// <summary>
         /// When true, the next profile tag is used
         /// </summary>
         public override bool IsDone
         {
-            get { return !IsActiveQuestStep || isDone; }
+            get { return !IsActiveQuestStep || _isDone; }
         }
 
         /// <summary>
@@ -1549,13 +1584,15 @@ namespace QuestTools.ProfileTags
         public override void ResetCachedDone()
         {
             Logger.Debug("TrinityExploreDungeon ResetCachedDone()");
-            isDone = false;
+            _isDone = false;
             InitDone = false;
-            timeoutBreached = false;
-            TagTimer.Reset();
+            _timeoutBreached = false;
+            _tagTimer.Reset();
             base.ResetCachedDone();
         }
+        #endregion
 
+        #region Adventure Mode
         public bool IsInAdventureMode()
         {
             // Only valid for Adventure mode
@@ -1565,14 +1602,14 @@ namespace QuestTools.ProfileTags
             return false;
         }
 
-        private DateTime _LastCheckRiftDone = DateTime.MinValue;
+        private DateTime _lastCheckRiftDone = DateTime.MinValue;
 
         public bool GetIsRiftDone()
         {
-            if (DateTime.UtcNow.Subtract(_LastCheckRiftDone).TotalSeconds < 1)
+            if (DateTime.UtcNow.Subtract(_lastCheckRiftDone).TotalSeconds < 1)
                 return false;
 
-            _LastCheckRiftDone = DateTime.UtcNow;
+            _lastCheckRiftDone = DateTime.UtcNow;
 
             if (ZetaDia.Me.IsInBossEncounter)
                 return false;
@@ -1601,15 +1638,15 @@ namespace QuestTools.ProfileTags
             return false;
         }
 
-        private DateTime _LastCheckBountyDone = DateTime.MinValue;
+        private DateTime _lastCheckBountyDone = DateTime.MinValue;
         public bool GetIsBountyDone()
         {
             try
             {
-                if (DateTime.UtcNow.Subtract(_LastCheckBountyDone).TotalSeconds < 1)
+                if (DateTime.UtcNow.Subtract(_lastCheckBountyDone).TotalSeconds < 1)
                     return false;
 
-                _LastCheckBountyDone = DateTime.UtcNow;
+                _lastCheckBountyDone = DateTime.UtcNow;
 
                 // Only valid for Adventure mode
                 if (ZetaDia.CurrentAct != Act.OpenWorld)
@@ -1628,7 +1665,6 @@ namespace QuestTools.ProfileTags
                 if (ZetaDia.Me.IsInBossEncounter)
                     return false;
 
-
                 // Bounty Turn-in
                 if (ZetaDia.ActInfo.AllQuests.Any(q => DataDictionary.BountyTurnInQuests.Contains(q.QuestSNO) && q.State == QuestState.InProgress))
                 {
@@ -1642,13 +1678,13 @@ namespace QuestTools.ProfileTags
                     Logger.Log("Active bounty returned null, Assuming done.");
                     return true;
                 }
-                if (b == null && ZetaDia.ActInfo.ActiveQuests.Any(q => q.Quest.ToString().ToLower().StartsWith("x1_AdventureMode_BountyTurnin") && q.State == QuestState.InProgress))
+                if (ZetaDia.ActInfo.ActiveQuests.Any(q => q.Quest.ToString().ToLower().StartsWith("x1_AdventureMode_BountyTurnin") && q.State == QuestState.InProgress))
                 {
                     Logger.Log("Bounty Turn-in quest is In-Progress, Assuming done.");
                     return true;
                 }
                 //If completed or on next step, we are good.
-                if (b != null && b.Info.State == QuestState.Completed)
+                if (b.Info.State == QuestState.Completed)
                 {
                     Logger.Log("Seems completed!");
                     return true;
@@ -1662,6 +1698,103 @@ namespace QuestTools.ProfileTags
             }
 
             return false;
+        }
+        #endregion
+
+        #region Death Gate Handling
+
+        private static bool GetIsInPandemoniumFortress()
+        {
+            return DataDictionary.PandemoniumFortressWorlds.Contains(ZetaDia.CurrentWorldId);
+        }
+
+        private Decorator MoveToAndUseDeathGate()
+        {
+            return
+            new Decorator(ret => GetIsInPandemoniumFortress() && AnyDeathGates && !CanFullPathToCurrentNavTarget(),
+                new PrioritySelector(
+                    new Decorator(ret => NearestDeathGate.Position.Distance2DSqr(ZetaDia.Me.Position) > 10f * 10f,
+                        new Sequence(
+                            new Action(ret => Logger.Debug("Moving to Death Gate at {0} distance {1:0}", NearestDeathGate.Position, NearestDeathGate.Position.Distance2D(ZetaDia.Me.Position))),
+                            new Action(ret => _lastMoveResult = Navigator.MoveTo(NearestDeathGate.Position))
+                        )
+                    ),
+                    new Sequence(
+                        new Action(ret => Logger.Debug("Interacting With to Death Gate")),
+                        new Action(ret => NearestDeathGate.Interact()),
+                        new Sleep(500),
+                        new Action(ret => ClearDeathGateCheck())
+                    )
+                )
+            );
+        }
+
+        private void ClearDeathGateCheck()
+        {
+            _canPathCache = new Dictionary<int, bool>();
+            _lastPathCheckTarget = Vector3.Zero;
+            _nearestDeathGate = null;
+            NavigationProvider.Clear();
+            UpdateRoute();
+        }
+
+        private Dictionary<int, bool> _canPathCache = new Dictionary<int, bool>();
+        private DiaObject _nearestDeathGate;
+        public DiaObject NearestDeathGate
+        {
+            get
+            {
+                if (!GetIsInPandemoniumFortress())
+                    return null;
+
+                if (_nearestDeathGate != null && _nearestDeathGate.IsValid)
+                    return _nearestDeathGate;
+
+                var deathgates =
+                    (from o in ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
+                     where o.IsValid && DataDictionary.DeathGates.Contains(o.ActorSNO) && o.Distance < 500 && 
+                     !_canPathCache.ContainsKey(o.RActorGuid)
+                     orderby o.Position.Distance2D(CurrentNavTarget)
+                     select o).ToList();
+
+                if (!deathgates.Any())
+                    return _nearestDeathGate;
+
+                foreach (var portal in deathgates)
+                {
+                    _canPathCache.Add(portal.RActorGuid, NavigationProvider.CanPathWithinDistance(portal.Position, 10f));
+                }
+
+                if (QuestToolsSettings.Instance.DebugEnabled)
+                {
+                    string debugNoise = deathgates.Aggregate("Found DeathGates: ",
+                        (current, p) => current + string.Format("\n{0} distance: {1:0}, distance to node: {2:0} canPath: {3}",
+                            StringUtils.GetProfileCoordinates(p.Position), p.Distance, p.Position.Distance2D(CurrentNavTarget),
+                            _canPathCache[p.RActorGuid]));
+                    Logger.Debug(debugNoise);
+                }
+
+                _nearestDeathGate = deathgates.FirstOrDefault(p => _canPathCache[p.RActorGuid]);
+                return _nearestDeathGate;
+            }
+        }
+
+        public bool AnyDeathGates
+        {
+            get
+            {
+                return NearestDeathGate != null && NearestDeathGate.IsValid;
+
+            }
+        }
+        #endregion
+
+        public DefaultNavigationProvider NavigationProvider
+        {
+            get
+            {
+                return Navigator.GetNavigationProviderAs<DefaultNavigationProvider>();
+            }
         }
     }
 }

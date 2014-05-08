@@ -351,7 +351,7 @@ namespace QuestTools.ProfileTags
         private Composite InteractSequence()
         {
             return
-            new Decorator(ret => Player.IsPlayerValid(),
+            new Decorator(ret => Player.IsPlayerValid() && actor.IsValid,
                 new PrioritySelector(
                     new Decorator(ret => DungeonStonesPresent && (GameUI.IsElementVisible(GameUI.GenericOK) || GameUI.IsElementVisible(UIElements.ConfirmationDialogOkButton)),
                         new Sequence(
@@ -365,9 +365,7 @@ namespace QuestTools.ProfileTags
                             new Action(ret => startingWorldId = ZetaDia.CurrentWorldId)
                         ),
                         new Action(ret => interactWaitSeconds = DungeonStonesPresent ? 4 : 1),
-                        new Action(ret => Logger.Debug("Interacting with Object: {0} {1} attempt: {2}, lastInteractDuration: {3:0}",
-                            actor.ActorSNO, Status(), completedInteractions, Math.Abs(DateTime.UtcNow.Subtract(lastInteract).TotalSeconds))
-                        ),
+                        new Action(ret => LogInteraction()),
                         new DecoratorContinue(ret => IsPortal,
                             new Action(ret => GameEvents.FireWorldTransferStart())
                         ),
@@ -410,6 +408,12 @@ namespace QuestTools.ProfileTags
                     )
                 )
            );
+        }
+
+        private void LogInteraction()
+        {
+            Logger.Debug("Interacting with Object: {0} {1} attempt: {2}, lastInteractDuration: {3:0}",
+                actor.ActorSNO, Status(), completedInteractions, Math.Abs(DateTime.UtcNow.Subtract(lastInteract).TotalSeconds));
         }
 
         private bool WithinMaxSearchDistance()

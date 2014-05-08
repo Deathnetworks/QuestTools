@@ -8,7 +8,8 @@ namespace QuestTools.Helpers
 {
     public class PositionCache
     {
-        public static HashSet<Vector3> Cache { get; set; }
+        private static HashSet<Vector3> _cache = new HashSet<Vector3>();
+        public static HashSet<Vector3> Cache { get { return _cache; } set { _cache = value; } }
 
         private static DateTime _lastRecordedPosition = DateTime.MinValue;
 

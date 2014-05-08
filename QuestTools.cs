@@ -10,12 +10,12 @@ namespace QuestTools
 {
     public class QuestTools
     {
-        public static Version PluginVersion = new Version(2, 0, 0);
+        public static Version PluginVersion = new Version(2, 0, 12);
 
         private static int _skipEventDuration = -1;
         private static readonly Stopwatch SkipEventTimer = new Stopwatch();
 
-        public static bool EnableDebugLogging { get; set; }
+        public static bool EnableDebugLogging { get { return QuestToolsSettings.Instance.DebugEnabled; } }
 
         /// <summary>
         /// Starts the Random event timer

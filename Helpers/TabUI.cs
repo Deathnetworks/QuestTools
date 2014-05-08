@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -8,7 +9,6 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
-using QuestTools.Helpers;
 using Zeta.Bot;
 using Zeta.Bot.Dungeons;
 using Zeta.Bot.Logic;
@@ -18,19 +18,19 @@ using Zeta.Game.Internals;
 using Zeta.Game.Internals.Actors;
 using Zeta.Game.Internals.Actors.Gizmos;
 
-namespace QuestTools
+namespace QuestTools.Helpers
 {
-    class TabUI
+    class TabUi
     {
-        private static Button btnDumpActors, btnOpenLogFile, btnResetGrid;
-        private static Button btnSafeMoveTo, btnMoveToActor, btnMoveToMapMarker, btnIfTag, btnWaitTimerTag, btnExploreAreaTag, btnUseWaypointTag;
+        private static Button _btnDumpActors, _btnOpenLogFile, _btnResetGrid;
+        private static Button _btnSafeMoveTo, _btnMoveToActor, _btnMoveToMapMarker, _btnIfTag, _btnWaitTimerTag, _btnExploreAreaTag, _btnUseWaypointTag;
 
-        private static string Indent3Hang = "                       ";
+        private const string Indent3Hang = "                       ";
 
         internal static void InstallTab()
         {
             Application.Current.Dispatcher.Invoke(
-                new System.Action(
+                new Action(
                     () =>
                     {
                         // 1st column x: 432
@@ -39,7 +39,7 @@ namespace QuestTools
 
                         // Y rows: 10, 33, 56, 79, 102
 
-                        btnDumpActors = new Button
+                        _btnDumpActors = new Button
                         {
                             Width = 120,
                             HorizontalAlignment = HorizontalAlignment.Left,
@@ -48,7 +48,7 @@ namespace QuestTools
                             Content = "Dump Actor Attribs"
                         };
 
-                        btnOpenLogFile = new Button
+                        _btnOpenLogFile = new Button
                         {
                             Width = 120,
                             HorizontalAlignment = HorizontalAlignment.Left,
@@ -57,7 +57,7 @@ namespace QuestTools
                             Content = "Open Log File"
                         };
 
-                        btnResetGrid = new Button
+                        _btnResetGrid = new Button
                         {
                             Width = 120,
                             HorizontalAlignment = HorizontalAlignment.Left,
@@ -66,7 +66,7 @@ namespace QuestTools
                             Content = "Force Reset Grid"
                         };
 
-                        btnSafeMoveTo = new Button
+                        _btnSafeMoveTo = new Button
                         {
                             Width = 120,
                             HorizontalAlignment = HorizontalAlignment.Left,
@@ -75,7 +75,7 @@ namespace QuestTools
                             Content = "SafeMoveTo"
                         };
 
-                        btnMoveToActor = new Button
+                        _btnMoveToActor = new Button
                         {
                             Width = 120,
                             HorizontalAlignment = HorizontalAlignment.Left,
@@ -84,7 +84,7 @@ namespace QuestTools
                             Content = "MoveToActor"
                         };
 
-                        btnMoveToMapMarker = new Button
+                        _btnMoveToMapMarker = new Button
                         {
                             Width = 120,
                             HorizontalAlignment = HorizontalAlignment.Left,
@@ -93,7 +93,7 @@ namespace QuestTools
                             Content = "MoveToMapMarker"
                         };
 
-                        btnIfTag = new Button
+                        _btnIfTag = new Button
                         {
                             Width = 120,
                             HorizontalAlignment = HorizontalAlignment.Left,
@@ -102,7 +102,7 @@ namespace QuestTools
                             Content = "IfTag"
                         };
 
-                        btnWaitTimerTag = new Button
+                        _btnWaitTimerTag = new Button
                         {
                             Width = 120,
                             HorizontalAlignment = HorizontalAlignment.Left,
@@ -111,7 +111,7 @@ namespace QuestTools
                             Content = "WaitTag"
                         };
 
-                        btnExploreAreaTag = new Button
+                        _btnExploreAreaTag = new Button
                         {
                             Width = 120,
                             HorizontalAlignment = HorizontalAlignment.Left,
@@ -120,7 +120,7 @@ namespace QuestTools
                             Content = "ExploreTag"
                         };
 
-                        btnUseWaypointTag = new Button
+                        _btnUseWaypointTag = new Button
                         {
                             Width = 120,
                             HorizontalAlignment = HorizontalAlignment.Left,
@@ -132,51 +132,49 @@ namespace QuestTools
 
                         Window mainWindow = Application.Current.MainWindow;
 
-                        btnDumpActors.Click += new RoutedEventHandler(btnDumpActors_Click);
-                        btnOpenLogFile.Click += new RoutedEventHandler(btnOpenLogFile_Click);
-                        btnResetGrid.Click += new RoutedEventHandler(btnResetGrid_Click);
+                        _btnDumpActors.Click += btnDumpActors_Click;
+                        _btnOpenLogFile.Click += btnOpenLogFile_Click;
+                        _btnResetGrid.Click += btnResetGrid_Click;
 
-                        btnSafeMoveTo.Click += btnSafeMoveTo_Click;
-                        btnMoveToActor.Click += btnMoveToActor_Click;
-                        btnMoveToMapMarker.Click += btnMoveToMapMarker_Click;
-                        btnIfTag.Click += btnIfTag_Click;
-                        btnExploreAreaTag.Click += btnExploreAreaTag_Click;
-                        btnWaitTimerTag.Click += btnWaitTimerTag_Click;
-                        btnUseWaypointTag.Click += btnUseWaypointTag_Click;
+                        _btnSafeMoveTo.Click += btnSafeMoveTo_Click;
+                        _btnMoveToActor.Click += btnMoveToActor_Click;
+                        _btnMoveToMapMarker.Click += btnMoveToMapMarker_Click;
+                        _btnIfTag.Click += btnIfTag_Click;
+                        _btnExploreAreaTag.Click += btnExploreAreaTag_Click;
+                        _btnWaitTimerTag.Click += btnWaitTimerTag_Click;
+                        _btnUseWaypointTag.Click += btnUseWaypointTag_Click;
 
-                        UniformGrid uniformGrid = new UniformGrid()
+                        UniformGrid uniformGrid = new UniformGrid
                         {
                             HorizontalAlignment = HorizontalAlignment.Stretch,
                             VerticalAlignment = VerticalAlignment.Top,
                             MaxHeight = 180,
                         };
 
-                        uniformGrid.Children.Add(btnDumpActors);
-                        uniformGrid.Children.Add(btnOpenLogFile);
-                        uniformGrid.Children.Add(btnResetGrid);
+                        uniformGrid.Children.Add(_btnDumpActors);
+                        uniformGrid.Children.Add(_btnOpenLogFile);
+                        uniformGrid.Children.Add(_btnResetGrid);
 
-                        uniformGrid.Children.Add(btnSafeMoveTo);
-                        uniformGrid.Children.Add(btnMoveToActor);
-                        uniformGrid.Children.Add(btnMoveToMapMarker);
-                        uniformGrid.Children.Add(btnIfTag);
-                        uniformGrid.Children.Add(btnExploreAreaTag);
-                        uniformGrid.Children.Add(btnWaitTimerTag);
-                        uniformGrid.Children.Add(btnUseWaypointTag);
+                        uniformGrid.Children.Add(_btnSafeMoveTo);
+                        uniformGrid.Children.Add(_btnMoveToActor);
+                        uniformGrid.Children.Add(_btnMoveToMapMarker);
+                        uniformGrid.Children.Add(_btnIfTag);
+                        uniformGrid.Children.Add(_btnExploreAreaTag);
+                        uniformGrid.Children.Add(_btnWaitTimerTag);
+                        uniformGrid.Children.Add(_btnUseWaypointTag);
 
 
-                        tabItem = new TabItem()
+                        _tabItem = new TabItem
                         {
                             Header = "QuestTools",
-                            ToolTip = "Profile Creation Tools",
+                            ToolTip = "Profile Creation Tools", Content = uniformGrid,
                         };
-
-                        tabItem.Content = uniformGrid;
 
                         var tabs = mainWindow.FindName("tabControlMain") as TabControl;
                         if (tabs == null)
                             return;
 
-                        tabs.Items.Add(tabItem);
+                        tabs.Items.Add(_tabItem);
                     }
                 )
             );
@@ -184,15 +182,14 @@ namespace QuestTools
 
         static void btnUseWaypointTag_Click(object sender, RoutedEventArgs e)
         {
-            if (Zeta.Bot.BotMain.IsRunning)
+            if (BotMain.IsRunning)
             {
                 BotMain.Stop();
             }
-            string tagText = "";
             Thread.Sleep(500);
             try
             {
-                using (var helper = new ZetaCacheHelper())
+                using (new ZetaCacheHelper())
                 {
                     if (!ZetaDia.IsInGame)
                         return;
@@ -203,19 +200,19 @@ namespace QuestTools
 
                     ZetaDia.Actors.Update();
 
-                    List<GizmoWaypoint> objList = (from o in ZetaDia.Actors.GetActorsOfType<GizmoWaypoint>(true, false)
-                                                   where o.IsValid
-                                                   orderby o.Position.Distance(ZetaDia.Me.Position)
-                                                   select o).ToList();
+                    List<GizmoWaypoint> objList = (from o in ZetaDia.Actors.GetActorsOfType<GizmoWaypoint>(true)
+                        where o.IsValid
+                        orderby o.Position.Distance(ZetaDia.Me.Position)
+                        select o).ToList();
 
-                    string portalInfo = string.Empty;
-
+                    string tagText = "";
                     if (objList.Any())
                     {
                         GizmoWaypoint obj = objList.FirstOrDefault();
 
-                        tagText = string.Format("\n<UseWaypoint questId=\"{0}\" stepId=\"{1}\" waypointNumber=\"{2}\" name=\"{3}\" statusText=\"\" /> \n",
-                            ZetaDia.CurrentQuest.QuestSNO, ZetaDia.CurrentQuest.StepId, obj.WaypointNumber, obj.Name);
+                        if (obj != null)
+                            tagText = string.Format("\n<UseWaypoint questId=\"{0}\" stepId=\"{1}\" waypointNumber=\"{2}\" name=\"{3}\" statusText=\"\" /> \n",
+                                ZetaDia.CurrentQuest.QuestSNO, ZetaDia.CurrentQuest.StepId, obj.WaypointNumber, obj.Name);
                     }
                     else
                     {
@@ -233,19 +230,19 @@ namespace QuestTools
             }
         }
 
-        private static TabItem tabItem;
+        private static TabItem _tabItem;
 
         internal static void RemoveTab()
         {
             Application.Current.Dispatcher.Invoke(
-                new System.Action(
+                new Action(
                     () =>
                     {
                         Window mainWindow = Application.Current.MainWindow;
                         var tabs = mainWindow.FindName("tabControlMain") as TabControl;
                         if (tabs == null)
                             return;
-                        tabs.Items.Remove(tabItem);
+                        tabs.Items.Remove(_tabItem);
 
                     }
                 )
@@ -254,14 +251,14 @@ namespace QuestTools
 
         private static void btnWaitTimerTag_Click(object sender, RoutedEventArgs e)
         {
-            if (Zeta.Bot.BotMain.IsRunning)
+            if (BotMain.IsRunning)
             {
                 BotMain.Stop();
             }
             Thread.Sleep(500);
             try
             {
-                using (var helper = new ZetaCacheHelper())
+                using (new ZetaCacheHelper())
                 {
                     if (!ZetaDia.IsInGame)
                         return;
@@ -269,11 +266,8 @@ namespace QuestTools
                         return;
                     if (!ZetaDia.Me.IsValid)
                         return; ZetaDia.Actors.Update();
-                    string levelAreaName = ZetaDia.SNO.LookupSNOName(SNOGroup.LevelArea, Player.LevelAreaId);
-                    string worldName = ZetaDia.WorldInfo.Name;
-
-                    string tagText = string.Format("\n<WaitTimer questId=\"{3}\" stepId=\"{4}\" waitTime=\"500\" />\n",
-                        ZetaDia.CurrentQuest.Name, worldName, levelAreaName, ZetaDia.CurrentQuest.QuestSNO, ZetaDia.CurrentQuest.StepId, ZetaDia.CurrentWorldId, Player.LevelAreaId);
+                    
+                    string tagText = string.Format("\n<WaitTimer questId=\"{0}\" stepId=\"{1}\" waitTime=\"500\" />\n", ZetaDia.CurrentQuest.QuestSNO, ZetaDia.CurrentQuest.StepId);
                     Clipboard.SetText(tagText);
                     Logger.Log(tagText);
                 }
@@ -287,14 +281,14 @@ namespace QuestTools
 
         private static void btnExploreAreaTag_Click(object sender, RoutedEventArgs e)
         {
-            if (Zeta.Bot.BotMain.IsRunning)
+            if (BotMain.IsRunning)
             {
                 BotMain.Stop();
             }
 
             try
             {
-                using (var helper = new ZetaCacheHelper())
+                using (new ZetaCacheHelper())
                 {
                     if (!ZetaDia.IsInGame)
                         return;
@@ -310,24 +304,24 @@ namespace QuestTools
                     GetQuestInfoText(out questInfo, out questHeader);
 
                     string tagText =
-"\n" + questHeader +
-"\n<TrinityExploreDungeon " + questInfo + " until=\"ExitFound\" exitNameHash=\"0\" actorId=\"0\" pathPrecision=\"45\" boxSize=\"60\" boxTolerance=\"0.01\" objectDistance=\"45\">" +
-"\n    <AlternateActors>" +
-"\n        <AlternateActor actorId=\"0\" objectDistance=\"45\" />" +
-"\n    </AlternateActors>" +
-"\n    <AlternateMarkers>" +
-"\n        <AlternateMarker markerNameHash=\"0\" markerDistance=\"45\" />" +
-"\n    </AlternateMarkers>" +
-"\n    <PriorityScenes>" +
-"\n        <PriorityScene sceneName=\"Exit\" />" +
-"\n    </PriorityScenes>" +
-"\n    <IgnoreScenes>" +
-"\n        <IgnoreScene sceneName=\"_N_\" />" +
-"\n        <IgnoreScene sceneName=\"_S_\" />" +
-"\n        <IgnoreScene sceneName=\"_E_\" />" +
-"\n        <IgnoreScene sceneName=\"_W_\" />" +
-"\n    </IgnoreScenes>" +
-"\n</TrinityExploreDungeon>";
+                        "\n" + questHeader +
+                        "\n<ExploreDungeon " + questInfo + " until=\"ExitFound\" exitNameHash=\"0\" actorId=\"0\" pathPrecision=\"45\" boxSize=\"60\" boxTolerance=\"0.01\" objectDistance=\"45\">" +
+                        "\n    <AlternateActors>" +
+                        "\n        <AlternateActor actorId=\"0\" objectDistance=\"45\" />" +
+                        "\n    </AlternateActors>" +
+                        "\n    <AlternateMarkers>" +
+                        "\n        <AlternateMarker markerNameHash=\"0\" markerDistance=\"45\" />" +
+                        "\n    </AlternateMarkers>" +
+                        "\n    <PriorityScenes>" +
+                        "\n        <PriorityScene sceneName=\"Exit\" />" +
+                        "\n    </PriorityScenes>" +
+                        "\n    <IgnoreScenes>" +
+                        "\n        <IgnoreScene sceneName=\"_N_\" />" +
+                        "\n        <IgnoreScene sceneName=\"_S_\" />" +
+                        "\n        <IgnoreScene sceneName=\"_E_\" />" +
+                        "\n        <IgnoreScene sceneName=\"_W_\" />" +
+                        "\n    </IgnoreScenes>" +
+                        "\n</ExploreDungeon>";
                     Clipboard.SetText(tagText);
                     Logger.Log(tagText);
                 }
@@ -370,7 +364,7 @@ namespace QuestTools
 
         private static void btnIfTag_Click(object sender, RoutedEventArgs e)
         {
-            if (Zeta.Bot.BotMain.IsRunning)
+            if (BotMain.IsRunning)
             {
                 BotMain.Stop();
             }
@@ -378,7 +372,7 @@ namespace QuestTools
             Thread.Sleep(500);
             try
             {
-                using (var helper = new ZetaCacheHelper())
+                using (new ZetaCacheHelper())
                 {
                     if (!ZetaDia.IsInGame)
                         return;
@@ -390,7 +384,7 @@ namespace QuestTools
                     string levelAreaName = ZetaDia.SNO.LookupSNOName(SNOGroup.LevelArea, Player.LevelAreaId);
                     string worldName = ZetaDia.WorldInfo.Name;
 
-                    string tagText;
+                    string tagText = "";
                     string questInfo;
                     string questHeader;
 
@@ -399,12 +393,13 @@ namespace QuestTools
                     if (ZetaDia.CurrentAct == Act.OpenWorld && ZetaDia.ActInfo.ActiveBounty != null)
                     {
                         tagText = string.Format(questHeader + "\n<If condition=\"HasQuest({5}) and CurrentWorldId=={6} and CurrentLevelAreaId=={7}\">\n\n</If>",
-                             ZetaDia.ActInfo.ActiveBounty.Info.Quest, worldName, ZetaDia.CurrentWorldId, levelAreaName, ZetaDia.CurrentLevelAreaId, ZetaDia.ActInfo.ActiveBounty.Info.QuestSNO, ZetaDia.CurrentWorldId, Player.LevelAreaId);
+                            ZetaDia.ActInfo.ActiveBounty.Info.Quest, worldName, ZetaDia.CurrentWorldId, levelAreaName, ZetaDia.CurrentLevelAreaId, ZetaDia.ActInfo.ActiveBounty.Info.QuestSNO, ZetaDia.CurrentWorldId, Player.LevelAreaId);
                     }
                     else if (ZetaDia.CurrentAct == Act.OpenWorld && ZetaDia.IsInTown)
                     {
-                        tagText = string.Format(questHeader + "\n<If condition=\"HasQuest(0) and CurrentWorldId=={6} and CurrentLevelAreaId=={7}\">\n\n</If>",
-                            ZetaDia.ActInfo.ActiveBounty.Info.Quest, worldName, ZetaDia.CurrentWorldId, levelAreaName, ZetaDia.CurrentLevelAreaId, ZetaDia.ActInfo.ActiveBounty.Info.QuestSNO, ZetaDia.CurrentWorldId, Player.LevelAreaId);
+                        if (ZetaDia.ActInfo.ActiveBounty != null)
+                            tagText = string.Format(questHeader + "\n<If condition=\"HasQuest(0) and CurrentWorldId=={6} and CurrentLevelAreaId=={7}\">\n\n</If>",
+                                ZetaDia.ActInfo.ActiveBounty.Info.Quest, worldName, ZetaDia.CurrentWorldId, levelAreaName, ZetaDia.CurrentLevelAreaId, ZetaDia.ActInfo.ActiveBounty.Info.QuestSNO, ZetaDia.CurrentWorldId, Player.LevelAreaId);
                     }
                     else
                     {
@@ -444,15 +439,15 @@ namespace QuestTools
 
                     MinimapMarker marker = ZetaDia.Minimap.Markers.CurrentWorldMarkers.OrderBy(m => m.Position.Distance2D(ZetaDia.Me.Position)).FirstOrDefault();
 
-                    DiaObject portal = (from o in ZetaDia.Actors.GetActorsOfType<GizmoPortal>(true)
-                        orderby o.Position.Distance(ZetaDia.Me.Position)
-                        select o).FirstOrDefault() ?? (from o in ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
-                            orderby o.Position.Distance(marker.Position)
-                            select o).FirstOrDefault();
-
-
                     if (marker == null)
                         return;
+
+                    DiaObject portal = (from o in ZetaDia.Actors.GetActorsOfType<GizmoPortal>(true)
+                                        orderby o.Position.Distance(ZetaDia.Me.Position)
+                                        select o).FirstOrDefault() ??
+                                        (from o in ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
+                                         orderby o.Position.Distance(marker.Position)
+                                        select o).FirstOrDefault();
 
                     string questInfo;
                     string questHeader;
@@ -466,11 +461,14 @@ namespace QuestTools
                             portal.Position.X, portal.Position.Y, portal.Position.Z);
                     }
 
-                    string tagText = string.Format(questHeader + "\n<MoveToMapMarker " + questInfo + " " + locationInfo + "markerNameHash=\"{0}\" actorId=\"{1}\" interactRange=\"{2}\" \n" +
-                                                   Indent3Hang + "pathPrecision=\"5\" pathPointLimit=\"250\" isPortal=\"True\" destinationWorldId=\"-1\" statusText=\"\" /> \n",
-                        marker.NameHash, portal.ActorSNO, portal.CollisionSphere.Radius);
-                    Clipboard.SetText(tagText);
-                    Logger.Log(tagText);
+                    if (portal != null)
+                    {
+                        string tagText = string.Format(questHeader + "\n<MoveToMapMarker " + questInfo + " " + locationInfo + "markerNameHash=\"{0}\" actorId=\"{1}\" interactRange=\"{2}\" \n" +
+                                                       Indent3Hang + "pathPrecision=\"5\" pathPointLimit=\"250\" isPortal=\"True\" destinationWorldId=\"-1\" statusText=\"\" /> \n",
+                            marker.NameHash, portal.ActorSNO, portal.CollisionSphere.Radius);
+                        Clipboard.SetText(tagText);
+                        Logger.Log(tagText);
+                    }
                 }
             }
             catch (Exception ex)
@@ -481,15 +479,14 @@ namespace QuestTools
 
         private static void btnMoveToActor_Click(object sender, RoutedEventArgs e)
         {
-            if (Zeta.Bot.BotMain.IsRunning)
+            if (BotMain.IsRunning)
             {
                 BotMain.Stop();
             }
-            string tagText = "";
             Thread.Sleep(500);
             try
             {
-                using (var helper = new ZetaCacheHelper())
+                using (new ZetaCacheHelper())
                 {
                     if (!ZetaDia.IsInGame)
                         return;
@@ -500,13 +497,13 @@ namespace QuestTools
 
                     ZetaDia.Actors.Update();
 
-                    List<DiaObject> objList = (from o in ZetaDia.Actors.GetActorsOfType<DiaObject>(true, false)
-                                               where (o is DiaGizmo || o is DiaUnit) &&
-                                               !o.Name.StartsWith("Generic_Proxy") &&
-                                               !o.Name.StartsWith("Start_Location") &&
-                                               !(o is DiaPlayer)
-                                               orderby o.Position.Distance(ZetaDia.Me.Position)
-                                               select o).ToList();
+                    List<DiaObject> objList = (from o in ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
+                        where (o is DiaGizmo || o is DiaUnit) &&
+                              !o.Name.StartsWith("Generic_Proxy") &&
+                              !o.Name.StartsWith("Start_Location") &&
+                              !(o is DiaPlayer)
+                        orderby o.Position.Distance(ZetaDia.Me.Position)
+                        select o).ToList();
 
                     string portalInfo = string.Empty;
 
@@ -516,6 +513,7 @@ namespace QuestTools
 
                     string locationInfo = "";
 
+                    string tagText;
                     if (objList.Any())
                     {
                         DiaObject obj = objList.FirstOrDefault();
@@ -550,7 +548,7 @@ namespace QuestTools
 
         private static void btnSafeMoveTo_Click(object sender, RoutedEventArgs e)
         {
-            if (Zeta.Bot.BotMain.IsRunning)
+            if (BotMain.IsRunning)
             {
                 BotMain.Stop();
             }
@@ -558,7 +556,7 @@ namespace QuestTools
             Thread.Sleep(500);
             try
             {
-                using (var helper = new ZetaCacheHelper())
+                using (new ZetaCacheHelper())
                 {
                     if (!ZetaDia.IsInGame)
                         return;
@@ -592,7 +590,7 @@ namespace QuestTools
                 if (!ZetaDia.IsInGame || !ZetaDia.Me.IsValid)
                     return;
 
-                System.Threading.Thread.Sleep(500);
+                Thread.Sleep(500);
 
                 GridSegmentation.Reset();
                 GridSegmentation.Update();
@@ -608,13 +606,27 @@ namespace QuestTools
 
         private static void btnOpenLogFile_Click(object sender, RoutedEventArgs e)
         {
-            string exePath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+            string logFile = "";
+            try
+            {
+                string exePath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
 
-            int myPid = Process.GetCurrentProcess().Id;
-            DateTime startTime = Process.GetCurrentProcess().StartTime;
-            string logFile = Path.Combine(exePath, "Logs", myPid + " " + startTime.ToString("yyyy-MM-dd HH.mm") + ".txt");
+                int myPid = Process.GetCurrentProcess().Id;
+                DateTime startTime = Process.GetCurrentProcess().StartTime;
+                if (exePath != null)
+                    logFile = Path.Combine(exePath, "Logs", myPid + " " + startTime.ToString("yyyy-MM-dd HH.mm") + ".txt");
 
-            Process.Start(logFile);
+                if (File.Exists(logFile))
+                    Process.Start(logFile);
+                else
+                {
+                    Logger.LogError("Unable to open log file {0} - file does not exist");
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Error opening log file: {0} {1}", logFile, ex.Message);
+            }
         }
 
         private static void btnDumpActors_Click(object sender, RoutedEventArgs e)
@@ -633,9 +645,9 @@ namespace QuestTools
 
                     double iType = -1;
 
-                    
+
                     ZetaDia.Actors.Update();
-                    var units = ZetaDia.Actors.GetActorsOfType<DiaUnit>(false, false)
+                    var units = ZetaDia.Actors.GetActorsOfType<DiaUnit>()
                         .Where(o => o.IsValid)
                         .OrderBy(o => o.Distance);
 
@@ -643,31 +655,31 @@ namespace QuestTools
 
 
                     //ZetaDia.Actors.Update();
-                    var objects = ZetaDia.Actors.GetActorsOfType<DiaObject>(false, false)
+                    var objects = ZetaDia.Actors.GetActorsOfType<DiaObject>()
                         .Where(o => o.IsValid)
                         .OrderBy(o => o.Distance);
 
                     iType = DumpObjects(objects, iType);
 
                     //ZetaDia.Actors.Update();
-                    var gizmos = ZetaDia.Actors.GetActorsOfType<DiaGizmo>(true, false)
+                    var gizmos = ZetaDia.Actors.GetActorsOfType<DiaGizmo>(true)
                         .Where(o => o.IsValid)
                         .OrderBy(o => o.Distance);
 
                     iType = DumpGizmos(gizmos, iType);
 
-                    var items = ZetaDia.Actors.GetActorsOfType<DiaItem>(true, false)
+                    var items = ZetaDia.Actors.GetActorsOfType<DiaItem>(true)
                         .Where(o => o.IsValid)
                         .OrderBy(o => o.Distance);
 
-                    iType = DumpItems(items, iType);
+                    DumpItems(items, iType);
 
                     ZetaDia.Actors.Update();
-                    var players = ZetaDia.Actors.GetActorsOfType<DiaPlayer>(true, false)
+                    var players = ZetaDia.Actors.GetActorsOfType<DiaPlayer>(true)
                         .Where(o => o.IsValid)
                         .OrderBy(o => o.Distance);
 
-                    iType = DumpPlayers(players, iType);
+                    DumpPlayers(players);
 
                     //DumpService();
 
@@ -705,7 +717,7 @@ namespace QuestTools
                 if (!o.IsValid)
                     continue;
 
-                string attributesFound = "", propertiesFound = "";
+                string attributesFound = "";
 
                 foreach (ActorAttributeType aType in Enum.GetValues(typeof(ActorAttributeType)))
                 {
@@ -714,11 +726,11 @@ namespace QuestTools
                     iType = GetAttribute(iType, o, aType);
                     if (iType > 0)
                     {
-                        attributesFound += aType.ToString() + "=" + iType.ToString() + ", ";
+                        attributesFound += aType.ToString() + "=" + iType + ", ";
                     }
                 }
 
-                propertiesFound = ReadProperties(o, null);
+                string propertiesFound = ReadProperties(o, null);
 
                 try
                 {
@@ -766,10 +778,6 @@ namespace QuestTools
                         {
                             propertiesFound += "\n" + property.Name + ":" + ReadProperties(property.GetValue(obj, null), checkedTypes);
                         }
-                        else
-                        {
-                            // Meh
-                        }
                     }
                     catch (Exception ex)
                     {
@@ -801,7 +809,7 @@ namespace QuestTools
 
                     if (iType > 0)
                     {
-                        attributesFound += aType.ToString() + "=" + iType.ToString() + ", ";
+                        attributesFound += aType.ToString() + "=" + iType + ", ";
                     }
                 }
 
@@ -840,7 +848,7 @@ namespace QuestTools
                     iType = GetAttribute(iType, o, aType);
                     if (iType > 0)
                     {
-                        attributesFound += aType.ToString() + "=" + iType.ToString() + ", ";
+                        attributesFound += aType.ToString() + "=" + iType + ", ";
                     }
                 }
 
@@ -865,10 +873,11 @@ namespace QuestTools
             return iType;
         }
 
-        private static double DumpItems(IEnumerable<DiaItem> items, double iType)
+        private static void DumpItems(IEnumerable<DiaItem> items, double iType)
         {
-            Logger.Log("Items found: {0}", items.Count());
-            foreach (DiaItem o in items)
+            var diaItems = items as IList<DiaItem> ?? items.ToList();
+            Logger.Log("Items found: {0}", diaItems.Count());
+            foreach (DiaItem o in diaItems)
             {
                 if (!o.IsValid)
                     continue;
@@ -882,7 +891,7 @@ namespace QuestTools
                     iType = GetAttribute(iType, o, aType);
                     if (iType > 0)
                     {
-                        attributesFound += aType.ToString() + "=" + iType.ToString() + ", ";
+                        attributesFound += aType.ToString() + "=" + iType + ", ";
                     }
                 }
 
@@ -893,19 +902,20 @@ namespace QuestTools
                 }
                 catch { }
             }
-            return iType;
         }
 
-        private static double DumpPlayers(IEnumerable<DiaUnit> players, double iType)
+        private static void DumpPlayers(IEnumerable<DiaPlayer> players)
         {
-            Logger.Log("Players found: {0}", players.Count());
+            var diaPlayers = players as IList<DiaPlayer> ?? players.ToList();
+            Logger.Log("Players found: {0}", diaPlayers.Count());
             HashSet<string> scannedAttributes = new HashSet<string>();
-            foreach (DiaPlayer o in players)
+            foreach (DiaPlayer o in diaPlayers)
             {
                 if (!o.IsValid)
                     continue;
 
-                string attributesFound = "", propertiesFound = "";
+                string attributesFound = "";
+                const string propertiesFound = "";
 
                 foreach (ActorAttributeType aType in Enum.GetValues(typeof(ActorAttributeType)))
                 {
@@ -919,11 +929,11 @@ namespace QuestTools
                     if (aat == 0d || aat == -1d || aat == double.NaN || aat == double.MinValue || aat == double.MaxValue)
                         continue;
 
-                    if (aat.ToString() == "NaN")
+                    if (aat.ToString(CultureInfo.InvariantCulture) == "NaN")
                         continue;
                     scannedAttributes.Add(aType.ToString());
 
-                    attributesFound += aType.ToString() + "=" + aat.ToString() + ", ";
+                    attributesFound += aType.ToString() + "=" + aat + ", ";
                 }
 
                 //propertiesFound = ReadProperties<DiaPlayer>(o, null);
@@ -939,22 +949,17 @@ namespace QuestTools
                 catch { }
 
             }
-            return iType;
         }
 
         private static void DumpService()
         {
-            string propertiesFound = "";
-
-            Type unitType = typeof(DiaPlayer);
-            propertiesFound = ReadProperties(ZetaDia.Service, null);
+            string propertiesFound = ReadProperties(ZetaDia.Service, null);
 
             try
             {
                 Logger.Log("\n\nService: " + propertiesFound);
             }
             catch { }
-
         }
 
         private static double GetAttribute(double iType, DiaObject o, ActorAttributeType aType)
@@ -978,10 +983,11 @@ namespace QuestTools
             }
             catch
             {
-                return (double)(-1);
+                return -1;
             }
         }
-        private static List<ActorAttributeType> IgnoreActorAttributeTypes = new List<ActorAttributeType>() {
+        private static readonly List<ActorAttributeType> IgnoreActorAttributeTypes = new List<ActorAttributeType>
+        {
             /*
              * [QuestTools] Unit ActorSNO: 5388 
              * Name: SkeletonSummoner_B-422 

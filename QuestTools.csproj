@@ -47,6 +47,7 @@
     <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
     <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <OutputPath>bin\x86\Release\</OutputPath>
@@ -116,7 +117,6 @@
     <Compile Include="ProfileTags\RandomRoll.cs" />
     <Compile Include="ProfileTags\RandomWait.cs" />
     <Compile Include="ProfileTags\ConfirmOK.cs" />
-    <Compile Include="ProfileTags\Movement\CustomBehavior.cs" />
     <Compile Include="Helpers\GameUI.cs" />
     <Compile Include="Helpers\Logger.cs" />
     <Compile Include="Helpers\Navigator.cs" />

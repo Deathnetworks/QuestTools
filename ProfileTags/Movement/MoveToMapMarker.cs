@@ -155,10 +155,10 @@ namespace QuestTools.ProfileTags.Movement
                 InteractAttempts = 5;
             if (TimeoutSeconds == 0)
                 TimeoutSeconds = TimeoutSecondsDefault;
-            if (_behaviorStartTime == DateTime.MinValue)
-                _behaviorStartTime = DateTime.UtcNow;
             if (MaxSearchDistance <= 0)
                 MaxSearchDistance = 10;
+
+            _behaviorStartTime = DateTime.UtcNow;
 
             _lastPosition = Vector3.Zero;
             _stuckStart = DateTime.UtcNow;
@@ -363,7 +363,7 @@ namespace QuestTools.ProfileTags.Movement
                 new Sequence(
                     new Action(ret => _isDone = true),
                     new Action(ret => Logger.Log("Timeout of {0} seconds exceeded in current behavior", TimeoutSeconds)),
-                    new Action(ret => { return RunStatus.Failure; })
+                    new Action(ret => RunStatus.Failure)
                 )
             );
         }

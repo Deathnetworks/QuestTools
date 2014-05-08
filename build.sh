@@ -16,7 +16,7 @@ SVNDIR=$BASE/../svn/$NAME/trunk/$NAME
 #remove contents of output directories
 rm -vrf $BUILDHOME
 rm -vrf $RUNDIR/$NAME
-rm -vrf $PLUGINDIR/bin
+#rm -vrf $PLUGINDIR/bin
 rm -vrf $PLUGINDIR/obj
 
 # re-create output directory

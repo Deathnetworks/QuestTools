@@ -31,7 +31,7 @@ namespace QuestTools
 
             BotEvents.WireUp();
 
-            TabUI.InstallTab();
+            TabUi.InstallTab();
         }
 
         public void OnDisabled()
@@ -39,7 +39,7 @@ namespace QuestTools
             Logger.Log("v{0} Disabled", Version);
             BotEvents.UnWire();
 
-            TabUI.RemoveTab();
+            TabUi.RemoveTab();
         }
 
         public void OnShutdown() { }
