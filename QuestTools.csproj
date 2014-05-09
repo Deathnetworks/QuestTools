@@ -111,7 +111,6 @@
     <Compile Include="ProfileTags\Depreciated\TrinityInteract.cs" />
     <Compile Include="ProfileTags\Depreciated\TrinityLoadProfile.cs" />
     <Compile Include="ProfileTags\Depreciated\TrinityLog.cs" />
-    <Compile Include="ProfileTags\Depreciated\TrinityMoveTo.cs" />
     <Compile Include="ProfileTags\Depreciated\TrinityMoveToSNO.cs" />
     <Compile Include="ProfileTags\Movement\MoveToScene.cs" />
     <Compile Include="ProfileTags\RandomRoll.cs" />

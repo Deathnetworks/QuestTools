@@ -241,8 +241,8 @@ namespace QuestTools.ProfileTags.Movement
                             new PrioritySelector(
                                 new Decorator(ret => _lastMoveResult != MoveResult.ReachedDestination,
                                     new Sequence(
-                                        new Action(ret => Logger.Debug("Moving to actor {0}, distance: {1} {2}", 
-                                            _interactObject.ActorSNO, _interactObject.Position.Distance(ZetaDia.Me.Position), Status())),
+                                        new Action(ret => Logger.Debug("Moving to actor {0} {1}", 
+                                            _interactObject.ActorSNO, Status())),
                                         new Action(ret => _lastMoveResult = Navigator.MoveTo(_interactObject.Position))
                                    )
                                 ),
@@ -268,13 +268,13 @@ namespace QuestTools.ProfileTags.Movement
                             new PrioritySelector(
                                 new Decorator(ret => _miniMapMarker != null && _miniMapMarker.Position.Distance(ZetaDia.Me.Position) > PathPrecision,
                                     new Sequence(
-                                        new Action(ret => Logger.Debug("Moving to Map Marker {0}, distance: {1:0} {2}", _miniMapMarker.NameHash, _miniMapMarker.Position.Distance(ZetaDia.Me.Position), Status())),
+                                        new Action(ret => Logger.Debug("Moving to Map Marker {0}, {1}", _miniMapMarker.NameHash, Status())),
                                         new Action(ret => _lastMoveResult = Navigator.MoveTo(_miniMapMarker.Position))
                                     )
                                 ),
                                 new Decorator(ret => _miniMapMarker != null && _miniMapMarker.Position.Distance(ZetaDia.Me.Position) < PathPrecision,
                                     new Sequence(
-                                        new Action(ret => Logger.Debug("Successfully Moved to Map Marker {0}, distance: {1} {2}", _miniMapMarker.NameHash, _miniMapMarker.Position.Distance(ZetaDia.Me.Position), Status())),
+                                        new Action(ret => Logger.Debug("Successfully Moved to Map Marker {0}, {1}", _miniMapMarker.NameHash, Status())),
                                         new Action(ret => _isDone = true)
                                     )
                                 )
@@ -546,7 +546,7 @@ namespace QuestTools.ProfileTags.Movement
             }
             float destinationDistance = newpos.Distance(ZetaDia.Me.Position);
 
-            _lastMoveResult = QTNavigator.MoveTo(newpos, destinationName + String.Format(" distance={0:0}", destinationDistance), true);
+            _lastMoveResult = QTNavigator.MoveTo(newpos, destinationName);
 
             switch (_lastMoveResult)
             {
@@ -568,8 +568,8 @@ namespace QuestTools.ProfileTags.Movement
 
             if (QuestTools.EnableDebugLogging)
             {
-                Logger.Debug("MoveResult: {0}, newpos={1} Distance={2}, destinationName={3}",
-                    _lastMoveResult.ToString(), newpos, newpos.Distance(ZetaDia.Me.Position), destinationName);
+                Logger.Debug("MoveResult: {0}, newpos={1} destinationName={2}",
+                    _lastMoveResult.ToString(), newpos, destinationName);
             }
             return result;
         }

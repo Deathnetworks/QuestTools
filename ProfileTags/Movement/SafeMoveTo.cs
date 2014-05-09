@@ -16,6 +16,7 @@ namespace QuestTools.ProfileTags.Movement
     ///     as its temporary destination. Usually a distance between 150-250 is ideal for pathing, and works in situations like
     ///     random dungeons and between New Tristram and anywhere in that world.
     /// </summary>
+    [XmlElement("TrinityMoveTo")]
     [XmlElement("SafeMoveTo")]
     internal class SafeMoveToTag : ProfileBehavior
     {

@@ -199,29 +199,20 @@ namespace QuestTools.Helpers
             return
             new Decorator(ret => AnyUnvisitedMarkers(),
                 new Sequence(
-                    new Action(ret => SetNearbyMarkersVisited(ZetaDia.Me.Position, markerDistance)),
+                    new DecoratorContinue(ret => LastMoveResult == MoveResult.ReachedDestination,
+                        new Action(ret =>  SetNearbyMarkersVisited(ZetaDia.Me.Position, markerDistance))
+                    ),
                     new Decorator(ret => GetNearestUnvisitedMarker(ZetaDia.Me.Position) != null,
-                        new Action(ret => MoveToNearestMarker(near))
+                        new Sequence(ctx => GetNearestUnvisitedMarker(near),
+                            new Action(ret => LastMoveResult = Navigator.MoveTo((ret as MiniMapMarker).Position)),
+                            new Action(ret => Logger.Log("Moved to inspect nameHash {0} at {1}, MoveResult: {3}",
+                                (ret as MiniMapMarker).MarkerNameHash, (ret as MiniMapMarker).Position, ZetaDia.Me.Position.Distance2D((ret as MiniMapMarker).Position), LastMoveResult))
+                        )
                     )
                 )
             );
         }
-
-        internal static RunStatus MoveToNearestMarker(Vector3 near)
-        {
-            MiniMapMarker m = GetNearestUnvisitedMarker(near);
-            //PlayerMover.RecordSkipAheadCachePoint();
-
-            LastMoveResult = Navigator.MoveTo(GetNearestUnvisitedMarker(near).Position);
-
-            Logger.Log("Moving to inspect nameHash {0} at {1} distance {2:0} mr: {3}",
-                m.MarkerNameHash, m.Position, ZetaDia.Me.Position.Distance2D(m.Position), LastMoveResult);
-
-
-            return RunStatus.Success;
-        }
-
-
+        
         public bool Equals(MiniMapMarker other)
         {
             return other.Position == Position && other.MarkerNameHash == MarkerNameHash;

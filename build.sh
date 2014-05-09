@@ -73,9 +73,10 @@ then
 
 	NEWBUILD=$[OLDBUILD+1]
 
-	echo new build is return new Version\($MAJOR, $MINOR, $NEWBUILD\);
+	echo new build is Version\($MAJOR, $MINOR, $NEWBUILD\);
 	VERSIONLINE="        public static Version PluginVersion = new Version($MAJOR, $MINOR, $NEWBUILD);"
 	cat $PLUGINFILE | sed -e "s/.*public static Version PluginVersion.*/$VERSIONLINE/g" > $PLUGINFILE
+	cp -v $PLUGINFILE $BUILDHOME/
 
 	ZIPFILE=$NAME-$MAJOR.$MINOR.$NEWBUILD.zip
 

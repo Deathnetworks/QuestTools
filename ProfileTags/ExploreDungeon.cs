@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using QuestTools.Helpers;
@@ -165,6 +166,7 @@ namespace QuestTools.ProfileTags
 
         [XmlAttribute("SetNodesExploredAutomatically")]
         [XmlAttribute("setNodesExploredAutomatically")]
+        [DefaultValue(true)]
         public bool SetNodesExploredAutomatically { get; set; }
 
         [XmlAttribute("minObjectOccurances")]
@@ -379,12 +381,12 @@ namespace QuestTools.ProfileTags
             public int MarkerNameHash { get; set; }
 
             [XmlAttribute("markerDistance")]
-            public float markerDistance { get; set; }
+            public float MarkerDistance { get; set; }
 
             public AlternateMarker()
             {
                 MarkerNameHash = 0;
-                markerDistance = 45f;
+                MarkerDistance = 45f;
             }
         }
 
@@ -395,7 +397,7 @@ namespace QuestTools.ProfileTags
         public class Objective
         {
             [XmlAttribute("actorId")]
-            public int ActorID { get; set; }
+            public int ActorId { get; set; }
 
             [XmlAttribute("markerNameHash")]
             public int MarkerNameHash { get; set; }
@@ -425,18 +427,21 @@ namespace QuestTools.ProfileTags
         {
             get
             {
-                if (PrioritySceneTarget != Vector3.Zero)
+                if (_prioritySceneTarget != Vector3.Zero)
                 {
-                    return PrioritySceneTarget;
+                    return _prioritySceneTarget;
                 }
 
-                if (GetIsInPandemoniumFortress() && GridSegmentation.Nodes.Any(n => !n.Visited))
+                if (GetIsInPandemoniumFortress())
                 {
-                    return GridSegmentation.Nodes
-                        .Where(n => !n.Visited)
-                        .OrderBy(n => n.Center.DistanceSqr(_myPosition.ToVector2()))
-                        .Select(n => n.NavigableCenter)
-                        .FirstOrDefault();
+
+                    if (_lastPandFortressTarget != Vector3.Zero && GridSegmentation.Nodes.Any(n => !n.Visited && n.NavigableCenter == _lastPandFortressTarget))
+                        return _lastPandFortressTarget;
+
+                    GetPandFortressNavTarget();
+
+                    if (_lastPandFortressTarget != Vector3.Zero)
+                        return _lastPandFortressTarget;
                 }
 
                 if (GetRouteUnvisitedNodeCount() > 0)
@@ -452,12 +457,12 @@ namespace QuestTools.ProfileTags
         public float Y { get { return CurrentNavTarget.Y; } }
         public float Z { get { return CurrentNavTarget.Z; } }
 
-        private bool InitDone;
+        private bool _initDone;
 
         /// <summary>
         /// The current player position
         /// </summary>
-        private static Vector3 _myPosition { get { return ZetaDia.Me.Position; } }
+        private static Vector3 MyPosition { get { return ZetaDia.Me.Position; } }
 
         /// <summary>
         /// The last position we updated the SearchGridProvider at
@@ -493,7 +498,7 @@ namespace QuestTools.ProfileTags
                 MiniMapMarker.KnownMarkers.Clear();
             }
 
-            if (!InitDone)
+            if (!_initDone)
             {
                 Init();
             }
@@ -530,21 +535,21 @@ namespace QuestTools.ProfileTags
                 ),
                 // I dunno if this will work...
                 new DecoratorContinue(ret => Navigator.StuckHandler.IsStuck,
-                    new Action(ret => stuckCount++)),
+                    new Action(ret => _stuckCount++)),
                 new DecoratorContinue(ret => !Navigator.StuckHandler.IsStuck,
-                    new Action(ret => stuckCount = 0)),
+                    new Action(ret => _stuckCount = 0)),
                 UpdateSearchGridProvider(),
                 new Action(ret => CheckResetDungeonExplorer()),
                 new PrioritySelector(
                     CheckIsObjectiveFinished(),
                     PrioritySceneCheck(),
                     new Decorator(ret => !IgnoreMarkers,
-                        MiniMapMarker.VisitMiniMapMarkers(_myPosition, MarkerDistance)
+                        MiniMapMarker.VisitMiniMapMarkers(MyPosition, MarkerDistance)
                     ),
                     new Decorator(ret => ShouldInvestigateActor(),
                         new PrioritySelector(
                             new Decorator(ret => CurrentActor != null && CurrentActor.IsValid &&
-                                Objectives.Any(o => o.ActorID == CurrentActor.ActorSNO && o.Interact) &&
+                                Objectives.Any(o => o.ActorId == CurrentActor.ActorSNO && o.Interact) &&
                                 CurrentActor.Position.Distance(ZetaDia.Me.Position) <= CurrentActor.CollisionSphere.Radius,
                                 new Sequence(
                                     new Action(ret => CurrentActor.Interact())
@@ -646,7 +651,7 @@ namespace QuestTools.ProfileTags
         {
             get
             {
-                return Objectives.Any(o => o.ActorID == CurrentActor.ActorSNO && o.EndAnimation == CurrentActor.CommonData.CurrentAnimation);
+                return Objectives.Any(o => o.ActorId == CurrentActor.ActorSNO && o.EndAnimation == CurrentActor.CommonData.CurrentAnimation);
             }
         }
 
@@ -657,7 +662,7 @@ namespace QuestTools.ProfileTags
                 var actor =
                 ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
                 .Where(diaObj => diaObj.IsValid && (diaObj.ActorSNO == ActorId ||
-                    Objectives.Any(o => o.ActorID != 0 && o.ActorID == diaObj.ActorSNO)) &&
+                    Objectives.Any(o => o.ActorId != 0 && o.ActorId == diaObj.ActorSNO)) &&
                     PositionCache.Cache.Any(pos => pos.Distance2DSqr(diaObj.Position) >= ObjectDistance * ObjectDistance) &&
                     _foundObjects.All(fo => fo.Equals(new Tuple<int, Vector3>(diaObj.ActorSNO, diaObj.Position))))
                 .OrderBy(o => o.Distance)
@@ -678,20 +683,20 @@ namespace QuestTools.ProfileTags
 
                 var actor = ZetaDia.Actors.GetActorsOfType<DiaObject>(true).FirstOrDefault(a => a.IsValid && a.ActorSNO == ActorId);
 
-                if (actor != null && actor.IsValid && actor.Position.Distance2DSqr(_myPosition) >= ObjectDistance * ObjectDistance)
+                if (actor != null && actor.IsValid && actor.Position.Distance2DSqr(MyPosition) >= ObjectDistance * ObjectDistance)
                     Navigator.MoveTo(actor.Position, string.Format("InvestigateActor {0} {1} {2}", actor.ActorSNO, actor.Name, actor.ActorType));
             });
         }
 
         private bool ShouldInvestigateActor()
         {
-            if (ActorId == 0 || Objectives.All(o => o.ActorID == 0))
+            if (ActorId == 0 || Objectives.All(o => o.ActorId == 0))
                 return false;
 
             var actors = ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
                 .Where(diaObj => diaObj.IsValid && (diaObj.ActorSNO == ActorId ||
                     AlternateActors.Any(alternateActor => alternateActor.ActorId != 0 && alternateActor.ActorId == diaObj.ActorSNO) ||
-                    Objectives.Any(objective => objective.ActorID != 0 && objective.ActorID == diaObj.ActorSNO) ||
+                    Objectives.Any(objective => objective.ActorId != 0 && objective.ActorId == diaObj.ActorSNO) ||
                     diaObj.CommonData.GetAttribute<int>(ActorAttributeType.BountyObjective) > 0) &&
                     PositionCache.Cache.Any(pos => pos.Distance2DSqr(diaObj.Position) >= ObjectDistance * ObjectDistance) &&
                     _foundObjects.All(fo => fo.Equals(new Tuple<int, Vector3>(diaObj.ActorSNO, diaObj.Position)))).ToList();
@@ -718,11 +723,11 @@ namespace QuestTools.ProfileTags
         private Composite UpdateSearchGridProvider()
         {
             return
-            new DecoratorContinue(ret => _lastSceneId != ZetaDia.Me.SceneId || Vector3.Distance(_myPosition, _gridProviderUpdatePosition) > 150,
+            new DecoratorContinue(ret => _lastSceneId != ZetaDia.Me.SceneId || Vector3.Distance(MyPosition, _gridProviderUpdatePosition) > 150,
                 new Sequence(
                     new Action(ret => _lastSceneId = ZetaDia.Me.SceneId),
                     new Action(ret => Navigator.SearchGridProvider.Update()),
-                    new Action(ret => _gridProviderUpdatePosition = _myPosition),
+                    new Action(ret => _gridProviderUpdatePosition = MyPosition),
                     new Action(ret => MiniMapMarker.UpdateFailedMarkers())
                 )
             );
@@ -756,22 +761,22 @@ namespace QuestTools.ProfileTags
                     )
                 ),
                 new Decorator(ret => ExploreTimeoutType == TimeoutType.Timer,
-                    new Action(ret => CheckSetTimer(ret))
+                    new Action(ret => CheckSetTimer())
                 ),
                 new Decorator(ret => ExploreTimeoutType == TimeoutType.GoldInactivity,
-                    new Action(ret => CheckSetGoldInactive(ret))
+                    new Action(ret => CheckSetGoldInactive())
                 )
             );
         }
 
         bool _timeoutBreached;
         readonly Stopwatch _tagTimer = new Stopwatch();
+
         /// <summary>
         /// Will start the timer if needed, and end the tag if the timer has exceeded the TimeoutValue
         /// </summary>
-        /// <param name="ctx"></param>
         /// <returns></returns>
-        private RunStatus CheckSetTimer(object ctx)
+        private RunStatus CheckSetTimer()
         {
             if (!_tagTimer.IsRunning)
             {
@@ -788,14 +793,14 @@ namespace QuestTools.ProfileTags
         }
 
         private int _lastCoinage = -1;
+
         /// <summary>
         /// Will check if the bot has not picked up any gold within the allocated TimeoutValue
         /// </summary>
-        /// <param name="ctx"></param>
         /// <returns></returns>
-        private RunStatus CheckSetGoldInactive(object ctx)
+        private RunStatus CheckSetGoldInactive()
         {
-            CheckSetTimer(ctx);
+            CheckSetTimer();
             if (_lastCoinage == -1)
             {
                 _lastCoinage = Player.Coinage;
@@ -816,7 +821,7 @@ namespace QuestTools.ProfileTags
             return RunStatus.Failure;
         }
 
-        private int _timesForcedReset = 0;
+        private int _timesForcedReset;
         private const int TimesForceResetMax = 5;
 
         /// <summary>
@@ -838,6 +843,12 @@ namespace QuestTools.ProfileTags
                 new Decorator(ret => GetRouteUnvisitedNodeCount() == 0,
                     new Sequence(
                         new Action(ret => Logger.Log("Visited all nodes but objective not complete, forcing grid reset!")),
+                        new DecoratorContinue(ret => BrainBehavior.DungeonExplorer.SetNodesExploredAutomatically,
+                            new Sequence(
+                                new Action(ret => Logger.Log("Disabling SetNodesExploredAutomatically")),
+                                new Action(ret => BrainBehavior.DungeonExplorer.SetNodesExploredAutomatically = false)
+                            )
+                        ),
                         new DecoratorContinue(ret => _timesForcedReset > 2 && GetCurrentRouteNodeCount() == 1,
                             new Sequence(
                                 new Action(ret => Logger.Log("Only 1 node found and 3 grid resets, falling back to failsafe!")),
@@ -853,14 +864,14 @@ namespace QuestTools.ProfileTags
                         new Action(ret => GridSegmentation.Reset()),
                         new Action(ret => GridSegmentation.Update()),
                         new Action(ret => BrainBehavior.DungeonExplorer.Reset()),
-                        new Action(ret => PriorityScenesInvestigated.Clear()),
+                        new Action(ret => _priorityScenesInvestigated.Clear()),
                         new Action(ret => UpdateRoute())
                     )
                 )
            );
         }
 
-        private void ForceUpdateScenes()
+        private static void ForceUpdateScenes()
         {
             foreach (Scene scene in ZetaDia.Scenes.GetScenes().ToList())
             {
@@ -884,7 +895,7 @@ namespace QuestTools.ProfileTags
                     )
                 ),
                 new Decorator(ret => EndType == TrinityExploreEndType.PortalExitFound &&
-                    PortalExitMarker() != null && PortalExitMarker().Position.Distance2D(_myPosition) <= MarkerDistance,
+                    PortalExitMarker() != null && PortalExitMarker().Position.Distance2D(MyPosition) <= MarkerDistance,
                     new Sequence(
                         new Action(ret => Logger.Log("Found portal exit! Tag Finished.")),
                         new Action(ret => _isDone = true)
@@ -914,7 +925,7 @@ namespace QuestTools.ProfileTags
                         new Action(ret => _isDone = true)
                     )
                 ),
-                new Decorator(ret => (EndType == TrinityExploreEndType.ObjectFound || EndType == TrinityExploreEndType.SceneLeftOrActorFound) && ActorId != 0 && ZetaDia.Actors.GetActorsOfType<DiaObject>(true, false)
+                new Decorator(ret => (EndType == TrinityExploreEndType.ObjectFound || EndType == TrinityExploreEndType.SceneLeftOrActorFound) && ActorId != 0 && ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
                     .Any(a => a.ActorSNO == ActorId && a.Distance <= ObjectDistance),
                     new Sequence(
                         new Action(ret => Logger.Log("Found Object {0}!", ActorId)),
@@ -967,7 +978,7 @@ namespace QuestTools.ProfileTags
 
         private bool AlternateActorsFound()
         {
-            return AlternateActors.Any() && ZetaDia.Actors.GetActorsOfType<DiaObject>(true, false)
+            return AlternateActors.Any() && ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
                     .Where(o => AlternateActors.Any(a => a.ActorId == o.ActorSNO && o.Distance <= a.ObjectDistance)).Any();
         }
 
@@ -983,7 +994,7 @@ namespace QuestTools.ProfileTags
 
         private DiaObject GetAlternateActor()
         {
-            return ZetaDia.Actors.GetActorsOfType<DiaObject>(true, false)
+            return ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
                     .Where(o => AlternateActors.Any(a => a.ActorId == o.ActorSNO && o.Distance <= a.ObjectDistance)).OrderBy(o => o.Distance).FirstOrDefault();
         }
 
@@ -993,22 +1004,22 @@ namespace QuestTools.ProfileTags
         /// <returns></returns>
         private bool IsExitNameHashVisible()
         {
-            return ZetaDia.Minimap.Markers.CurrentWorldMarkers.Any(m => m.NameHash == ExitNameHash && m.Position.Distance2D(_myPosition) <= MarkerDistance + 10f);
+            return ZetaDia.Minimap.Markers.CurrentWorldMarkers.Any(m => m.NameHash == ExitNameHash && m.Position.Distance2D(MyPosition) <= MarkerDistance + 10f);
         }
 
         #region PriorityScenes
-        private Vector3 PrioritySceneTarget = Vector3.Zero;
-        private int PrioritySceneSNOId = -1;
-        private Scene CurrentPriorityScene = null;
-        private float PriorityScenePathPrecision = -1f;
+        private Vector3 _prioritySceneTarget = Vector3.Zero;
+        private int _prioritySceneSNOId = -1;
+        private Scene _currentPriorityScene;
+        private float _priorityScenePathPrecision = -1f;
         /// <summary>
         /// A list of Scene SNOId's that have already been investigated
         /// </summary>
-        private List<int> PriorityScenesInvestigated = new List<int>();
+        private readonly List<int> _priorityScenesInvestigated = new List<int>();
 
-        private DateTime lastCheckedScenes = DateTime.MinValue;
+        private DateTime _lastCheckedScenes = DateTime.MinValue;
 
-        private int stuckCount = 0;
+        private int _stuckCount;
 
         /// <summary>
         /// Will find and move to Prioritized Scene's based on Scene SNOId or Name
@@ -1019,25 +1030,25 @@ namespace QuestTools.ProfileTags
             return
             new Decorator(ret => PriorityScenes != null && PriorityScenes.Any(),
                 new Sequence(
-                    new DecoratorContinue(ret => DateTime.UtcNow.Subtract(lastCheckedScenes).TotalMilliseconds > 1000,
+                    new DecoratorContinue(ret => DateTime.UtcNow.Subtract(_lastCheckedScenes).TotalMilliseconds > 1000,
                         new Sequence(
-                            new Action(ret => lastCheckedScenes = DateTime.UtcNow),
+                            new Action(ret => _lastCheckedScenes = DateTime.UtcNow),
                             new Action(ret => FindPrioritySceneTarget())
                         )
                     ),
-                    new Decorator(ret => PrioritySceneTarget != Vector3.Zero,
+                    new Decorator(ret => _prioritySceneTarget != Vector3.Zero,
                         new PrioritySelector(
-                            new Decorator(ret => stuckCount > 3,
+                            new Decorator(ret => _stuckCount > 3,
                                 new Sequence(
                                      new Action(ret => Logger.Log("Too many stuck attempts, canceling Priority Scene {0} {1} center {2} Distance {3:0}",
-                                        CurrentPriorityScene.Name, CurrentPriorityScene.SceneInfo.SNOId, PrioritySceneTarget, PrioritySceneTarget.Distance2D(_myPosition))),
+                                        _currentPriorityScene.Name, _currentPriorityScene.SceneInfo.SNOId, _prioritySceneTarget, _prioritySceneTarget.Distance2D(MyPosition))),
                                    new Action(ret => PrioritySceneMoveToFinished())
                                 )
                             ),
-                            new Decorator(ret => PrioritySceneTarget.Distance2D(_myPosition) <= PriorityScenePathPrecision,
+                            new Decorator(ret => _prioritySceneTarget.Distance2D(MyPosition) <= _priorityScenePathPrecision,
                                 new Sequence(
                                     new Action(ret => Logger.Log("Successfully navigated to priority scene {0} {1} center {2} Distance {3:0}",
-                                        CurrentPriorityScene.Name, CurrentPriorityScene.SceneInfo.SNOId, PrioritySceneTarget, PrioritySceneTarget.Distance2D(_myPosition))),
+                                        _currentPriorityScene.Name, _currentPriorityScene.SceneInfo.SNOId, _prioritySceneTarget, _prioritySceneTarget.Distance2D(MyPosition))),
                                     new Action(ret => PrioritySceneMoveToFinished())
                                 )
                             ),
@@ -1056,16 +1067,16 @@ namespace QuestTools.ProfileTags
         /// </summary>
         private void MoveToPriorityScene()
         {
-            string info = string.Format("Moving to Priority Scene {0} - {1} Center {2} Distance {3:0}",
-                CurrentPriorityScene.Name, CurrentPriorityScene.SceneInfo.SNOId, PrioritySceneTarget, PrioritySceneTarget.Distance2D(_myPosition));
+            string info = string.Format("Moving to Priority Scene {0} - {1} Center {2}",
+                _currentPriorityScene.Name, _currentPriorityScene.SceneInfo.SNOId, _prioritySceneTarget);
             Logger.Debug(info);
 
-            MoveResult moveResult = Navigator.MoveTo(PrioritySceneTarget, info);
+            MoveResult moveResult = Navigator.MoveTo(_prioritySceneTarget, info);
 
             if (moveResult == MoveResult.PathGenerationFailed || moveResult == MoveResult.ReachedDestination)
             {
                 Logger.Debug("Unable to navigate to Scene {0} - {1} Center {2} Distance {3:0}, cancelling!",
-                    CurrentPriorityScene.Name, CurrentPriorityScene.SceneInfo.SNOId, PrioritySceneTarget, PrioritySceneTarget.Distance2D(_myPosition));
+                    _currentPriorityScene.Name, _currentPriorityScene.SceneInfo.SNOId, _prioritySceneTarget, _prioritySceneTarget.Distance2D(MyPosition));
                 PrioritySceneMoveToFinished();
             }
         }
@@ -1075,9 +1086,9 @@ namespace QuestTools.ProfileTags
         /// </summary>
         private void PrioritySceneMoveToFinished()
         {
-            PriorityScenesInvestigated.Add(PrioritySceneSNOId);
-            PrioritySceneSNOId = -1;
-            PrioritySceneTarget = Vector3.Zero;
+            _priorityScenesInvestigated.Add(_prioritySceneSNOId);
+            _prioritySceneSNOId = -1;
+            _prioritySceneTarget = Vector3.Zero;
             UpdateRoute();
         }
 
@@ -1089,23 +1100,23 @@ namespace QuestTools.ProfileTags
             if (!PriorityScenes.Any())
                 return;
 
-            if (PrioritySceneTarget != Vector3.Zero)
+            if (_prioritySceneTarget != Vector3.Zero)
                 return;
 
             bool foundPriorityScene = false;
 
             // find any matching priority scenes in scene manager - match by name or SNOId
 
-            List<Scene> PScenes = ZetaDia.Scenes.GetScenes()
+            List<Scene> priorityScenes = ZetaDia.Scenes.GetScenes()
                 .Where(s => PriorityScenes.Any(ps => ps.SceneId != -1 && s.SceneInfo.SNOId == ps.SceneId)).ToList();
 
-            PScenes.AddRange(ZetaDia.Scenes.GetScenes()
+            priorityScenes.AddRange(ZetaDia.Scenes.GetScenes()
                  .Where(s => PriorityScenes.Any(ps => ps.SceneName.Trim() != String.Empty && ps.SceneId == -1 && s.Name.ToLower().Contains(ps.SceneName.ToLower()))).ToList());
 
             List<Scene> foundPriorityScenes = new List<Scene>();
             Dictionary<int, Vector3> foundPrioritySceneIndex = new Dictionary<int, Vector3>();
 
-            foreach (Scene scene in PScenes)
+            foreach (Scene scene in priorityScenes)
             {
                 if (!scene.IsValid)
                     continue;
@@ -1116,7 +1127,7 @@ namespace QuestTools.ProfileTags
                 if (!scene.Mesh.Zone.NavZoneDef.IsValid)
                     continue;
 
-                if (PriorityScenesInvestigated.Contains(scene.SceneInfo.SNOId))
+                if (_priorityScenesInvestigated.Contains(scene.SceneInfo.SNOId))
                     continue;
 
                 foundPriorityScene = true;
@@ -1124,17 +1135,14 @@ namespace QuestTools.ProfileTags
                 NavZone navZone = scene.Mesh.Zone;
                 NavZoneDef zoneDef = navZone.NavZoneDef;
 
-                Vector2 zoneMin = navZone.ZoneMin;
-                Vector2 zoneMax = navZone.ZoneMax;
-
                 Vector3 zoneCenter = GetNavZoneCenter(navZone);
 
-                List<NavCell> NavCells = zoneDef.NavCells.Where(c => c.IsValid && c.Flags.HasFlag(NavCellFlags.AllowWalk)).ToList();
+                List<NavCell> navCells = zoneDef.NavCells.Where(c => c.IsValid && c.Flags.HasFlag(NavCellFlags.AllowWalk)).ToList();
 
-                if (!NavCells.Any())
+                if (!navCells.Any())
                     continue;
 
-                NavCell bestCell = NavCells.OrderBy(c => GetNavCellCenter(c.Min, c.Max, navZone).Distance2D(zoneCenter)).FirstOrDefault();
+                NavCell bestCell = navCells.OrderBy(c => GetNavCellCenter(c.Min, c.Max, navZone).Distance2D(zoneCenter)).FirstOrDefault();
 
                 if (bestCell != null && !foundPrioritySceneIndex.ContainsKey(scene.SceneInfo.SNOId))
                 {
@@ -1149,20 +1157,20 @@ namespace QuestTools.ProfileTags
 
             if (foundPrioritySceneIndex.Any())
             {
-                KeyValuePair<int, Vector3> nearestPriorityScene = foundPrioritySceneIndex.OrderBy(s => s.Value.Distance2D(_myPosition)).FirstOrDefault();
+                KeyValuePair<int, Vector3> nearestPriorityScene = foundPrioritySceneIndex.OrderBy(s => s.Value.Distance2D(MyPosition)).FirstOrDefault();
 
-                PrioritySceneSNOId = nearestPriorityScene.Key;
-                PrioritySceneTarget = nearestPriorityScene.Value;
-                CurrentPriorityScene = foundPriorityScenes.FirstOrDefault(s => s.SceneInfo.SNOId == PrioritySceneSNOId);
-                PriorityScenePathPrecision = GetPriorityScenePathPrecision(PScenes.FirstOrDefault(s => s.SceneInfo.SNOId == nearestPriorityScene.Key));
+                _prioritySceneSNOId = nearestPriorityScene.Key;
+                _prioritySceneTarget = nearestPriorityScene.Value;
+                _currentPriorityScene = foundPriorityScenes.FirstOrDefault(s => s.SceneInfo.SNOId == _prioritySceneSNOId);
+                _priorityScenePathPrecision = GetPriorityScenePathPrecision(priorityScenes.FirstOrDefault(s => s.SceneInfo.SNOId == nearestPriorityScene.Key));
 
                 Logger.Debug("Found Priority Scene {0} - {1} Center {2} Distance {3:0}",
-                    CurrentPriorityScene.Name, CurrentPriorityScene.SceneInfo.SNOId, PrioritySceneTarget, PrioritySceneTarget.Distance2D(_myPosition));
+                    _currentPriorityScene.Name, _currentPriorityScene.SceneInfo.SNOId, _prioritySceneTarget, _prioritySceneTarget.Distance2D(MyPosition));
             }
 
             if (!foundPriorityScene)
             {
-                PrioritySceneTarget = Vector3.Zero;
+                _prioritySceneTarget = Vector3.Zero;
             }
         }
 
@@ -1291,14 +1299,14 @@ namespace QuestTools.ProfileTags
                         new Action(ret => UpdateRoute())
                     )
                 ),
-                new Decorator(ret => CurrentNavTarget.Distance2D(_myPosition) <= PathPrecision,
+                new Decorator(ret => CurrentNavTarget.Distance2D(MyPosition) <= PathPrecision,
                     new Sequence(
                         new Action(ret => SetNodeVisited(String.Format("Node {0} is within PathPrecision ({1:0}/{2:0})",
-                            CurrentNavTarget, CurrentNavTarget.Distance2D(_myPosition), PathPrecision))),
+                            CurrentNavTarget, CurrentNavTarget.Distance2D(MyPosition), PathPrecision))),
                         new Action(ret => UpdateRoute())
                     )
                 ),
-                new Decorator(ret => CurrentNavTarget.Distance2D(_myPosition) <= 90f && !MainGridProvider.CanStandAt(MainGridProvider.WorldToGrid(CurrentNavTarget.ToVector2())),
+                new Decorator(ret => CurrentNavTarget.Distance2D(MyPosition) <= 90f && !MainGridProvider.CanStandAt(MainGridProvider.WorldToGrid(CurrentNavTarget.ToVector2())),
                     new Sequence(
                         new Action(ret => SetNodeVisited("Center Not Navigable")),
                         new Action(ret => UpdateRoute())
@@ -1359,7 +1367,7 @@ namespace QuestTools.ProfileTags
             foreach (DungeonNode node in GridSegmentation.Nodes.Where(n => !n.Visited))
             {
                 var navCenter = node.NavigableCenter;
-                float distance = navCenter.Distance2D(_myPosition);
+                float distance = navCenter.Distance2D(MyPosition);
                 if (distance > PathPrecision)
                     continue;
 
@@ -1557,7 +1565,7 @@ namespace QuestTools.ProfileTags
                 TimeoutValue = 1800;
 
             PositionCache.Cache = new HashSet<Vector3>();
-            PriorityScenesInvestigated.Clear();
+            _priorityScenesInvestigated.Clear();
             MiniMapMarker.KnownMarkers.Clear();
             if (PriorityScenes == null)
                 PriorityScenes = new List<PrioritizeScene>();
@@ -1574,7 +1582,7 @@ namespace QuestTools.ProfileTags
                     "Initialized TrinityExploreDungeon: boxSize={0} boxTolerance={1:0.00} endType={2} timeoutType={3} timeoutValue={4} pathPrecision={5:0} sceneId={6} actorId={7} objectDistance={8} markerDistance={9} exitNameHash={10}",
                     GridSegmentation.BoxSize, GridSegmentation.BoxTolerance, EndType, ExploreTimeoutType, TimeoutValue, PathPrecision, SceneId, ActorId, ObjectDistance, MarkerDistance, ExitNameHash);
             }
-            InitDone = true;
+            _initDone = true;
         }
 
         #region ProfileBehavior
@@ -1594,7 +1602,7 @@ namespace QuestTools.ProfileTags
         {
             Logger.Debug("TrinityExploreDungeon ResetCachedDone()");
             _isDone = false;
-            InitDone = false;
+            _initDone = false;
             _timeoutBreached = false;
             _tagTimer.Reset();
             base.ResetCachedDone();
@@ -1635,8 +1643,8 @@ namespace QuestTools.ProfileTags
             if (riftWorldIndex != -1 &&
                 ZetaDia.Minimap.Markers.CurrentWorldMarkers
                 .Any(m => m.NameHash == DataDictionary.RiftPortalHashes[riftWorldIndex] &&
-                    m.Position.Distance2D(_myPosition) <= MarkerDistance + 10f &&
-                    (Math.Abs(m.Position.Z - ZetaDia.Me.Position.Z) <= 14f || Navigator.Raycast(_myPosition, m.Position)) &&
+                    m.Position.Distance2D(MyPosition) <= MarkerDistance + 10f &&
+                    (Math.Abs(m.Position.Z - ZetaDia.Me.Position.Z) <= 14f || Navigator.Raycast(MyPosition, m.Position)) &&
                     !MiniMapMarker.TownHubMarkers.Contains(m.NameHash)))
             {
                 int marker = DataDictionary.RiftPortalHashes[riftWorldIndex];
@@ -1712,6 +1720,39 @@ namespace QuestTools.ProfileTags
 
         #region Death Gate Handling
 
+
+        private List<Vector3> _pandemoniumFortressCanPathCache = new List<Vector3>();
+        private Vector3 _lastPandFortressTarget = Vector3.Zero;
+
+        private void GetPandFortressNavTarget()
+        {
+            if (_lastPandFortressTarget != Vector3.Zero && GridSegmentation.Nodes.Any(n => n.Visited && n.NavigableCenter == _lastPandFortressTarget))
+            {
+                _lastPandFortressTarget = Vector3.Zero;
+            }
+
+            List<Tuple<Vector3, Vector2>> nodeList = GridSegmentation.Nodes.Where(n => !n.Visited).OrderBy(n => n.Center.DistanceSqr(MyPosition.ToVector2())).Select(n => new Tuple<Vector3, Vector2>(n.NavigableCenter, n.Center)).ToList();
+            if (!nodeList.Any())
+                return;
+
+            _pandemoniumFortressCanPathCache.Clear();
+            foreach (var nodeCenter in nodeList.Select(n => n.Item1))
+            {
+                bool canPath = NavigationProvider.CanPathWithinDistance(nodeCenter);
+                // Find the first node we can path to (ordered by distance above)
+                if (!canPath)
+                    continue;
+                _pandemoniumFortressCanPathCache.Add(nodeCenter);
+                break;
+            }
+
+            _lastPandFortressTarget = nodeList
+                .OrderBy(n => _pandemoniumFortressCanPathCache.Contains(n.Item1))
+                .ThenBy(n => n.Item2.DistanceSqr(MyPosition.ToVector2()))
+                .Select(n => n.Item1)
+                .FirstOrDefault();
+        }
+
         private static bool GetIsInPandemoniumFortress()
         {
             return DataDictionary.PandemoniumFortressWorlds.Contains(ZetaDia.CurrentWorldId) ||
@@ -1726,7 +1767,7 @@ namespace QuestTools.ProfileTags
             return
             new Decorator(ret => GetIsInPandemoniumFortress() && AnyDeathGates && !CanFullPathToCurrentNavTarget(),
                 new PrioritySelector(
-                    new Decorator(ret => _deathGateInteractStartPosition != Vector3.Zero && _myPosition.Distance2D(_deathGateInteractStartPosition) > 15f,
+                    new Decorator(ret => _deathGateInteractStartPosition != Vector3.Zero && MyPosition.Distance2D(_deathGateInteractStartPosition) > 15f,
                         new Sequence(
                             new Action(ret => ClearDeathGateCheck()),
                             new DecoratorContinue(ret => !CanFullPathToCurrentNavTarget(),
@@ -1742,13 +1783,13 @@ namespace QuestTools.ProfileTags
                     ),
                     new Decorator(ret => NearestDeathGate.Position.Distance2DSqr(ZetaDia.Me.Position) > 10f * 10f,
                         new Sequence(
-                            new Action(ret => Logger.Debug("Moving to Death Gate at {0} distance {1:0}", NearestDeathGate.Position, NearestDeathGate.Position.Distance2D(ZetaDia.Me.Position))),
+                            new Action(ret => Logger.Debug("Moving to Death Gate at {0}", NearestDeathGate.Position)),
                             new Action(ret => _lastMoveResult = Navigator.MoveTo(NearestDeathGate.Position))
                         )
                     ),
                     new Sequence(
                         new Action(ret => Logger.Debug("Interacting With Death Gate")),
-                        new Action(ret => _deathGateInteractStartPosition = _myPosition),
+                        new Action(ret => _deathGateInteractStartPosition = MyPosition),
                         new Action(ret => NearestDeathGate.Interact()),
                         new Sleep(1500)
                     )
@@ -1767,6 +1808,8 @@ namespace QuestTools.ProfileTags
             _canPathCache = new Dictionary<int, bool>();
             _lastPathCheckTarget = Vector3.Zero;
             _nearestDeathGate = null;
+            _lastPandFortressTarget = Vector3.Zero;
+            _pandemoniumFortressCanPathCache.Clear();
             NavigationProvider.Clear();
             UpdateRoute();
         }
