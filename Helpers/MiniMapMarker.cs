@@ -17,7 +17,10 @@ namespace QuestTools.Helpers
     {
         //private const int WAYPOINT_MARKER = -1751517829;
 
-        private const int RiftGuardian = 1603556356;
+        private const int RiftGuardianHash = 1603556356;
+        private const int WaypointHash = -1751517829;
+
+        private const int PointOfInterestTexture = 81058;
 
         internal static HashSet<int> TownHubMarkers = new HashSet<int>
         {
@@ -46,8 +49,8 @@ namespace QuestTools.Helpers
                 return;
 
             foreach (MiniMapMarker marker in KnownMarkers
-                .Where(m => m.Equals(nearestMarker) && 
-                near.Distance2D(m.Position) <= pathPrecision && 
+                .Where(m => m.Equals(nearestMarker) &&
+                near.Distance2D(m.Position) <= pathPrecision &&
                 DataDictionary.RiftPortalHashes.Contains(m.MarkerNameHash)))
             {
                 Logger.Log("Setting MiniMapMarker {0} as Visited, within PathPrecision {1:0}", marker.MarkerNameHash, pathPrecision);
@@ -118,9 +121,17 @@ namespace QuestTools.Helpers
         private static IEnumerable<Zeta.Game.Internals.MinimapMarker> GetMarkerList(int includeMarker)
         {
             return ZetaDia.Minimap.Markers.CurrentWorldMarkers
-                .Where(m => (m.NameHash == 0 || m.NameHash == RiftGuardian || m.NameHash == includeMarker || m.IsPointOfInterest || m.IsPortalExit) &&
+                .Where(m => (
+                    m.NameHash == includeMarker ||
+                    m.NameHash == 0 ||
+                    m.NameHash == RiftGuardianHash ||
+                    m.NameHash == WaypointHash ||
+                    m.IsPointOfInterest || // Already matches POI hash
+                    m.IsPortalExit ||
+                    m.Position.ToVector2().DistanceSqr(ZetaDia.Me.Position.ToVector2()) <= 500 * 500) && // within 500 yards
                     !KnownMarkers.Any(ml => ml.Position == m.Position && ml.MarkerNameHash == m.NameHash))
-                    .OrderBy(m => m.NameHash != 0);
+                    .OrderBy(m => m.IsPointOfInterest)
+                    .ThenBy(m => m.Position.ToVector2().DistanceSqr(ZetaDia.Me.Position.ToVector2()));
         }
 
         internal static void AddMarkersToList(int includeMarker = 0)
@@ -200,7 +211,7 @@ namespace QuestTools.Helpers
             new Decorator(ret => AnyUnvisitedMarkers(),
                 new Sequence(
                     new DecoratorContinue(ret => LastMoveResult == MoveResult.ReachedDestination,
-                        new Action(ret =>  SetNearbyMarkersVisited(ZetaDia.Me.Position, markerDistance))
+                        new Action(ret => SetNearbyMarkersVisited(ZetaDia.Me.Position, markerDistance))
                     ),
                     new Decorator(ret => GetNearestUnvisitedMarker(ZetaDia.Me.Position) != null,
                         new Sequence(ctx => GetNearestUnvisitedMarker(near),
@@ -212,7 +223,7 @@ namespace QuestTools.Helpers
                 )
             );
         }
-        
+
         public bool Equals(MiniMapMarker other)
         {
             return other.Position == Position && other.MarkerNameHash == MarkerNameHash;

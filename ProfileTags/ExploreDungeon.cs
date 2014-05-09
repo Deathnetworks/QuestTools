@@ -598,6 +598,7 @@ namespace QuestTools.ProfileTags
                 return _lastPathCheckResult;
 
             _lastPathCheckTarget = navTarget;
+            Logger.Debug("Checking Path to navTarget {0}", navTarget);
             _lastPathCheckResult = NavigationProvider.CanPathWithinDistance(navTarget, PathPrecision);
             if (!_lastPathCheckResult)
                 Logger.Debug("Unable to fully path to {0} with precision {1}, distance {2:0}", navTarget, PathPrecision, navTarget.Distance2D(ZetaDia.Me.Position));
@@ -1738,6 +1739,7 @@ namespace QuestTools.ProfileTags
             _pandemoniumFortressCanPathCache.Clear();
             foreach (var nodeCenter in nodeList.Select(n => n.Item1))
             {
+                Logger.Debug("Checking Path to nodeCenter {0}", nodeCenter);
                 bool canPath = NavigationProvider.CanPathWithinDistance(nodeCenter);
                 // Find the first node we can path to (ordered by distance above)
                 if (!canPath)
@@ -1838,6 +1840,7 @@ namespace QuestTools.ProfileTags
 
                 foreach (var portal in deathgates)
                 {
+                    Logger.Debug("Checking Path to portal {0}", portal.Position);
                     _canPathCache.Add(portal.RActorGuid, NavigationProvider.CanPathWithinDistance(portal.Position, 10f));
                 }
 
