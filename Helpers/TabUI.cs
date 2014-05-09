@@ -620,7 +620,7 @@ namespace QuestTools.Helpers
                     Process.Start(logFile);
                 else
                 {
-                    Logger.LogError("Unable to open log file {0} - file does not exist");
+                    Logger.LogError("Unable to open log file {0} - file does not exist", logFile);
                 }
             }
             catch (Exception ex)

@@ -434,7 +434,7 @@ namespace QuestTools.ProfileTags
                 {
                     return GridSegmentation.Nodes
                         .Where(n => !n.Visited)
-                        .OrderBy(n => n.NavigableCenter.Distance2DSqr(_myPosition))
+                        .OrderBy(n => n.Center.DistanceSqr(_myPosition.ToVector2()))
                         .Select(n => n.NavigableCenter)
                         .FirstOrDefault();
                 }
@@ -457,12 +457,12 @@ namespace QuestTools.ProfileTags
         /// <summary>
         /// The current player position
         /// </summary>
-        private Vector3 _myPosition { get { return ZetaDia.Me.Position; } }
+        private static Vector3 _myPosition { get { return ZetaDia.Me.Position; } }
 
         /// <summary>
         /// The last position we updated the SearchGridProvider at
         /// </summary>
-        private Vector3 GridProviderUpdatePosition = Vector3.Zero;
+        private Vector3 _gridProviderUpdatePosition = Vector3.Zero;
 
         /// <summary>
         /// Called when the profile behavior starts
@@ -718,11 +718,11 @@ namespace QuestTools.ProfileTags
         private Composite UpdateSearchGridProvider()
         {
             return
-            new DecoratorContinue(ret => _lastSceneId != ZetaDia.Me.SceneId || Vector3.Distance(_myPosition, GridProviderUpdatePosition) > 150,
+            new DecoratorContinue(ret => _lastSceneId != ZetaDia.Me.SceneId || Vector3.Distance(_myPosition, _gridProviderUpdatePosition) > 150,
                 new Sequence(
                     new Action(ret => _lastSceneId = ZetaDia.Me.SceneId),
                     new Action(ret => Navigator.SearchGridProvider.Update()),
-                    new Action(ret => GridProviderUpdatePosition = _myPosition),
+                    new Action(ret => _gridProviderUpdatePosition = _myPosition),
                     new Action(ret => MiniMapMarker.UpdateFailedMarkers())
                 )
             );
@@ -1334,9 +1334,18 @@ namespace QuestTools.ProfileTags
         /// <param name="reason"></param>
         private void SetNodeVisited(string reason = "")
         {
-            Logger.Debug("Dequeueing current node {0} - {1}", CurrentNavTarget, reason);
-            BrainBehavior.DungeonExplorer.CurrentNode.Visited = true;
-            BrainBehavior.DungeonExplorer.CurrentRoute.Dequeue();
+            if (GetIsInPandemoniumFortress() && CurrentNavTarget != BrainBehavior.DungeonExplorer.CurrentNode.NavigableCenter)
+            {
+                var dungeonNode = GridSegmentation.Nodes.FirstOrDefault(n => n.NavigableCenter == CurrentNavTarget);
+                if (dungeonNode != null)
+                    dungeonNode.Visited = true;
+            }
+            else
+            {
+                Logger.Debug("Dequeueing current node {0} - {1}", CurrentNavTarget, reason);
+                BrainBehavior.DungeonExplorer.CurrentNode.Visited = true;
+                BrainBehavior.DungeonExplorer.CurrentRoute.Dequeue();
+            }
 
             MarkNearbyNodesVisited();
             ClearDeathGateCheck();
@@ -1473,7 +1482,7 @@ namespace QuestTools.ProfileTags
 
         private MoveResult _lastMoveResult = MoveResult.Moved;
         private DateTime _lastGeneratedPath = DateTime.MinValue;
-#endregion
+        #endregion
 
         private Vector3 _lastDestination;
 
@@ -1626,8 +1635,8 @@ namespace QuestTools.ProfileTags
             if (riftWorldIndex != -1 &&
                 ZetaDia.Minimap.Markers.CurrentWorldMarkers
                 .Any(m => m.NameHash == DataDictionary.RiftPortalHashes[riftWorldIndex] &&
-                    m.Position.Distance2D(ZetaDia.Me.Position) <= MarkerDistance + 10f &&
-                    Math.Abs(m.Position.Z - ZetaDia.Me.Position.Z) <= 14f &&
+                    m.Position.Distance2D(_myPosition) <= MarkerDistance + 10f &&
+                    (Math.Abs(m.Position.Z - ZetaDia.Me.Position.Z) <= 14f || Navigator.Raycast(_myPosition, m.Position)) &&
                     !MiniMapMarker.TownHubMarkers.Contains(m.NameHash)))
             {
                 int marker = DataDictionary.RiftPortalHashes[riftWorldIndex];
@@ -1705,14 +1714,32 @@ namespace QuestTools.ProfileTags
 
         private static bool GetIsInPandemoniumFortress()
         {
-            return DataDictionary.PandemoniumFortressWorlds.Contains(ZetaDia.CurrentWorldId);
+            return DataDictionary.PandemoniumFortressWorlds.Contains(ZetaDia.CurrentWorldId) ||
+                DataDictionary.PandemoniumFortressLevelAreaIds.Contains(ZetaDia.CurrentLevelAreaId);
         }
 
+
+        private Vector3 _deathGateInteractStartPosition = Vector3.Zero;
+        private MoveResult _navTargetMoveResult;
         private Decorator MoveToAndUseDeathGate()
         {
             return
             new Decorator(ret => GetIsInPandemoniumFortress() && AnyDeathGates && !CanFullPathToCurrentNavTarget(),
                 new PrioritySelector(
+                    new Decorator(ret => _deathGateInteractStartPosition != Vector3.Zero && _myPosition.Distance2D(_deathGateInteractStartPosition) > 15f,
+                        new Sequence(
+                            new Action(ret => ClearDeathGateCheck()),
+                            new DecoratorContinue(ret => !CanFullPathToCurrentNavTarget(),
+                                new Action(ret => SetNodeVisited("Unable to Path"))
+                            )
+                        )
+                    ),
+                    new Decorator(ret => _navTargetMoveResult != MoveResult.ReachedDestination,
+                        new Sequence(
+                            new Action(ret => Logger.Debug("Moving to Current Nav Target {0}", CurrentNavTarget)),
+                            new Action(ret => _navTargetMoveResult = Navigator.MoveTo(CurrentNavTarget))
+                        )
+                    ),
                     new Decorator(ret => NearestDeathGate.Position.Distance2DSqr(ZetaDia.Me.Position) > 10f * 10f,
                         new Sequence(
                             new Action(ret => Logger.Debug("Moving to Death Gate at {0} distance {1:0}", NearestDeathGate.Position, NearestDeathGate.Position.Distance2D(ZetaDia.Me.Position))),
@@ -1720,17 +1747,23 @@ namespace QuestTools.ProfileTags
                         )
                     ),
                     new Sequence(
-                        new Action(ret => Logger.Debug("Interacting With to Death Gate")),
+                        new Action(ret => Logger.Debug("Interacting With Death Gate")),
+                        new Action(ret => _deathGateInteractStartPosition = _myPosition),
                         new Action(ret => NearestDeathGate.Interact()),
-                        new Sleep(500),
-                        new Action(ret => ClearDeathGateCheck())
+                        new Sleep(1500)
                     )
                 )
             );
         }
 
+        /// <summary>
+        /// Resets all variables used with checking, moving to, and interacting with Death Gates
+        /// </summary>
         private void ClearDeathGateCheck()
         {
+            Logger.Debug("Clearing Death Gate Check");
+            _deathGateInteractStartPosition = Vector3.Zero;
+            _navTargetMoveResult = default(MoveResult);
             _canPathCache = new Dictionary<int, bool>();
             _lastPathCheckTarget = Vector3.Zero;
             _nearestDeathGate = null;
@@ -1752,7 +1785,7 @@ namespace QuestTools.ProfileTags
 
                 var deathgates =
                     (from o in ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
-                     where o.IsValid && DataDictionary.DeathGates.Contains(o.ActorSNO) && o.Distance < 500 && 
+                     where o.IsValid && DataDictionary.DeathGates.Contains(o.ActorSNO) && o.Distance < 500 &&
                      !_canPathCache.ContainsKey(o.RActorGuid)
                      orderby o.Position.Distance2D(CurrentNavTarget)
                      select o).ToList();

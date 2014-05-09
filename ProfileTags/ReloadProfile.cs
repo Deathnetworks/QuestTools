@@ -86,21 +86,8 @@ namespace QuestTools.ProfileTags
 
             if (!questingProfileName.IsMatch(ProfileManager.CurrentProfile.Name))
                 return RunStatus.Success;
-            string act = "";
 
-            switch (ZetaDia.CurrentAct)
-            {
-                case Act.A1: act = "Act1";
-                    break;
-                case Act.A2: act = "Act2";
-                    break;
-                case Act.A3: act = "Act3";
-                    break;
-                case Act.A4: act = "Act4";
-                    break;
-            }
-
-            string restartActProfile = String.Format("{0}_StartNew.xml", act);
+            string restartActProfile = String.Format("{0}_StartNew.xml", ZetaDia.CurrentAct);
             Logger.Log("[QuestTools] Max Profile reloads reached, restarting Act! Loading Profile {0} - {1}", restartActProfile, Status());
 
             string profilePath = Path.Combine(Path.GetDirectoryName(ProfileManager.CurrentProfile.Path), restartActProfile);

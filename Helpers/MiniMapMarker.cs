@@ -17,6 +17,8 @@ namespace QuestTools.Helpers
     {
         //private const int WAYPOINT_MARKER = -1751517829;
 
+        private const int RiftGuardian = 1603556356;
+
         internal static HashSet<int> TownHubMarkers = new HashSet<int>
         {
             1877684886, // A5 Hub
@@ -42,7 +44,11 @@ namespace QuestTools.Helpers
             MiniMapMarker nearestMarker = GetNearestUnvisitedMarker(near);
             if (nearestMarker == null)
                 return;
-            foreach (MiniMapMarker marker in KnownMarkers.Where(m => m.Equals(nearestMarker) && near.Distance2D(m.Position) <= pathPrecision))
+
+            foreach (MiniMapMarker marker in KnownMarkers
+                .Where(m => m.Equals(nearestMarker) && 
+                near.Distance2D(m.Position) <= pathPrecision && 
+                DataDictionary.RiftPortalHashes.Contains(m.MarkerNameHash)))
             {
                 Logger.Log("Setting MiniMapMarker {0} as Visited, within PathPrecision {1:0}", marker.MarkerNameHash, pathPrecision);
                 marker.Visited = true;
@@ -112,7 +118,7 @@ namespace QuestTools.Helpers
         private static IEnumerable<Zeta.Game.Internals.MinimapMarker> GetMarkerList(int includeMarker)
         {
             return ZetaDia.Minimap.Markers.CurrentWorldMarkers
-                .Where(m => (m.NameHash == 0 || m.NameHash == includeMarker || m.IsPointOfInterest || m.IsPortalExit) &&
+                .Where(m => (m.NameHash == 0 || m.NameHash == RiftGuardian || m.NameHash == includeMarker || m.IsPointOfInterest || m.IsPortalExit) &&
                     !KnownMarkers.Any(ml => ml.Position == m.Position && ml.MarkerNameHash == m.NameHash))
                     .OrderBy(m => m.NameHash != 0);
         }

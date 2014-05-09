@@ -27,25 +27,9 @@ namespace QuestTools.ProfileTags
             new Action(ret => ForceRestartAct());
         }
 
-        private RunStatus ForceRestartAct()
+        private static RunStatus ForceRestartAct()
         {
-            string act = "";
-
-            switch (ZetaDia.CurrentAct)
-            {
-                case Act.A1: act = "Act1";
-                    break;
-                case Act.A2: act = "Act2";
-                    break;
-                case Act.A3: act = "Act3";
-                    break;
-                case Act.A4: act = "Act4";
-                    break;
-                case Act.A5: act = "Act5";
-                    break;
-            }
-
-            string restartActProfile = String.Format("{0}_StartNew.xml", act);
+            string restartActProfile = ZetaDia.CurrentAct + "_StartNew.xml";
             Logger.Log("[QuestTools] Restarting Act - loading {0}", restartActProfile);
 
             string profilePath = Path.Combine(Path.GetDirectoryName(ProfileManager.CurrentProfile.Path), restartActProfile);

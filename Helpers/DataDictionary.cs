@@ -11,6 +11,12 @@ namespace QuestTools
             271235, // Adventure Pand Fortress 2
         };
 
+        public static HashSet<int> PandemoniumFortressLevelAreaIds { get { return _pandemoniumFortressLevelAreaIds; } }
+        private static readonly HashSet<int> _pandemoniumFortressLevelAreaIds = new HashSet<int>
+        {
+            333758, //LevelArea: X1_LR_Tileset_Fortress
+        };
+
         public static HashSet<int> DeathGates { get { return _deathGates; } }
         private static readonly HashSet<int> _deathGates = new HashSet<int>()
         {
@@ -30,7 +36,9 @@ namespace QuestTools
             288800,
             288802,
             288804,
-            288806,
+            288810,
+            288814,
+            288816,
         };
 
         /// <summary>
