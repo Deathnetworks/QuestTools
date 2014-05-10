@@ -125,7 +125,6 @@ namespace QuestTools.Helpers
                     m.NameHash == includeMarker ||
                     m.NameHash == 0 ||
                     m.NameHash == RiftGuardianHash ||
-                    m.NameHash == WaypointHash ||
                     m.IsPointOfInterest || // Already matches POI hash
                     m.IsPortalExit ||
                     m.Position.ToVector2().DistanceSqr(ZetaDia.Me.Position.ToVector2()) <= 500 * 500) && // within 500 yards

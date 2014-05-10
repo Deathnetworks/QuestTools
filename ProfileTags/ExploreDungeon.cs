@@ -76,7 +76,7 @@ namespace QuestTools.ProfileTags
         /// <summary>
         /// The until="" atribute must match one of these
         /// </summary>
-        public enum TrinityExploreEndType
+        public enum ExploreEndType
         {
             FullyExplored = 0,
             ObjectFound,
@@ -90,7 +90,7 @@ namespace QuestTools.ProfileTags
 
         [XmlAttribute("endType")]
         [XmlAttribute("until")]
-        public TrinityExploreEndType EndType { get; set; }
+        public ExploreEndType EndType { get; set; }
 
         /// <summary>
         /// The Scene SNOId, used with ExploreUntil="SceneFound"
@@ -139,6 +139,7 @@ namespace QuestTools.ProfileTags
         /// Value in Seconds. 
         /// The timeout value to use, when used with Timer will force-end the tag after a certain time. When used with GoldInactivity will end the tag after coinages doesn't change for the given period
         /// </summary>
+        [XmlAttribute("timeout")]
         [XmlAttribute("timeoutValue")]
         public int TimeoutValue { get; set; }
 
@@ -474,7 +475,7 @@ namespace QuestTools.ProfileTags
         /// </summary>
         public override void OnStart()
         {
-            Logger.Log("TrinityExploreDungeon Started");
+            Logger.Log("ExploreDungeon Started");
 
             if (SetNodesExploredAutomatically)
             {
@@ -502,7 +503,7 @@ namespace QuestTools.ProfileTags
             {
                 Init();
             }
-            _tagTimer.Reset();
+            _tagTimer.Restart();
             _timesForcedReset = 0;
 
             if (Objectives == null)
@@ -744,10 +745,10 @@ namespace QuestTools.ProfileTags
             new PrioritySelector(
                 new Decorator(ret => _timeoutBreached,
                     new Sequence(
-                        new DecoratorContinue(ret => TownPortalOnTimeout && !ZetaDia.IsInTown,
+                        new DecoratorContinue(ret => TownPortalOnTimeout,
                             new Sequence(
                                 new Action(ret => Logger.Log(
-                                    "TrinityExploreDungeon timer tripped ({0}), tag finished, Using Town Portal!", TimeoutValue)),
+                                    "ExploreDungeon timer tripped ({0}), tag finished, Using Town Portal!", TimeoutValue)),
                                 Zeta.Bot.CommonBehaviors.CreateUseTownPortal(),
                                 new Action(ret => _isDone = true)
                             )
@@ -755,7 +756,7 @@ namespace QuestTools.ProfileTags
                         new DecoratorContinue(ret => !TownPortalOnTimeout,
                             new Sequence(
                                 new Action(ret => Logger.Log(
-                                    "TrinityExploreDungeon timer tripped ({0}), tag finished!", TimeoutValue)),
+                                    "ExploreDungeon timer tripped ({0}), tag finished!", TimeoutValue)),
                                 new Action(ret => _isDone = true)
                             )
                         )
@@ -786,7 +787,7 @@ namespace QuestTools.ProfileTags
             }
             if (ExploreTimeoutType == TimeoutType.Timer && _tagTimer.Elapsed.TotalSeconds > TimeoutValue)
             {
-                Logger.Log("TrinityExploreDungeon timer ended ({0}), tag finished!", TimeoutValue);
+                Logger.Log("ExploreDungeon timer ended ({0}), tag finished!", TimeoutValue);
                 _timeoutBreached = true;
                 return RunStatus.Success;
             }
@@ -814,7 +815,7 @@ namespace QuestTools.ProfileTags
             }
             if (_lastCoinage == Player.Coinage && _tagTimer.Elapsed.TotalSeconds > TimeoutValue)
             {
-                Logger.Log("TrinityExploreDungeon gold inactivity timer tripped ({0}), tag finished!", TimeoutValue);
+                Logger.Log("ExploreDungeon gold inactivity timer tripped ({0}), tag finished!", TimeoutValue);
                 _timeoutBreached = true;
                 return RunStatus.Success;
             }
@@ -889,75 +890,75 @@ namespace QuestTools.ProfileTags
             return
             new PrioritySelector(
                 TimeoutCheck(),
-                new Decorator(ret => EndType == TrinityExploreEndType.RiftComplete && GetIsRiftDone(),
+                new Decorator(ret => EndType == ExploreEndType.RiftComplete && GetIsRiftDone(),
                     new Sequence(
                         new Action(ret => Logger.Log("Rift is done. Tag Finished.")),
                         new Action(ret => _isDone = true)
                     )
                 ),
-                new Decorator(ret => EndType == TrinityExploreEndType.PortalExitFound &&
+                new Decorator(ret => EndType == ExploreEndType.PortalExitFound &&
                     PortalExitMarker() != null && PortalExitMarker().Position.Distance2D(MyPosition) <= MarkerDistance,
                     new Sequence(
                         new Action(ret => Logger.Log("Found portal exit! Tag Finished.")),
                         new Action(ret => _isDone = true)
                     )
                 ),
-                new Decorator(ret => EndType == TrinityExploreEndType.BountyComplete && GetIsBountyDone(),
+                new Decorator(ret => EndType == ExploreEndType.BountyComplete && GetIsBountyDone(),
                     new Sequence(
                         new Action(ret => Logger.Log("Bounty is done. Tag Finished.")),
                         new Action(ret => _isDone = true)
                     )
                 ),
-                new Decorator(ret => EndType == TrinityExploreEndType.FullyExplored && IgnoreLastNodes > 0 && GetRouteUnvisitedNodeCount() <= IgnoreLastNodes && GetGridSegmentationVisistedNodeCount() >= MinVisistedNodes,
+                new Decorator(ret => EndType == ExploreEndType.FullyExplored && IgnoreLastNodes > 0 && GetRouteUnvisitedNodeCount() <= IgnoreLastNodes && GetGridSegmentationVisistedNodeCount() >= MinVisistedNodes,
                     new Sequence(
                         new Action(ret => Logger.Log("Fully explored area! Ignoring {0} nodes. Tag Finished.", IgnoreLastNodes)),
                         new Action(ret => _isDone = true)
                     )
                 ),
-                new Decorator(ret => EndType == TrinityExploreEndType.FullyExplored && GetRouteUnvisitedNodeCount() == 0,
+                new Decorator(ret => EndType == ExploreEndType.FullyExplored && GetRouteUnvisitedNodeCount() == 0,
                     new Sequence(
                         new Action(ret => Logger.Log("Fully explored area! Tag Finished.", 0)),
                         new Action(ret => _isDone = true)
                     )
                 ),
-                new Decorator(ret => EndType == TrinityExploreEndType.ExitFound && ExitNameHash != 0 && IsExitNameHashVisible(),
+                new Decorator(ret => EndType == ExploreEndType.ExitFound && ExitNameHash != 0 && IsExitNameHashVisible(),
                     new Sequence(
                         new Action(ret => Logger.Log("Found exitNameHash {0}!", ExitNameHash)),
                         new Action(ret => _isDone = true)
                     )
                 ),
-                new Decorator(ret => (EndType == TrinityExploreEndType.ObjectFound || EndType == TrinityExploreEndType.SceneLeftOrActorFound) && ActorId != 0 && ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
+                new Decorator(ret => (EndType == ExploreEndType.ObjectFound || EndType == ExploreEndType.SceneLeftOrActorFound) && ActorId != 0 && ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
                     .Any(a => a.ActorSNO == ActorId && a.Distance <= ObjectDistance),
                     new Sequence(
                         new Action(ret => Logger.Log("Found Object {0}!", ActorId)),
                         new Action(ret => _isDone = true)
                     )
                 ),
-                new Decorator(ret => (EndType == TrinityExploreEndType.ObjectFound || EndType == TrinityExploreEndType.SceneLeftOrActorFound) && AlternateActorsFound(),
+                new Decorator(ret => (EndType == ExploreEndType.ObjectFound || EndType == ExploreEndType.SceneLeftOrActorFound) && AlternateActorsFound(),
                     new Sequence(
                         new Action(ret => Logger.Log("Found Alternate Object {0}!", GetAlternateActor().ActorSNO)),
                         new Action(ret => _isDone = true)
                     )
                 ),
-                new Decorator(ret => EndType == TrinityExploreEndType.SceneFound && ZetaDia.Me.SceneId == SceneId,
+                new Decorator(ret => EndType == ExploreEndType.SceneFound && ZetaDia.Me.SceneId == SceneId,
                     new Sequence(
                         new Action(ret => Logger.Log("Found SceneId {0}!", SceneId)),
                         new Action(ret => _isDone = true)
                     )
                 ),
-                new Decorator(ret => EndType == TrinityExploreEndType.SceneFound && !string.IsNullOrWhiteSpace(SceneName) && ZetaDia.Me.CurrentScene.Name.ToLower().Contains(SceneName.ToLower()),
+                new Decorator(ret => EndType == ExploreEndType.SceneFound && !string.IsNullOrWhiteSpace(SceneName) && ZetaDia.Me.CurrentScene.Name.ToLower().Contains(SceneName.ToLower()),
                     new Sequence(
                         new Action(ret => Logger.Log("Found SceneName {0}!", SceneName)),
                         new Action(ret => _isDone = true)
                     )
                 ),
-                new Decorator(ret => EndType == TrinityExploreEndType.SceneLeftOrActorFound && SceneId != 0 && SceneIdLeft(),
+                new Decorator(ret => EndType == ExploreEndType.SceneLeftOrActorFound && SceneId != 0 && SceneIdLeft(),
                     new Sequence(
                         new Action(ret => Logger.Log("Left SceneId {0}!", SceneId)),
                         new Action(ret => _isDone = true)
                     )
                 ),
-                new Decorator(ret => (EndType == TrinityExploreEndType.SceneFound || EndType == TrinityExploreEndType.SceneLeftOrActorFound) && !string.IsNullOrWhiteSpace(SceneName) && SceneNameLeft(),
+                new Decorator(ret => (EndType == ExploreEndType.SceneFound || EndType == ExploreEndType.SceneLeftOrActorFound) && !string.IsNullOrWhiteSpace(SceneName) && SceneNameLeft(),
                     new Sequence(
                         new Action(ret => Logger.Log("Left SceneName {0}!", SceneName)),
                         new Action(ret => _isDone = true)
@@ -965,7 +966,7 @@ namespace QuestTools.ProfileTags
                 ),
                 new Decorator(ret => ZetaDia.IsInTown,
                     new Sequence(
-                        new Action(ret => Logger.Log("Cannot use TrinityExploreDungeon in town - tag finished!", SceneName)),
+                        new Action(ret => Logger.Log("Cannot use ExploreDungeon in town - tag finished!", SceneName)),
                         new Action(ret => _isDone = true)
                     )
                 )
@@ -1068,11 +1069,11 @@ namespace QuestTools.ProfileTags
         /// </summary>
         private void MoveToPriorityScene()
         {
-            string info = string.Format("Moving to Priority Scene {0} - {1} Center {2}",
-                _currentPriorityScene.Name, _currentPriorityScene.SceneInfo.SNOId, _prioritySceneTarget);
-            Logger.Debug(info);
 
-            MoveResult moveResult = Navigator.MoveTo(_prioritySceneTarget, info);
+            MoveResult moveResult = Navigator.MoveTo(_prioritySceneTarget);
+            string info = string.Format("Moved to Priority Scene {0} - {1} Center {2} MoveResult: {3}",
+                _currentPriorityScene.Name, _currentPriorityScene.SceneInfo.SNOId, _prioritySceneTarget, moveResult);
+            Logger.Debug(info);
 
             if (moveResult == MoveResult.PathGenerationFailed || moveResult == MoveResult.ReachedDestination)
             {
@@ -1577,11 +1578,15 @@ namespace QuestTools.ProfileTags
             if (AlternateActors == null)
                 AlternateActors = new List<AlternateActor>();
 
+            _deathGateInteractionCount = new Dictionary<Vector3, int>();
+
             if (!forced)
             {
                 Logger.Debug(
-                    "Initialized TrinityExploreDungeon: boxSize={0} boxTolerance={1:0.00} endType={2} timeoutType={3} timeoutValue={4} pathPrecision={5:0} sceneId={6} actorId={7} objectDistance={8} markerDistance={9} exitNameHash={10}",
-                    GridSegmentation.BoxSize, GridSegmentation.BoxTolerance, EndType, ExploreTimeoutType, TimeoutValue, PathPrecision, SceneId, ActorId, ObjectDistance, MarkerDistance, ExitNameHash);
+                    "Initialized ExploreDungeon: boxSize={0} boxTolerance={1:0.00} endType={2} timeoutType={3} timeoutValue={4} " +
+                    "pathPrecision={5:0} sceneId={6} actorId={7} objectDistance={8} markerDistance={9} exitNameHash={10}",
+                    GridSegmentation.BoxSize, GridSegmentation.BoxTolerance, EndType, ExploreTimeoutType, TimeoutValue,
+                    PathPrecision, SceneId, ActorId, ObjectDistance, MarkerDistance, ExitNameHash);
             }
             _initDone = true;
         }
@@ -1601,7 +1606,7 @@ namespace QuestTools.ProfileTags
         /// </summary>
         public override void ResetCachedDone()
         {
-            Logger.Debug("TrinityExploreDungeon ResetCachedDone()");
+            Logger.Debug("ExploreDungeon ResetCachedDone()");
             _isDone = false;
             _initDone = false;
             _timeoutBreached = false;
@@ -1758,10 +1763,10 @@ namespace QuestTools.ProfileTags
         private static bool GetIsInPandemoniumFortress()
         {
             return DataDictionary.PandemoniumFortressWorlds.Contains(ZetaDia.CurrentWorldId) ||
-                DataDictionary.PandemoniumFortressLevelAreaIds.Contains(ZetaDia.CurrentLevelAreaId);
+                DataDictionary.PandemoniumFortressLevelAreaIds.Contains(Player.LevelAreaId);
         }
 
-
+        private Dictionary<Vector3, int> _deathGateInteractionCount = new Dictionary<Vector3, int>();
         private Vector3 _deathGateInteractStartPosition = Vector3.Zero;
         private MoveResult _navTargetMoveResult;
         private Decorator MoveToAndUseDeathGate()
@@ -1792,11 +1797,29 @@ namespace QuestTools.ProfileTags
                     new Sequence(
                         new Action(ret => Logger.Debug("Interacting With Death Gate")),
                         new Action(ret => _deathGateInteractStartPosition = MyPosition),
+                        new Action(ret => AddDeathGateCount()),
                         new Action(ret => NearestDeathGate.Interact()),
                         new Sleep(1500)
                     )
                 )
             );
+        }
+
+        private void AddDeathGateCount()
+        {
+            if (_deathGateInteractionCount.ContainsKey(NearestDeathGate.Position))
+                _deathGateInteractionCount[NearestDeathGate.Position]++;
+            else
+            {
+                _deathGateInteractionCount.Add(NearestDeathGate.Position, 1);
+            }
+        }
+
+        private int GetDeathGateInteractionCount(DiaObject gate)
+        {
+            if (!_deathGateInteractionCount.ContainsKey(gate.Position))
+                return 0;
+            return _deathGateInteractionCount[gate.Position];
         }
 
         /// <summary>
@@ -1832,7 +1855,7 @@ namespace QuestTools.ProfileTags
                     (from o in ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
                      where o.IsValid && DataDictionary.DeathGates.Contains(o.ActorSNO) && o.Distance < 500 &&
                      !_canPathCache.ContainsKey(o.RActorGuid)
-                     orderby o.Position.Distance2D(CurrentNavTarget)
+                     orderby GetDeathGateInteractionCount(o), o.Position.Distance2D(CurrentNavTarget)
                      select o).ToList();
 
                 if (!deathgates.Any())
