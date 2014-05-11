@@ -86,6 +86,7 @@ namespace QuestTools.ProfileTags
             BountyComplete,
             RiftComplete,
             PortalExitFound,
+            ObjectiveFound,
         }
 
         [XmlAttribute("endType")]
@@ -543,10 +544,10 @@ namespace QuestTools.ProfileTags
                 new Action(ret => CheckResetDungeonExplorer()),
                 new PrioritySelector(
                     CheckIsObjectiveFinished(),
-                    PrioritySceneCheck(),
                     new Decorator(ret => !IgnoreMarkers,
                         MiniMapMarker.VisitMiniMapMarkers(MyPosition, MarkerDistance)
                     ),
+                    PrioritySceneCheck(),
                     new Decorator(ret => ShouldInvestigateActor(),
                         new PrioritySelector(
                             new Decorator(ret => CurrentActor != null && CurrentActor.IsValid &&
@@ -881,6 +882,34 @@ namespace QuestTools.ProfileTags
             }
         }
 
+        private MinimapMarker GetObjectiveMarker()
+        {
+            // Get Special objective Marker
+            MinimapMarker miniMapMarker = ZetaDia.Minimap.Markers.CurrentWorldMarkers
+                .Where(m => m.IsPointOfInterest && m.Id < 1000)
+                .OrderBy(m => m.Position.Distance2DSqr(ZetaDia.Me.Position))
+                .FirstOrDefault();
+
+            if (miniMapMarker == null)
+            {
+                // Get point of interest marker
+                miniMapMarker = ZetaDia.Minimap.Markers.CurrentWorldMarkers
+                .Where(m => m.IsPointOfInterest)
+                .OrderBy(m => m.Position.Distance2DSqr(ZetaDia.Me.Position))
+                .FirstOrDefault();
+            }
+
+            if (miniMapMarker != null)
+            {
+                Logger.Log("Using Objective Style Minimap Marker: {0} dist: {1:0} isExit: {2} isEntrance {3}",
+                    miniMapMarker.NameHash,
+                    miniMapMarker.Position.Distance2D(ZetaDia.Me.Position),
+                    miniMapMarker.IsPortalExit,
+                    miniMapMarker.IsPortalEntrance);
+            }
+            return miniMapMarker;
+        }
+
         /// <summary>
         /// Checks to see if the tag is finished as needed
         /// </summary>
@@ -890,6 +919,12 @@ namespace QuestTools.ProfileTags
             return
             new PrioritySelector(
                 TimeoutCheck(),
+                new Decorator(ret => EndType == ExploreEndType.ObjectiveFound && GetIsObjectiveInRange(),
+                    new Sequence(
+                        new Action(ret => Logger.Log("Found Objective Marker. Tag Finished.")),
+                        new Action(ret => _isDone = true)
+                    )
+                ),
                 new Decorator(ret => EndType == ExploreEndType.RiftComplete && GetIsRiftDone(),
                     new Sequence(
                         new Action(ret => Logger.Log("Rift is done. Tag Finished.")),
@@ -971,6 +1006,14 @@ namespace QuestTools.ProfileTags
                     )
                 )
             );
+        }
+
+        private bool GetIsObjectiveInRange()
+        {
+            if (GetObjectiveMarker() == null)
+                return false;
+
+            return GetObjectiveMarker().Position.Distance2D(MyPosition) <= MarkerDistance;
         }
 
         private static MinimapMarker PortalExitMarker()
@@ -1726,7 +1769,6 @@ namespace QuestTools.ProfileTags
 
         #region Death Gate Handling
 
-
         private List<Vector3> _pandemoniumFortressCanPathCache = new List<Vector3>();
         private Vector3 _lastPandFortressTarget = Vector3.Zero;
 
@@ -1737,25 +1779,29 @@ namespace QuestTools.ProfileTags
                 _lastPandFortressTarget = Vector3.Zero;
             }
 
-            List<Tuple<Vector3, Vector2>> nodeList = GridSegmentation.Nodes.Where(n => !n.Visited).OrderBy(n => n.Center.DistanceSqr(MyPosition.ToVector2())).Select(n => new Tuple<Vector3, Vector2>(n.NavigableCenter, n.Center)).ToList();
+            List<Tuple<Vector3, Vector2>> nodeList = GridSegmentation.Nodes
+                .Where(n => !n.Visited)
+                .OrderBy(n => n.Center.DistanceSqr(MyPosition.ToVector2()))
+                .Select(n => new Tuple<Vector3, Vector2>(n.NavigableCenter, n.Center))
+                .ToList();
+
             if (!nodeList.Any())
                 return;
 
-            _pandemoniumFortressCanPathCache.Clear();
-            foreach (var nodeCenter in nodeList.Select(n => n.Item1))
-            {
-                Logger.Debug("Checking Path to nodeCenter {0}", nodeCenter);
-                bool canPath = NavigationProvider.CanPathWithinDistance(nodeCenter);
-                // Find the first node we can path to (ordered by distance above)
-                if (!canPath)
-                    continue;
-                _pandemoniumFortressCanPathCache.Add(nodeCenter);
-                break;
-            }
+            //_pandemoniumFortressCanPathCache.Clear();
+            //foreach (var nodeCenter in nodeList.Select(n => n.Item1))
+            //{
+            //    Logger.Debug("Checking Path to nodeCenter {0}", nodeCenter);
+            //    bool canPath = NavigationProvider.CanPathWithinDistance(nodeCenter);
+            //    // Find the first node we can path to (ordered by distance above)
+            //    if (!canPath)
+            //        continue;
+            //    _pandemoniumFortressCanPathCache.Add(nodeCenter);
+            //    break;
+            //}
 
             _lastPandFortressTarget = nodeList
-                .OrderBy(n => _pandemoniumFortressCanPathCache.Contains(n.Item1))
-                .ThenBy(n => n.Item2.DistanceSqr(MyPosition.ToVector2()))
+                .OrderBy(n => n.Item2.DistanceSqr(MyPosition.ToVector2()))
                 .Select(n => n.Item1)
                 .FirstOrDefault();
         }

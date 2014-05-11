@@ -32,6 +32,8 @@ namespace QuestTools.Helpers
         public Vector3 Position { get; set; }
         public bool Visited { get; set; }
         public bool Failed { get; set; }
+        public bool IsPointOfInterest { get; set; }
+        public bool IsExit { get; set; }
 
         internal static List<MiniMapMarker> KnownMarkers = new List<MiniMapMarker>();
 
@@ -81,7 +83,10 @@ namespace QuestTools.Helpers
 
         internal static MiniMapMarker GetNearestUnvisitedMarker(Vector3 near)
         {
-            return KnownMarkers.OrderBy(m => m.MarkerNameHash != 0).ThenBy(m => Vector3.Distance(near, m.Position)).FirstOrDefault(m => !m.Visited && !m.Failed);
+            return KnownMarkers
+                .OrderBy(m => !m.IsPointOfInterest)
+                .ThenBy(m => m.Position.Distance2DSqr(near))
+                .FirstOrDefault(m => !m.Visited && !m.Failed);
         }
 
         private static DefaultNavigationProvider _navProvider;
@@ -141,10 +146,15 @@ namespace QuestTools.Helpers
                 {
                     MarkerNameHash = marker.NameHash,
                     Position = marker.Position,
-                    Visited = false
+                    Visited = false,
+                    IsExit = marker.IsPortalExit,
+                    IsPointOfInterest = marker.IsPointOfInterest,
                 };
 
-                Logger.Log("Adding MiniMapMarker {0} at {1} to KnownMarkers", mmm.MarkerNameHash, mmm.Position);
+                float distance = mmm.Position.Distance2D(ZetaDia.Me.Position);
+
+                Logger.Log("Adding MiniMapMarker {0} at {1}, IsPOI: {2}, IsExit: {3}, Distance: {4:0} to KnownMarkers",
+                    mmm.MarkerNameHash, mmm.Position, mmm.IsPointOfInterest, mmm.IsExit, distance);
 
                 KnownMarkers.Add(mmm);
             }
@@ -215,8 +225,12 @@ namespace QuestTools.Helpers
                     new Decorator(ret => GetNearestUnvisitedMarker(ZetaDia.Me.Position) != null,
                         new Sequence(ctx => GetNearestUnvisitedMarker(near),
                             new Action(ret => LastMoveResult = Navigator.MoveTo((ret as MiniMapMarker).Position)),
-                            new Action(ret => Logger.Log("Moved to inspect nameHash {0} at {1}, MoveResult: {3}",
-                                (ret as MiniMapMarker).MarkerNameHash, (ret as MiniMapMarker).Position, ZetaDia.Me.Position.Distance2D((ret as MiniMapMarker).Position), LastMoveResult))
+                            new Action(ret => Logger.Log("Moved to inspect nameHash {0} at {1}, IsPOI: {2} IsExit: {3} MoveResult: {4}",
+                                (ret as MiniMapMarker).MarkerNameHash, 
+                                (ret as MiniMapMarker).Position,
+                                (ret as MiniMapMarker).IsPointOfInterest,
+                                (ret as MiniMapMarker).IsExit,
+                                LastMoveResult))
                         )
                     )
                 )
