@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Demonbuddy;
 using QuestTools.ProfileTags;
 using Zeta.Bot.Navigation;
 using Zeta.Common;
@@ -34,6 +35,7 @@ namespace QuestTools.Helpers
         public bool Failed { get; set; }
         public bool IsPointOfInterest { get; set; }
         public bool IsExit { get; set; }
+        public float Distance { get { return Position.Distance2D(ZetaDia.Me.Position); } }
 
         internal static List<MiniMapMarker> KnownMarkers = new List<MiniMapMarker>();
 
@@ -52,8 +54,7 @@ namespace QuestTools.Helpers
 
             foreach (MiniMapMarker marker in KnownMarkers
                 .Where(m => m.Equals(nearestMarker) &&
-                near.Distance2D(m.Position) <= pathPrecision &&
-                DataDictionary.RiftPortalHashes.Contains(m.MarkerNameHash)))
+                    near.Distance2D(m.Position) <= pathPrecision))
             {
                 Logger.Log("Setting MiniMapMarker {0} as Visited, within PathPrecision {1:0}", marker.MarkerNameHash, pathPrecision);
                 marker.Visited = true;
@@ -61,12 +62,13 @@ namespace QuestTools.Helpers
             }
 
             // Navigator will return "ReacheDestination" when it can't fully move to the specified position
-            if (LastMoveResult == MoveResult.ReachedDestination)
+            if (LastMoveResult == MoveResult.ReachedDestination && nearestMarker.Distance > pathPrecision)
             {
                 foreach (MiniMapMarker marker in KnownMarkers.Where(m => m.Equals(nearestMarker)))
                 {
-                    Logger.Log("Setting MiniMapMarker {0} as Visited, MoveResult=ReachedDestination", marker.MarkerNameHash);
-                    marker.Visited = true;
+                    Logger.Log("Setting MiniMapMarker {0} as failed, MoveResult=ReachedDestination, Distance {1:0} IsPOI {2} IsExit {3}", 
+                        marker.MarkerNameHash, marker.Distance, marker.IsPointOfInterest, marker.IsExit);
+                    marker.Failed = true;
                     LastMoveResult = MoveResult.Moved;
                 }
             }
@@ -96,9 +98,10 @@ namespace QuestTools.Helpers
             if (_navProvider == null)
                 _navProvider = new DefaultNavigationProvider();
 
-            foreach (MiniMapMarker marker in KnownMarkers.Where(m => m.Failed).Where(marker => _navProvider.CanPathWithinDistance(marker.Position, 10f)))
+            foreach (MiniMapMarker marker in KnownMarkers.Where(m => m.Failed).Where(marker => _navProvider.CanFullyClientPathTo(marker.Position)))
             {
-                Logger.Log("Was able to generate full path to failed MiniMapMarker {0} at {1}, marking as good", marker.MarkerNameHash, marker.Position);
+                Logger.Log("Was able to generate full path to failed MiniMapMarker {0} at {1}, distance {2:0} IsPOI {3} IsExit {4}, marking as good", 
+                    marker.MarkerNameHash, marker.Position, marker.Position.Distance2D(ZetaDia.Me.Position), marker.IsPointOfInterest, marker.IsExit);
                 marker.Failed = false;
                 LastMoveResult = MoveResult.PathGenerated;
             }
@@ -127,12 +130,13 @@ namespace QuestTools.Helpers
         {
             return ZetaDia.Minimap.Markers.CurrentWorldMarkers
                 .Where(m => (
+                    m.NameHash != WaypointHash && (
                     m.NameHash == includeMarker ||
                     m.NameHash == 0 ||
                     m.NameHash == RiftGuardianHash ||
                     m.IsPointOfInterest || // Already matches POI hash
                     m.IsPortalExit ||
-                    m.Position.ToVector2().DistanceSqr(ZetaDia.Me.Position.ToVector2()) <= 500 * 500) && // within 500 yards
+                    m.Position.ToVector2().DistanceSqr(ZetaDia.Me.Position.ToVector2()) <= 500 * 500)) && // within 500 yards
                     !KnownMarkers.Any(ml => ml.Position == m.Position && ml.MarkerNameHash == m.NameHash))
                     .OrderBy(m => m.IsPointOfInterest)
                     .ThenBy(m => m.Position.ToVector2().DistanceSqr(ZetaDia.Me.Position.ToVector2()));
@@ -189,8 +193,7 @@ namespace QuestTools.Helpers
             return
             new Sequence(
                 CreateAddRiftMarkers(),
-                new DecoratorContinue(ret => ZetaDia.Minimap.Markers.CurrentWorldMarkers
-                    .Any(m => (m.NameHash == 0 || m.NameHash == includeMarker) && !KnownMarkers.Any(m2 => m2.Position != m.Position && m2.MarkerNameHash == m.NameHash)),
+                new DecoratorContinue(ret => GetMarkerList(0).Any(),
                     new Sequence(
                     new Action(ret => AddMarkersToList(includeMarker))
                     )

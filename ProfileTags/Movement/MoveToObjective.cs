@@ -240,7 +240,8 @@ namespace QuestTools.ProfileTags.Movement
         {
             try
             {
-                return (_objectiveObject != null && _objectiveObject.CommonData.GetAttribute<int>(ActorAttributeType.BountyObjective) > 0) || _objectiveObject is GizmoPortal;
+                return (_objectiveObject != null &&  _objectiveObject.IsValid &&
+                    _objectiveObject.CommonData.GetAttribute<int>(ActorAttributeType.BountyObjective) > 0) || _objectiveObject is GizmoPortal;
             }
             catch (Exception ex)
             {
@@ -321,7 +322,7 @@ namespace QuestTools.ProfileTags.Movement
                 _objectiveObject = ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
                     .OrderBy(a => a.Position.Distance2D(_mapMarkerLastPosition)).FirstOrDefault();
 
-                if (_objectiveObject != null)
+                if (_objectiveObject != null && _objectiveObject.IsValid)
                 {
                     InteractRange = _objectiveObject.CollisionSphere.Radius;
                     Logger.Log("Found Actor from Objective Marker! mapMarkerPos={0} actor={1} {2} {3} {4}",
@@ -329,7 +330,7 @@ namespace QuestTools.ProfileTags.Movement
                 }
             }
 
-            if (_objectiveObject != null)
+            if (_objectiveObject != null && _objectiveObject.IsValid)
             {
                 if (IsValidObjective())
                 {

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -436,6 +437,9 @@ namespace QuestTools.ProfileTags
 
                 if (GetIsInPandemoniumFortress())
                 {
+                    var marker = MiniMapMarker.GetNearestUnvisitedMarker(MyPosition);
+                    if (marker != null)
+                        return marker.Position;
 
                     if (_lastPandFortressTarget != Vector3.Zero && GridSegmentation.Nodes.Any(n => !n.Visited && n.NavigableCenter == _lastPandFortressTarget))
                         return _lastPandFortressTarget;
@@ -901,9 +905,8 @@ namespace QuestTools.ProfileTags
 
             if (miniMapMarker != null)
             {
-                Logger.Log("Using Objective Style Minimap Marker: {0} dist: {1:0} isExit: {2} isEntrance {3}",
+                Logger.Log("Using Objective Style Minimap Marker: {0} isExit: {1} isEntrance {2}",
                     miniMapMarker.NameHash,
-                    miniMapMarker.Position.Distance2D(ZetaDia.Me.Position),
                     miniMapMarker.IsPortalExit,
                     miniMapMarker.IsPortalEntrance);
             }
@@ -1408,21 +1411,24 @@ namespace QuestTools.ProfileTags
 
         public void MarkNearbyNodesVisited()
         {
-            bool anyMarked = false;
-            foreach (DungeonNode node in GridSegmentation.Nodes.Where(n => !n.Visited))
+            ConcurrentBag<DungeonNode> newBag = new ConcurrentBag<DungeonNode>();
+            while (!GridSegmentation.Nodes.IsEmpty)
             {
-                var navCenter = node.NavigableCenter;
-                float distance = navCenter.Distance2D(MyPosition);
-                if (distance > PathPrecision)
+                DungeonNode node;
+                if (!GridSegmentation.Nodes.TryTake(out node))
                     continue;
 
-                anyMarked = true;
-                node.Visited = true;
-                string reason2 = String.Format("Node {0} is within path precision {1:0}/{2:0}", navCenter, distance, PathPrecision);
-                Logger.Debug("Marking unvisited nearby node as visited - {0}", reason2);
+                if (!node.Visited && node.NavigableCenter.Distance2D(MyPosition) < PathPrecision)
+                {
+                    Logger.Log("Marking nearby node {0} as visited, distance {1:0}/{2:0}, IsVisisted={3}",
+                        node.NavigableCenter, node.NavigableCenter.Distance2D(MyPosition), PathPrecision, node.Visited);
+                    node.Visited = true;
+                }
+                newBag.Add(node);
             }
-            if (anyMarked)
-                BrainBehavior.DungeonExplorer.Update();
+            GridSegmentation.Nodes = newBag;
+
+            BrainBehavior.DungeonExplorer.Update();
         }
 
         /// <summary>
@@ -1600,11 +1606,11 @@ namespace QuestTools.ProfileTags
             if (PathPrecision < minPathPrecision)
                 PathPrecision = minPathPrecision;
 
-            if (ObjectDistance < 1f)
-                ObjectDistance = 40f;
+            if (ObjectDistance < 10f)
+                ObjectDistance = 10f;
 
-            if (MarkerDistance < 1f)
-                MarkerDistance = 40f;
+            if (MarkerDistance < 10f)
+                MarkerDistance = 10f;
 
             if (TimeoutValue == 0 && ExploreTimeoutType != TimeoutType.None)
                 TimeoutValue = 1800;
@@ -1876,16 +1882,17 @@ namespace QuestTools.ProfileTags
             Logger.Debug("Clearing Death Gate Check");
             _deathGateInteractStartPosition = Vector3.Zero;
             _navTargetMoveResult = default(MoveResult);
-            _canPathCache = new Dictionary<int, bool>();
+            _canPathCache = new Dictionary<Vector3, bool>();
             _lastPathCheckTarget = Vector3.Zero;
             _nearestDeathGate = null;
             _lastPandFortressTarget = Vector3.Zero;
             _pandemoniumFortressCanPathCache.Clear();
             NavigationProvider.Clear();
             UpdateRoute();
+            //MiniMapMarker.KnownMarkers.RemoveAll(m => m.IsPointOfInterest && m.Failed);
         }
 
-        private Dictionary<int, bool> _canPathCache = new Dictionary<int, bool>();
+        private Dictionary<Vector3, bool> _canPathCache = new Dictionary<Vector3, bool>();
         private DiaObject _nearestDeathGate;
         public DiaObject NearestDeathGate
         {
@@ -1900,17 +1907,17 @@ namespace QuestTools.ProfileTags
                 var deathgates =
                     (from o in ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
                      where o.IsValid && DataDictionary.DeathGates.Contains(o.ActorSNO) && o.Distance < 500 &&
-                     !_canPathCache.ContainsKey(o.RActorGuid)
+                     !_canPathCache.ContainsKey(o.Position)
                      orderby GetDeathGateInteractionCount(o), o.Position.Distance2D(CurrentNavTarget)
                      select o).ToList();
 
                 if (!deathgates.Any())
                     return _nearestDeathGate;
 
-                foreach (var portal in deathgates)
+                foreach (var portal in deathgates.Where(p => !_canPathCache.ContainsKey(p.Position)))
                 {
                     Logger.Debug("Checking Path to portal {0}", portal.Position);
-                    _canPathCache.Add(portal.RActorGuid, NavigationProvider.CanPathWithinDistance(portal.Position, 10f));
+                    _canPathCache.Add(portal.Position, NavigationProvider.CanPathWithinDistance(portal.Position, 10f));
                 }
 
                 if (QuestToolsSettings.Instance.DebugEnabled)
@@ -1918,11 +1925,11 @@ namespace QuestTools.ProfileTags
                     string debugNoise = deathgates.Aggregate("Found DeathGates: ",
                         (current, p) => current + string.Format("\n{0} distance: {1:0}, distance to node: {2:0} canPath: {3}",
                             StringUtils.GetProfileCoordinates(p.Position), p.Distance, p.Position.Distance2D(CurrentNavTarget),
-                            _canPathCache[p.RActorGuid]));
+                            _canPathCache[p.Position]));
                     Logger.Debug(debugNoise);
                 }
 
-                _nearestDeathGate = deathgates.FirstOrDefault(p => _canPathCache[p.RActorGuid]);
+                _nearestDeathGate = deathgates.FirstOrDefault(p => _canPathCache[p.Position]);
                 return _nearestDeathGate;
             }
         }

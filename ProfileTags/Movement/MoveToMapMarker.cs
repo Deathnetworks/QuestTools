@@ -319,7 +319,7 @@ namespace QuestTools.ProfileTags.Movement
         private void FindMiniMapMarker()
         {
             // Special condition for Rift portals
-            if (MapMarkerNameHash == 0 && Position == Vector3.Zero && ActorId == 0 && IsPortal && DestinationWorldId == -1)
+            if (DataDictionary.RiftWorldIds.Contains(ZetaDia.CurrentWorldId) && Position == Vector3.Zero && ActorId == 0 && IsPortal && DestinationWorldId == -1)
             {
                 _miniMapMarker = GetRiftExitMarker();
                 if (_miniMapMarker != null)
@@ -611,6 +611,8 @@ namespace QuestTools.ProfileTags.Movement
         public override void ResetCachedDone()
         {
             _isDone = false;
+
+            _behaviorStartTime = DateTime.UtcNow;
             _lastPosition = Vector3.Zero;
             _stuckStart = DateTime.UtcNow;
             _lastCheckedStuck = DateTime.UtcNow;

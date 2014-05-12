@@ -10,7 +10,7 @@ namespace QuestTools
 {
     public class QuestTools
     {
-        public static Version PluginVersion = new Version(2, 0, 56);
+        public static Version PluginVersion = new Version(2, 0, 70);
 
         private static int _skipEventDuration = -1;
         private static readonly Stopwatch SkipEventTimer = new Stopwatch();
@@ -44,7 +44,6 @@ namespace QuestTools
             _skipEventDuration = -1;
         }
 
-        internal static bool ForceGeneratePath = false;
         internal static ulong LastGameId = 0;
 
         internal static void Pulse()
@@ -56,19 +55,7 @@ namespace QuestTools
 
                 ChangeMonitor.CheckForChanges();
 
-                if (Plugin.GetMillisecondsSincePulse() > 500)
-                {
-                    ForceGeneratePath = true;
-                }
-
-                if (CombatTargeting.Instance.FirstNpc != null || CombatTargeting.Instance.FirstObject != null)
-                {
-                    ForceGeneratePath = true;
-                }
-
                 PositionCache.RecordPosition();
-
-                MiniMapMarker.UpdateFailedMarkers();
 
                 // Mark Dungeon Explorer nodes as Visited if combat pulls us into it
                 if (ProfileManager.CurrentProfileBehavior != null)
