@@ -88,6 +88,7 @@ namespace QuestTools.ProfileTags
             RiftComplete,
             PortalExitFound,
             ObjectiveFound,
+            ObjectiveFoundOrBountyComplete,
         }
 
         [XmlAttribute("endType")]
@@ -922,7 +923,7 @@ namespace QuestTools.ProfileTags
             return
             new PrioritySelector(
                 TimeoutCheck(),
-                new Decorator(ret => EndType == ExploreEndType.ObjectiveFound && GetIsObjectiveInRange(),
+                new Decorator(ret => (EndType == ExploreEndType.ObjectiveFound || EndType == ExploreEndType.ObjectiveFoundOrBountyComplete) && GetIsObjectiveInRange(),
                     new Sequence(
                         new Action(ret => Logger.Log("Found Objective Marker. Tag Finished.")),
                         new Action(ret => _isDone = true)
@@ -941,7 +942,7 @@ namespace QuestTools.ProfileTags
                         new Action(ret => _isDone = true)
                     )
                 ),
-                new Decorator(ret => EndType == ExploreEndType.BountyComplete && GetIsBountyDone(),
+                new Decorator(ret => (EndType == ExploreEndType.BountyComplete || EndType == ExploreEndType.ObjectiveFoundOrBountyComplete) && GetIsBountyDone(),
                     new Sequence(
                         new Action(ret => Logger.Log("Bounty is done. Tag Finished.")),
                         new Action(ret => _isDone = true)
@@ -1660,6 +1661,7 @@ namespace QuestTools.ProfileTags
             _initDone = false;
             _timeoutBreached = false;
             _tagTimer.Reset();
+            MiniMapMarker.KnownMarkers.Clear();
             base.ResetCachedDone();
         }
         #endregion

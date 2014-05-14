@@ -280,7 +280,7 @@ namespace QuestTools.ProfileTags.Movement
                                 )
                             )
                         ),
-                        new Decorator(ret => _miniMapMarker == null && Position != Vector3.Zero && Position.Distance(ZetaDia.Me.Position) > PathPrecision,
+                        new Decorator(ret => _miniMapMarker == null && Position != Vector3.Zero,
                             new Sequence(
                                 new Action(ret => _lastMoveResult = Navigator.MoveTo(Position)),
                                 new DecoratorContinue(ret => _lastMoveResult == MoveResult.ReachedDestination,
