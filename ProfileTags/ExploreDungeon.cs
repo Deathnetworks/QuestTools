@@ -631,7 +631,7 @@ namespace QuestTools.ProfileTags
             // I added this because GridSegmentation may (rarely) reset itself without us doing it to 15/.55.
             if ((BoxSize != 0 && BoxTolerance != 0) && (GridSegmentation.BoxSize != BoxSize || GridSegmentation.BoxTolerance != BoxTolerance) || (GetGridSegmentationNodeCount() == 0))
             {
-                Logger.Debug("Box Size or Tolerance has been changed! {0}/{1}", GridSegmentation.BoxSize, GridSegmentation.BoxTolerance);
+                Logger.Debug("Box Size or Tolerance has been changed! {0}/{1} NodeCount={2}", GridSegmentation.BoxSize, GridSegmentation.BoxTolerance, GetGridSegmentationNodeCount());
 
                 BrainBehavior.DungeonExplorer.Reset();
                 PrintNodeCounts("BrainBehavior.DungeonExplorer.Reset");
@@ -1412,24 +1412,22 @@ namespace QuestTools.ProfileTags
 
         public void MarkNearbyNodesVisited()
         {
-            ConcurrentBag<DungeonNode> newBag = new ConcurrentBag<DungeonNode>();
-            while (!GridSegmentation.Nodes.IsEmpty)
+            bool update = false;
+            foreach (var node in GridSegmentation.Nodes)
             {
-                DungeonNode node;
-                if (!GridSegmentation.Nodes.TryTake(out node))
-                    continue;
-
-                if (!node.Visited && node.NavigableCenter.Distance2D(MyPosition) < PathPrecision)
+                if (!node.Visited && node.NavigableCenter.Distance2DSqr(MyPosition) < PathPrecision * PathPrecision)
                 {
                     Logger.Log("Marking nearby node {0} as visited, distance {1:0}/{2:0}, IsVisisted={3}",
                         node.NavigableCenter, node.NavigableCenter.Distance2D(MyPosition), PathPrecision, node.Visited);
                     node.Visited = true;
+                    update = true;
                 }
-                newBag.Add(node);
             }
-            GridSegmentation.Nodes = newBag;
+            if (update)
+            {
 
-            BrainBehavior.DungeonExplorer.Update();
+                BrainBehavior.DungeonExplorer.Update();
+            }
         }
 
         /// <summary>
@@ -1777,7 +1775,6 @@ namespace QuestTools.ProfileTags
 
         #region Death Gate Handling
 
-        private List<Vector3> _pandemoniumFortressCanPathCache = new List<Vector3>();
         private Vector3 _lastPandFortressTarget = Vector3.Zero;
 
         private void GetPandFortressNavTarget()
@@ -1795,18 +1792,6 @@ namespace QuestTools.ProfileTags
 
             if (!nodeList.Any())
                 return;
-
-            //_pandemoniumFortressCanPathCache.Clear();
-            //foreach (var nodeCenter in nodeList.Select(n => n.Item1))
-            //{
-            //    Logger.Debug("Checking Path to nodeCenter {0}", nodeCenter);
-            //    bool canPath = NavigationProvider.CanPathWithinDistance(nodeCenter);
-            //    // Find the first node we can path to (ordered by distance above)
-            //    if (!canPath)
-            //        continue;
-            //    _pandemoniumFortressCanPathCache.Add(nodeCenter);
-            //    break;
-            //}
 
             _lastPandFortressTarget = nodeList
                 .OrderBy(n => n.Item2.DistanceSqr(MyPosition.ToVector2()))
@@ -1881,6 +1866,9 @@ namespace QuestTools.ProfileTags
         /// </summary>
         private void ClearDeathGateCheck()
         {
+            if (!GetIsInPandemoniumFortress())
+                return;
+
             Logger.Debug("Clearing Death Gate Check");
             _deathGateInteractStartPosition = Vector3.Zero;
             _navTargetMoveResult = default(MoveResult);
@@ -1888,10 +1876,8 @@ namespace QuestTools.ProfileTags
             _lastPathCheckTarget = Vector3.Zero;
             _nearestDeathGate = null;
             _lastPandFortressTarget = Vector3.Zero;
-            _pandemoniumFortressCanPathCache.Clear();
             NavigationProvider.Clear();
             UpdateRoute();
-            //MiniMapMarker.KnownMarkers.RemoveAll(m => m.IsPointOfInterest && m.Failed);
         }
 
         private Dictionary<Vector3, bool> _canPathCache = new Dictionary<Vector3, bool>();

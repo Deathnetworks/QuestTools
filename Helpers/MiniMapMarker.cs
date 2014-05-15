@@ -66,7 +66,7 @@ namespace QuestTools.Helpers
             {
                 foreach (MiniMapMarker marker in KnownMarkers.Where(m => m.Equals(nearestMarker)))
                 {
-                    Logger.Log("Setting MiniMapMarker {0} as failed, MoveResult=ReachedDestination, Distance {1:0} IsPOI {2} IsExit {3}", 
+                    Logger.Log("Setting MiniMapMarker {0} as failed, MoveResult=ReachedDestination, Distance {1:0} IsPOI {2} IsExit {3}",
                         marker.MarkerNameHash, marker.Distance, marker.IsPointOfInterest, marker.IsExit);
                     marker.Failed = true;
                     LastMoveResult = MoveResult.Moved;
@@ -100,7 +100,7 @@ namespace QuestTools.Helpers
 
             foreach (MiniMapMarker marker in KnownMarkers.Where(m => m.Failed).Where(marker => _navProvider.CanFullyClientPathTo(marker.Position)))
             {
-                Logger.Log("Was able to generate full path to failed MiniMapMarker {0} at {1}, distance {2:0} IsPOI {3} IsExit {4}, marking as good", 
+                Logger.Log("Was able to generate full path to failed MiniMapMarker {0} at {1}, distance {2:0} IsPOI {3} IsExit {4}, marking as good",
                     marker.MarkerNameHash, marker.Position, marker.Position.Distance2D(ZetaDia.Me.Position), marker.IsPointOfInterest, marker.IsExit);
                 marker.Failed = false;
                 LastMoveResult = MoveResult.PathGenerated;
@@ -152,7 +152,7 @@ namespace QuestTools.Helpers
                     Position = marker.Position,
                     Visited = false,
                     IsExit = marker.IsPortalExit,
-                    IsPointOfInterest = marker.IsPointOfInterest,
+                    IsPointOfInterest = marker.IsPointOfInterest || includeMarker == marker.NameHash,
                 };
 
                 float distance = mmm.Position.Distance2D(ZetaDia.Me.Position);
@@ -222,14 +222,15 @@ namespace QuestTools.Helpers
             return
             new Decorator(ret => AnyUnvisitedMarkers(),
                 new Sequence(
-                    new DecoratorContinue(ret => LastMoveResult == MoveResult.ReachedDestination,
+                    new DecoratorContinue(ret => LastMoveResult == MoveResult.ReachedDestination ||
+                            GetNearestUnvisitedMarker(near).Position.Distance2DSqr(ZetaDia.Me.Position) < 15f * 15f,
                         new Action(ret => SetNearbyMarkersVisited(ZetaDia.Me.Position, markerDistance))
                     ),
                     new Decorator(ret => GetNearestUnvisitedMarker(ZetaDia.Me.Position) != null,
                         new Sequence(ctx => GetNearestUnvisitedMarker(near),
                             new Action(ret => LastMoveResult = Navigator.MoveTo((ret as MiniMapMarker).Position)),
                             new Action(ret => Logger.Log("Moved to inspect nameHash {0} at {1}, IsPOI: {2} IsExit: {3} MoveResult: {4}",
-                                (ret as MiniMapMarker).MarkerNameHash, 
+                                (ret as MiniMapMarker).MarkerNameHash,
                                 (ret as MiniMapMarker).Position,
                                 (ret as MiniMapMarker).IsPointOfInterest,
                                 (ret as MiniMapMarker).IsExit,
