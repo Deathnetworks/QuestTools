@@ -307,8 +307,10 @@ namespace QuestTools.ProfileTags.Movement
                     if (_objectiveObject == null)
                     {
                         // Portals are not the actual objective but at the marker location
-                        _objectiveObject = ZetaDia.Actors.GetActorsOfType<DiaObject>(true).Where(o => o != null && o.IsValid && o is GizmoPortal
-                           && o.Position.Distance2D(_mapMarkerLastPosition) <= PathPrecision).OrderBy(o => o.Distance).FirstOrDefault();
+                        _objectiveObject = ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
+                            .Where(o => o != null && o.IsValid && o is GizmoPortal
+                                    && o.Position.Distance2DSqr(_mapMarkerLastPosition) <= 9f)
+                           .OrderBy(o => o.Distance).FirstOrDefault();
                     }
 
                 }

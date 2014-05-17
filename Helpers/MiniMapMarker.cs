@@ -135,8 +135,7 @@ namespace QuestTools.Helpers
                     m.NameHash == 0 ||
                     m.NameHash == RiftGuardianHash ||
                     m.IsPointOfInterest || // Already matches POI hash
-                    m.IsPortalExit ||
-                    m.Position.ToVector2().DistanceSqr(ZetaDia.Me.Position.ToVector2()) <= 500 * 500)) && // within 500 yards
+                    m.IsPortalExit)) && 
                     !KnownMarkers.Any(ml => ml.Position == m.Position && ml.MarkerNameHash == m.NameHash))
                     .OrderBy(m => m.IsPointOfInterest)
                     .ThenBy(m => m.Position.ToVector2().DistanceSqr(ZetaDia.Me.Position.ToVector2()));
