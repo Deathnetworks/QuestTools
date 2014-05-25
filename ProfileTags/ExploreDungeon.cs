@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -119,6 +118,10 @@ namespace QuestTools.ProfileTags
         [XmlAttribute("markerDistance")]
         public float MarkerDistance { get; set; }
 
+        [XmlAttribute("findExits")]
+        [DefaultValue(false)]
+        public bool FindExits { get; set; }
+
         /// <summary>
         /// Disable Mini Map Marker Scouting
         /// </summary>
@@ -167,11 +170,6 @@ namespace QuestTools.ProfileTags
         /// </summary>
         [XmlAttribute("minVisitedNodes")]
         public int MinVisistedNodes { get; set; }
-
-        [XmlAttribute("SetNodesExploredAutomatically")]
-        [XmlAttribute("setNodesExploredAutomatically")]
-        [DefaultValue(true)]
-        public bool SetNodesExploredAutomatically { get; set; }
 
         [XmlAttribute("minObjectOccurances")]
         public int MinOccurances { get; set; }
@@ -483,17 +481,6 @@ namespace QuestTools.ProfileTags
         {
             Logger.Log("ExploreDungeon Started");
 
-            if (SetNodesExploredAutomatically)
-            {
-                Logger.Debug("Minimap Explored Nodes Enabled");
-                BrainBehavior.DungeonExplorer.SetNodesExploredAutomatically = true;
-            }
-            else
-            {
-                Logger.Debug("Minimap Explored Nodes Disabled");
-                BrainBehavior.DungeonExplorer.SetNodesExploredAutomatically = false;
-            }
-
             if (!IgnoreGridReset && !ZetaDia.Me.IsDead && DateTime.UtcNow.Subtract(Death.LastDeathTime).TotalSeconds > 3)
             {
                 UpdateSearchGridProvider();
@@ -537,7 +524,10 @@ namespace QuestTools.ProfileTags
                         MiniMapMarker.DetectMiniMapMarkers(),
                         MiniMapMarker.DetectMiniMapMarkers(ExitNameHash),
                         MiniMapMarker.DetectMiniMapMarkers(Objectives),
-                        MiniMapMarker.DetectMiniMapMarkers(AlternateMarkers)
+                        MiniMapMarker.DetectMiniMapMarkers(AlternateMarkers),
+                        new DecoratorContinue(ret => FindExits,
+                            new Action(ret => MiniMapMarker.DetectMiniMapMarkers(0, true))
+                        )
                     )
                 ),
                 // I dunno if this will work...
@@ -960,7 +950,7 @@ namespace QuestTools.ProfileTags
                         new Action(ret => _isDone = true)
                     )
                 ),
-                new Decorator(ret => EndType == ExploreEndType.ExitFound && ExitNameHash != 0 && IsExitNameHashVisible(),
+                new Decorator(ret => EndType == ExploreEndType.ExitFound && ExitNameHash != 0 && ExitNameHashInRange(),
                     new Sequence(
                         new Action(ret => Logger.Log("Found exitNameHash {0}!", ExitNameHash)),
                         new Action(ret => _isDone = true)
@@ -1051,7 +1041,7 @@ namespace QuestTools.ProfileTags
         /// Determine if the tag ExitNameHash is visible in the list of Current World Markers
         /// </summary>
         /// <returns></returns>
-        private bool IsExitNameHashVisible()
+        private bool ExitNameHashInRange()
         {
             return ZetaDia.Minimap.Markers.CurrentWorldMarkers.Any(m => m.NameHash == ExitNameHash && m.Position.Distance2D(MyPosition) <= MarkerDistance + 10f);
         }

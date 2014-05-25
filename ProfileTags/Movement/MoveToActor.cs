@@ -8,6 +8,7 @@ using Zeta.Common;
 using Zeta.Game;
 using Zeta.Game.Internals;
 using Zeta.Game.Internals.Actors;
+using Zeta.Game.Internals.Actors.Gizmos;
 using Zeta.Game.Internals.SNO;
 using Zeta.TreeSharp;
 using Zeta.XmlEngine;
@@ -321,6 +322,18 @@ namespace QuestTools.ProfileTags
                 //if (!IsPortal || Position == Vector3.Zero)
                 Position = newActor.Position;
                 actor = newActor;
+
+                if (newActor is GizmoLootContainer)
+                {
+                    bool chestOpen = false;
+                    try
+                    {
+                        chestOpen = newActor.CommonData.GetAttribute<int>(ActorAttributeType.ChestOpen) != 0;
+                    }
+                    catch { }
+                    if (chestOpen)
+                        actor = null;
+                }
 
                 switch (newActor.ActorType)
                 {

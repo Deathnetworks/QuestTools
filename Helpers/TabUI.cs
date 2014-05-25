@@ -22,7 +22,7 @@ namespace QuestTools.Helpers
 {
     class TabUi
     {
-        private static Button _btnDumpActors, _btnOpenLogFile, _btnResetGrid;
+        private static Button _btnDumpActors, _btnOpenLogFile, _btnResetGrid, _btnDumpCPlayer;
         private static Button _btnSafeMoveTo, _btnMoveToActor, _btnMoveToMapMarker, _btnIfTag, _btnWaitTimerTag, _btnExploreAreaTag, _btnUseWaypointTag;
 
         private const string Indent3Hang = "                       ";
@@ -46,6 +46,15 @@ namespace QuestTools.Helpers
                             VerticalAlignment = VerticalAlignment.Top,
                             Margin = new Thickness(3),
                             Content = "Dump Actor Attribs"
+                        };
+
+                        _btnDumpCPlayer = new Button
+                        {
+                            Width = 120,
+                            HorizontalAlignment = HorizontalAlignment.Left,
+                            VerticalAlignment = VerticalAlignment.Top,
+                            Margin = new Thickness(3),
+                            Content = "Dump CPlayer"
                         };
 
                         _btnOpenLogFile = new Button
@@ -133,6 +142,7 @@ namespace QuestTools.Helpers
                         Window mainWindow = Application.Current.MainWindow;
 
                         _btnDumpActors.Click += btnDumpActors_Click;
+                        _btnDumpCPlayer.Click += _btnDumpCPlayer_Click;
                         _btnOpenLogFile.Click += btnOpenLogFile_Click;
                         _btnResetGrid.Click += btnResetGrid_Click;
 
@@ -152,6 +162,7 @@ namespace QuestTools.Helpers
                         };
 
                         uniformGrid.Children.Add(_btnDumpActors);
+                        uniformGrid.Children.Add(_btnDumpCPlayer);
                         uniformGrid.Children.Add(_btnOpenLogFile);
                         uniformGrid.Children.Add(_btnResetGrid);
 
@@ -167,7 +178,8 @@ namespace QuestTools.Helpers
                         _tabItem = new TabItem
                         {
                             Header = "QuestTools",
-                            ToolTip = "Profile Creation Tools", Content = uniformGrid,
+                            ToolTip = "Profile Creation Tools",
+                            Content = uniformGrid,
                         };
 
                         var tabs = mainWindow.FindName("tabControlMain") as TabControl;
@@ -201,9 +213,9 @@ namespace QuestTools.Helpers
                     ZetaDia.Actors.Update();
 
                     List<GizmoWaypoint> objList = (from o in ZetaDia.Actors.GetActorsOfType<GizmoWaypoint>(true)
-                        where o.IsValid
-                        orderby o.Position.Distance(ZetaDia.Me.Position)
-                        select o).ToList();
+                                                   where o.IsValid
+                                                   orderby o.Position.Distance(ZetaDia.Me.Position)
+                                                   select o).ToList();
 
                     string tagText = "";
                     if (objList.Any())
@@ -266,7 +278,7 @@ namespace QuestTools.Helpers
                         return;
                     if (!ZetaDia.Me.IsValid)
                         return; ZetaDia.Actors.Update();
-                    
+
                     string tagText = string.Format("\n<WaitTimer questId=\"{0}\" stepId=\"{1}\" waitTime=\"500\" />\n", ZetaDia.CurrentQuest.QuestSNO, ZetaDia.CurrentQuest.StepId);
                     Clipboard.SetText(tagText);
                     Logger.Log(tagText);
@@ -447,7 +459,7 @@ namespace QuestTools.Helpers
                                         select o).FirstOrDefault() ??
                                         (from o in ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
                                          orderby o.Position.Distance(marker.Position)
-                                        select o).FirstOrDefault();
+                                         select o).FirstOrDefault();
 
                     string questInfo;
                     string questHeader;
@@ -498,12 +510,12 @@ namespace QuestTools.Helpers
                     ZetaDia.Actors.Update();
 
                     List<DiaObject> objList = (from o in ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
-                        where (o is DiaGizmo || o is DiaUnit) &&
-                              !o.Name.StartsWith("Generic_Proxy") &&
-                              !o.Name.StartsWith("Start_Location") &&
-                              !(o is DiaPlayer)
-                        orderby o.Position.Distance(ZetaDia.Me.Position)
-                        select o).ToList();
+                                               where (o is DiaGizmo || o is DiaUnit) &&
+                                                     !o.Name.StartsWith("Generic_Proxy") &&
+                                                     !o.Name.StartsWith("Start_Location") &&
+                                                     !(o is DiaPlayer)
+                                               orderby o.Position.Distance(ZetaDia.Me.Position)
+                                               select o).ToList();
 
                     string portalInfo = string.Empty;
 
@@ -628,6 +640,40 @@ namespace QuestTools.Helpers
                 Logger.LogError("Error opening log file: {0} {1}", logFile, ex.Message);
             }
         }
+        static void _btnDumpCPlayer_Click(object sender, RoutedEventArgs e)
+        {
+            try
+            {
+                using (ZetaDia.Memory.SaveCacheState())
+                {
+                    ZetaDia.Memory.DisableCache();
+
+                    if (BotMain.IsRunning)
+                    {
+                        BotMain.Stop();
+                        Thread.Sleep(1500);
+                    }
+
+                    DumpCPlayer();
+
+                    foreach (var slot in Enum.GetValues(typeof(HotbarSlot)).Cast<HotbarSlot>())
+                    {
+                        DiaActiveSkill skill = ZetaDia.CPlayer.GetActiveSkillBySlot(slot);
+                        Logger.Log("{0} Active Skill: {1} RuneIndex: {2}", slot, skill.Power, skill.RuneIndex);
+                    }
+                    foreach (var power in ZetaDia.CPlayer.PassiveSkills)
+                    {
+                        Logger.Log("Passive Skill: {0}", power);
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                Logger.Log(ex.ToString());
+            }
+        }
+
 
         private static void btnDumpActors_Click(object sender, RoutedEventArgs e)
         {
@@ -644,7 +690,6 @@ namespace QuestTools.Helpers
                     }
 
                     double iType = -1;
-
 
                     ZetaDia.Actors.Update();
                     var units = ZetaDia.Actors.GetActorsOfType<DiaUnit>()
@@ -949,6 +994,16 @@ namespace QuestTools.Helpers
                 catch { }
 
             }
+        }
+
+        private static void DumpCPlayer()
+        {
+            string propertiesFound = ReadProperties(ZetaDia.CPlayer, null);
+            try
+            {
+                Logger.Log("\n\nCPlayer: " + propertiesFound);
+            }
+            catch { }
         }
 
         private static void DumpService()

@@ -219,7 +219,7 @@ namespace QuestTools.ProfileTags.Movement
                             (_objectiveObject != null && _objectiveObject.IsValid),
                             _completedInteractAttempts,
                             IsPortal,
-                            (_objectiveObject != null ? _objectiveObject.Position.Distance(ZetaDia.Me.Position) : 0f),
+                            (_objectiveObject != null && _objectiveObject.IsValid ? _objectiveObject.Position.Distance(ZetaDia.Me.Position) : 0f),
                             InteractRange)
                         )
                     )
