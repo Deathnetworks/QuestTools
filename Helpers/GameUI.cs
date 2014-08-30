@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using QuestTools.ProfileTags;
 using QuestTools.ProfileTags.Movement;
 using Zeta.Bot;

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
+using Buddy.Coroutines;
 using QuestTools.Helpers;
 using Zeta.Bot;
 using Zeta.Bot.Navigation;
@@ -12,9 +14,8 @@ using Zeta.Game.Internals.Actors.Gizmos;
 using Zeta.Game.Internals.SNO;
 using Zeta.TreeSharp;
 using Zeta.XmlEngine;
-using Action = Zeta.TreeSharp.Action;
 
-namespace QuestTools.ProfileTags
+namespace QuestTools.ProfileTags.Movement
 {
     [XmlElement("MoveToActor")]
     class MoveToActor : ProfileBehavior
@@ -170,105 +171,134 @@ namespace QuestTools.ProfileTags
             Logger.Debug("Initialized {0}", Status());
         }
 
-        /// <summary>
-        /// Main Behavior
-        /// </summary>
-        /// <returns></returns>
         protected override Composite CreateBehavior()
         {
-            return new PrioritySelector(
-                new Decorator(ret => ZetaDia.Me.IsDead,
-                    new Action(ret => { return RunStatus.Success; })
-                ),
-                new Decorator(ret => !ZetaDia.Me.IsValid,
-                    new Action(ret => { return RunStatus.Success; })
-                ),
-                new Decorator(ret => ZetaDia.IsLoadingWorld,
-                    new Action(ret => { return RunStatus.Success; })
-                ),
-                new Decorator(ret => DateTime.UtcNow.Subtract(lastInteract).TotalMilliseconds < 500 && WorldHasChanged(),
-                    new Action(ret => { return RunStatus.Success; })
-                ),
-                new Decorator(ret => DateTime.UtcNow.Subtract(tagStartTime).TotalSeconds > Timeout,
-                    new Action(ret => End("Timeout of {0} seconds exceeded for Profile Behavior {1}", Timeout, Status()))
-                ),
-                new Sequence(
-                    new DecoratorContinue(ret => DungeonStonesPresent && GameUI.IsElementVisible(GameUI.GenericOK),
-                        new Sequence(
-                            new Action(ret => GameUI.SafeClickElement(GameUI.GenericOK)),
-                            new Sleep(3000)
-                        )
-                    ),
-                    new Action(ret => GameUI.SafeClickUIButtons()),
-                    new Action(ret => SafeUpdateActor()),
-                    new DecoratorContinue(ret => Vector3.Distance(lastPosition, ZetaDia.Me.Position) > 5f,
-                        new Sequence(
-                            new Action(ret => lastPositionUpdate = DateTime.UtcNow),
-                            new Action(ret => lastPosition = ZetaDia.Me.Position)
-                        )
-                    ),
-                    new PrioritySelector(
-                        new Decorator(ret => (actor == null || !actor.IsValid) && Position == Vector3.Zero && !WorldHasChanged(),
-                            new Action(ret => EndDebug("ERROR: Could not find an actor or position to move to, finished! {0}", Status()))
-                        ),
-                        new Decorator(ret => IsPortal && WorldHasChanged(),
-                            new PrioritySelector(
-                                new Decorator(ret => DestinationWorldId > 0 && ZetaDia.CurrentWorldId != DestinationWorldId && ZetaDia.CurrentWorldId != startingWorldId,
-                                    new Action(ret => EndDebug("Error! We used a portal intending to go from WorldId={0} to WorldId={1} but ended up in WorldId={2} {3}",
-                                        startingWorldId, DestinationWorldId, ZetaDia.CurrentWorldId, Status()))
-                                ),
-                                new Action(ret => EndDebug("Successfully used portal {0} to WorldId {1} {2}", ActorId, ZetaDia.CurrentWorldId, Status()))
-                            )
-                        ),
-                        new Decorator(ret => (actor == null || !actor.IsValid) && ((MaxSearchDistance > 0 && WithinMaxSearchDistance()) || WithinInteractRange()),
-                            new Action(ret => EndDebug("Finished: Actor {0} not found, within InteractRange {1} and  MaxSearchDistance {2} of Position {3} {4}",
-                                ActorId, InteractRange, MaxSearchDistance, Position, Status()))
-                        ),
-                        new Decorator(ret => Position.Distance(ZetaDia.Me.Position) > 1500,
-                            new Action(ret => EndDebug("ERROR: Position distance is {0} - this is too far! {1}", Position.Distance(ZetaDia.Me.Position), Status()))
-                        ),
-                        new Decorator(ret => (actor == null || !actor.IsValid),
-                            new PrioritySelector(
-                                new Decorator(ret => MaxSearchDistance > 0 && !WithinMaxSearchDistance(),
-                                    new Action(ret => Move(Position))
-                                ),
-                                new Decorator(ret => InteractRange > 0 && !WithinInteractRange(),
-                                    new Action(ret => Move(Position))
-                                )
-                            )
-                        ),
-                        new Decorator(ret => ((!IsPortal && completedInteractions >= InteractAttempts && InteractAttempts > 0) || (IsPortal && WorldHasChanged()) || AnimationMatch()),
-                            new Action(ret => EndDebug("Successfully interacted with Actor {0} at Position {1}", actor.ActorSNO, actor.Position))
-                        ),
-                        new Decorator(ret => InteractAttempts <= 0 && WithinInteractRange(),
-                            new Action(ret => EndDebug("Actor is within interact range {0:0} - no interact attempts", actor.Distance))
-                        ),
-                        new Decorator(ret => completedInteractions >= InteractAttempts,
-                            new Action(ret => EndDebug("Interaction failed after {0} interact attempts", completedInteractions))
-                        ),
-                        new Decorator(ret => ExitWithConversation && GameUI.IsElementVisible(GameUI.TalktoInteractButton1),
-                            new Sequence(
-                                new Action(ret => GameUI.SafeClickElement(GameUI.TalktoInteractButton1, "Conversation Interaction Button 1")),
-                                new Action(ret => EndDebug("Clicked Conversation Interaction Button 1"))
-                            )
-                        ),
-                        new Decorator(ret => moveResult == MoveResult.ReachedDestination && actor == null,
-                            new Action(ret => EndDebug("Reached Destination, no actor found!"))
-                        ),
-                        new Decorator(ret => !WithinInteractRange(),
-                            new Action(ret => Move(actor.Position))
-                        ),
-                        new Wait(interactWaitSeconds, cnd => ShouldWaitForInteraction(),
-                            new Decorator(ret => (WithinInteractRange() || DateTime.UtcNow.Subtract(lastPositionUpdate).TotalMilliseconds > 750) && completedInteractions < InteractAttempts,
-                                InteractSequence()
-                            )
-                        ),
-                        new Action(ret => Logger.Debug("No action taken"))
-                    )
-                )
-            );
-
+            return new ActionRunCoroutine(ctx => MainCoroutine());
         }
+
+
+        private async Task<bool> MainCoroutine()
+        {
+            if (ZetaDia.Me.IsDead)
+                return false;
+
+            if (!ZetaDia.Me.IsValid)
+                return false;
+
+            if (ZetaDia.IsLoadingWorld)
+                return false;
+
+            if (ZetaDia.IsLoadingWorld)
+                return false;
+
+            if (DateTime.UtcNow.Subtract(lastInteract).TotalMilliseconds < 500 && WorldHasChanged())
+                return true;
+
+            if (DateTime.UtcNow.Subtract(tagStartTime).TotalSeconds > Timeout)
+            {
+                End("Timeout of {0} seconds exceeded for Profile Behavior {1}", Timeout, Status());
+                return true;
+            }
+
+            if (DungeonStonesPresent && GameUI.IsElementVisible(GameUI.GenericOK))
+            {
+                GameUI.SafeClickElement(GameUI.GenericOK);
+                await Coroutine.Yield();
+                await Coroutine.Sleep(3000);
+            }
+
+            GameUI.SafeClickUIButtons();
+
+            SafeUpdateActor();
+
+            if (Vector3.Distance(lastPosition, ZetaDia.Me.Position) > 5f)
+            {
+                lastPositionUpdate = DateTime.UtcNow;
+                lastPosition = ZetaDia.Me.Position;
+            }
+
+            if ((actor == null || !actor.IsValid) && Position == Vector3.Zero && !WorldHasChanged())
+            {
+                EndDebug("ERROR: Could not find an actor or position to move to, finished! {0}", Status());
+                return true;
+            }
+            if (IsPortal && WorldHasChanged())
+            {
+                if (DestinationWorldId > 0 && ZetaDia.CurrentWorldId != DestinationWorldId && ZetaDia.CurrentWorldId != startingWorldId)
+                {
+                    EndDebug("Error! We used a portal intending to go from WorldId={0} to WorldId={1} but ended up in WorldId={2} {3}",
+                                                    startingWorldId, DestinationWorldId, ZetaDia.CurrentWorldId, Status());
+                    return true;
+                }
+                EndDebug("Successfully used portal {0} to WorldId {1} {2}", ActorId, ZetaDia.CurrentWorldId, Status());
+                return true;
+            }
+            if ((actor == null || !actor.IsValid) && ((MaxSearchDistance > 0 && WithinMaxSearchDistance()) || WithinInteractRange()))
+            {
+                EndDebug("Finished: Actor {0} not found, within InteractRange {1} and  MaxSearchDistance {2} of Position {3} {4}",
+                                            ActorId, InteractRange, MaxSearchDistance, Position, Status());
+                return true;
+            }
+            if (Position.Distance(ZetaDia.Me.Position) > 1500)
+            {
+                EndDebug("ERROR: Position distance is {0} - this is too far! {1}", Position.Distance(ZetaDia.Me.Position), Status());
+                return true;
+            }
+            if (actor == null || !actor.IsValid)
+            {
+                if (MaxSearchDistance > 0 && !WithinMaxSearchDistance())
+                {
+                    Move(Position);
+                    return true;
+                }
+                if (InteractRange > 0 && !WithinInteractRange())
+                {
+                    Move(Position);
+                    return true;
+                }
+            }
+
+            if (((!IsPortal && completedInteractions >= InteractAttempts && InteractAttempts > 0) || (IsPortal && WorldHasChanged()) || AnimationMatch()))
+            {
+                EndDebug("Successfully interacted with Actor {0} at Position {1}", actor.ActorSNO, actor.Position);
+                return true;
+            }
+            if (InteractAttempts <= 0 && WithinInteractRange())
+            {
+                EndDebug("Actor is within interact range {0:0} - no interact attempts", actor.Distance);
+            }
+            if (completedInteractions >= InteractAttempts)
+            {
+                EndDebug("Interaction failed after {0} interact attempts", completedInteractions);
+            }
+            if (ExitWithConversation && GameUI.IsElementVisible(GameUI.TalktoInteractButton1))
+            {
+                GameUI.SafeClickElement(GameUI.TalktoInteractButton1, "Conversation Interaction Button 1");
+                EndDebug("Clicked Conversation Interaction Button 1");
+            }
+            if (moveResult == MoveResult.ReachedDestination && actor == null)
+            {
+                EndDebug("Reached Destination, no actor found!");
+            }
+            if (!WithinInteractRange())
+            {
+                Move(actor.Position);
+                return true;
+            }
+
+            bool doInteract = await Coroutine.Wait(interactWaitSeconds, ShouldWaitForInteraction);
+            if (doInteract)
+            {
+                if ((WithinInteractRange() || DateTime.UtcNow.Subtract(lastPositionUpdate).TotalMilliseconds > 750) && completedInteractions < InteractAttempts)
+                {
+                    return await InteractRoutine();
+                }
+            }
+
+            Logger.Debug("No action taken");
+            return true;
+        }
+
         private bool DungeonStonesPresent
         {
             get
@@ -361,67 +391,80 @@ namespace QuestTools.ProfileTags
             return ZetaDia.Me.LoopingAnimationEndTime > 0 || Math.Abs(DateTime.UtcNow.Subtract(lastInteract).TotalSeconds) > interactWaitSeconds;
         }
 
-        private Composite InteractSequence()
+        private async Task<bool> InteractRoutine()
         {
-            return
-            new Decorator(ret => Player.IsPlayerValid() && actor.IsValid,
-                new PrioritySelector(
-                    new Decorator(ret => DungeonStonesPresent && (GameUI.IsElementVisible(GameUI.GenericOK) || GameUI.IsElementVisible(UIElements.ConfirmationDialogOkButton)),
-                        new Sequence(
-                            new Action(ret => GameUI.SafeClickElement(GameUI.GenericOK)),
-                            new Action(ret => GameUI.SafeClickElement(UIElements.ConfirmationDialogOkButton)),
-                            new Sleep(3000)
-                        )
-                    ),
-                    new Sequence(
-                        new DecoratorContinue(ret => startingWorldId <= 0,
-                            new Action(ret => startingWorldId = ZetaDia.CurrentWorldId)
-                        ),
-                        new Action(ret => interactWaitSeconds = DungeonStonesPresent ? 4 : 1),
-                        new Action(ret => LogInteraction()),
-                        new DecoratorContinue(ret => IsPortal,
-                            new Action(ret => GameEvents.FireWorldTransferStart())
-                        ),
-                        new Action(ret => WaitWhileChanneling()),
-                        new DecoratorContinue(ret => actor.ActorType == ActorType.Gizmo,
-                            new PrioritySelector(
-                                new Decorator(ret => actor.ActorInfo.GizmoType == GizmoType.BossPortal,
-                                    new Action(ret => ZetaDia.Me.UsePower(SNOPower.GizmoOperatePortalWithAnimation, actor.Position))
-                                ),
-                                new Decorator(ret => actor.ActorInfo.GizmoType == GizmoType.Portal,
-                                    new Action(ret => ZetaDia.Me.UsePower(SNOPower.GizmoOperatePortalWithAnimation, actor.Position))
-                                ),
-                                new Decorator(ret => actor.ActorInfo.GizmoType == GizmoType.ReturnPortal,
-                                    new Action(ret => ZetaDia.Me.UsePower(SNOPower.GizmoOperatePortalWithAnimation, actor.Position))
-                                ),
-                                new Decorator(ret => actor.ActorInfo.GizmoType == GizmoType.Door,
-                                    new Action(ret => ZetaDia.Me.UsePower(SNOPower.Axe_Operate_Gizmo, actor.Position))
-                                ),
-                                new Decorator(ret => actor.ActorInfo.GizmoType == GizmoType.Portal,
-                                    new Action(ret => ZetaDia.Me.UsePower(SNOPower.Axe_Operate_Gizmo, actor.Position))
-                                ),
-                                new Action(ret => ZetaDia.Me.UsePower(SNOPower.Axe_Operate_Gizmo, actor.Position))
-                           )
-                        ),
-                        new DecoratorContinue(ret => actor.ActorType == ActorType.Monster,
-                            new Action(ret => ZetaDia.Me.UsePower(SNOPower.Axe_Operate_NPC, actor.Position))
-                        ),
-                        new Action(ret => actor.Interact()),
-                        new Action(ret => GameUI.SafeClickElement(GameUI.GenericOK)),
-                        new Action(ret => GameUI.SafeClickElement(UIElements.ConfirmationDialogOkButton)),
-                        new DecoratorContinue(cnd => startInteractPosition == Vector3.Zero,
-                            new Action(ret => startInteractPosition = ZetaDia.Me.Position)
-                        ),
-                        new Action(ret => lastPosition = ZetaDia.Me.Position),
-                        new Action(ret => completedInteractions++),
-                        new Action(ret => lastInteract = DateTime.UtcNow),
-                        new DecoratorContinue(ret => DungeonStonesPresent || IsPortal,
-                            new Sleep(500)
-                        )
-                    )
-                )
-           );
+            if (Player.IsPlayerValid() && actor.IsValid)
+            {
+
+                if (DungeonStonesPresent && (GameUI.IsElementVisible(GameUI.GenericOK) || GameUI.IsElementVisible(UIElements.ConfirmationDialogOkButton)))
+                {
+                    GameUI.SafeClickElement(GameUI.GenericOK);
+                    await Coroutine.Yield();
+
+                    GameUI.SafeClickElement(UIElements.ConfirmationDialogOkButton);
+                    await Coroutine.Yield();
+
+                    await Coroutine.Sleep(3000);
+                    return true;
+                }
+
+
+                if (startingWorldId <= 0)
+                {
+                    startingWorldId = ZetaDia.CurrentWorldId;
+                }
+
+                interactWaitSeconds = DungeonStonesPresent ? 4 : 1;
+                LogInteraction();
+
+                if (IsPortal)
+                {
+                    GameEvents.FireWorldTransferStart();
+                }
+
+                await Coroutine.Wait(TimeSpan.FromSeconds(3), () => IsChanneling);
+
+                switch (actor.ActorType)
+                {
+                    case ActorType.Gizmo:
+                        switch (actor.ActorInfo.GizmoType)
+                        {
+                            case GizmoType.BossPortal:
+                            case GizmoType.Portal:
+                            case GizmoType.ReturnPortal:
+                                ZetaDia.Me.UsePower(SNOPower.GizmoOperatePortalWithAnimation, actor.Position);
+                                break;
+                            default:
+                                ZetaDia.Me.UsePower(SNOPower.Axe_Operate_Gizmo, actor.Position);
+                                break;
+                        }
+                        break;
+                    case ActorType.Monster:
+                        ZetaDia.Me.UsePower(SNOPower.Axe_Operate_NPC, actor.Position);
+                        break;
+                }
+
+                // Doubly-make sure we interact
+                actor.Interact();
+
+                GameUI.SafeClickElement(GameUI.GenericOK);
+                GameUI.SafeClickElement(UIElements.ConfirmationDialogOkButton);
+
+                if (startInteractPosition == Vector3.Zero)
+                    startInteractPosition = ZetaDia.Me.Position;
+
+                lastPosition = ZetaDia.Me.Position;
+                completedInteractions++;
+                lastInteract = DateTime.UtcNow;
+                if (DungeonStonesPresent || IsPortal)
+                    await Coroutine.Sleep(500);
+
+                return true;
+
+            }
+            return false;
         }
+      
 
         private void LogInteraction()
         {
@@ -495,20 +538,6 @@ namespace QuestTools.ProfileTags
             }
         }
 
-        private RunStatus WaitWhileChanneling()
-        {
-            if (IsChanneling)
-            {
-                if (QuestTools.EnableDebugLogging)
-                {
-                    Logger.Log("Waiting while channeling");
-                }
-                return RunStatus.Running;
-            }
-            else
-                return RunStatus.Success;
-        }
-
         /// <summary>
         /// Checks to see if animation on actor matches EndAnimation
         /// </summary>
@@ -517,12 +546,7 @@ namespace QuestTools.ProfileTags
         {
             try
             {
-                bool match = false;
-
-                if (endAnimation != SNOAnim.Invalid && actor.CommonData.CurrentAnimation == endAnimation)
-                {
-                    match = true;
-                }
+                bool match = endAnimation != SNOAnim.Invalid && actor.CommonData.CurrentAnimation == endAnimation;
 
                 return match;
             }

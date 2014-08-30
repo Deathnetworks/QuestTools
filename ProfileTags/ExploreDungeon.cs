@@ -179,6 +179,10 @@ namespace QuestTools.ProfileTags
 
         [XmlAttribute("interactRange")]
         public float ObjectInteractRange { get; set; }
+
+        [XmlAttribute("setNodesExploredAutomatically")]
+        [DefaultValue(false)]
+        public bool SetNodesExploredAutomatically { get; set; }
         #endregion
 
         #region XML Elements
@@ -490,6 +494,12 @@ namespace QuestTools.ProfileTags
                 GridSegmentation.Reset();
                 BrainBehavior.DungeonExplorer.Reset();
                 MiniMapMarker.KnownMarkers.Clear();
+            }
+
+            if (SetNodesExploredAutomatically)
+            {
+                Logger.Log("Dungeon Explorer ignoring already explored nodes!");
+                BrainBehavior.DungeonExplorer.SetNodesExploredAutomatically = SetNodesExploredAutomatically;
             }
 
             if (!_initDone)
@@ -855,15 +865,18 @@ namespace QuestTools.ProfileTags
                                 new Action(ret => IgnoreScenes.Clear())
                             )
                         ),
-                        new Action(ret => _timesForcedReset++),
-                        new Action(ret => PositionCache.Cache.Clear()),
-                        new Action(ret => MiniMapMarker.KnownMarkers.Clear()),
-                        new Action(ret => ForceUpdateScenes()),
-                        new Action(ret => GridSegmentation.Reset()),
-                        new Action(ret => GridSegmentation.Update()),
-                        new Action(ret => BrainBehavior.DungeonExplorer.Reset()),
-                        new Action(ret => _priorityScenesInvestigated.Clear()),
-                        new Action(ret => UpdateRoute())
+                        new Action(ret =>
+                        {
+                            _timesForcedReset++;
+                            PositionCache.Cache.Clear();
+                            MiniMapMarker.KnownMarkers.Clear();
+                            ForceUpdateScenes();
+                            GridSegmentation.Reset();
+                            GridSegmentation.Update();
+                            BrainBehavior.DungeonExplorer.Reset();
+                            _priorityScenesInvestigated.Clear();
+                            UpdateRoute();
+                        })
                     )
                 )
            );
@@ -894,13 +907,13 @@ namespace QuestTools.ProfileTags
                 .FirstOrDefault();
             }
 
-            if (miniMapMarker != null)
-            {
-                Logger.Log("Using Objective Style Minimap Marker: {0} isExit: {1} isEntrance {2}",
-                    miniMapMarker.NameHash,
-                    miniMapMarker.IsPortalExit,
-                    miniMapMarker.IsPortalEntrance);
-            }
+            //if (miniMapMarker != null)
+            //{
+            //    Logger.Debug("Using Objective Style Minimap Marker: {0} isExit: {1} isEntrance {2}",
+            //        miniMapMarker.NameHash,
+            //        miniMapMarker.IsPortalExit,
+            //        miniMapMarker.IsPortalEntrance);
+            //}
             return miniMapMarker;
         }
 

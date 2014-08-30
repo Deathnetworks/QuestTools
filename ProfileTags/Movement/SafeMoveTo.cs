@@ -1,5 +1,6 @@
 ﻿using System;
 using QuestTools.Helpers;
+using Zeta.Bot;
 using Zeta.Bot.Navigation;
 using Zeta.Bot.Profile;
 using Zeta.Common;
@@ -7,6 +8,8 @@ using Zeta.Game;
 using Zeta.TreeSharp;
 using Zeta.XmlEngine;
 using Action = Zeta.TreeSharp.Action;
+using System.Threading.Tasks;
+
 
 namespace QuestTools.ProfileTags.Movement
 {
@@ -83,40 +86,46 @@ namespace QuestTools.ProfileTags.Movement
         /// <returns></returns>
         protected override Composite CreateBehavior()
         {
-            return new Sequence(
-                new DecoratorContinue(ret => ZetaDia.Me.IsDead,
-                    new Action(ret => RunStatus.Failure)
-                    ),
-                new Action(ret => GameUI.SafeClickUIButtons()),
-                new PrioritySelector(
-                    new Decorator(ctx => _tagStartTime != DateTime.UtcNow && DateTime.UtcNow.Subtract(_tagStartTime).TotalSeconds > Timeout,
-                        new Sequence(
-                            new Action(ret => Logger.Log("Timeout of {0} seconds exceeded for Profile Behavior (start: {1} now: {2}) {3}", Timeout, _tagStartTime.ToLocalTime(), DateTime.Now, Status())),
-                            new Action(ret => _isDone = true)
-                            )
-                        ),
-                    new Decorator(ctx => !AllowLongDistance && Position.Distance2D(ZetaDia.Me.Position) > 1500,
-                        new Sequence(
-                            new Action(ret => Logger.Log("Error! Destination distance is {0}", Position.Distance2D(ZetaDia.Me.Position))),
-                            new Action(ret => _isDone = true)
-                            )
-                        ),
-                    new Switch<MoveResult>(ret => Move(),
-                        new SwitchArgument<MoveResult>(MoveResult.ReachedDestination,
-                            new Sequence(
-                                new Action(ret => Logger.Log("ReachedDestination! {0}", Status())),
-                                new Action(ret => _isDone = true)
-                                )
-                            ),
-                        new SwitchArgument<MoveResult>(MoveResult.PathGenerationFailed,
-                            new Sequence(
-                                new Action(ret => Logger.Log("Move Failed: {0}! {1}", ret, Status())),
-                                new Action(ret => _isDone = true)
-                                )
-                            )
-                        )
-                    )
-                );
+            return new ActionRunCoroutine(ret => MainCoroutine());
+        }
+
+        public async Task<bool> MainCoroutine()
+        {
+            if (ZetaDia.Me.IsDead)
+                return true;
+
+            GameUI.SafeClickUIButtons();
+
+            if (_tagStartTime != DateTime.UtcNow && DateTime.UtcNow.Subtract(_tagStartTime).TotalSeconds > Timeout)
+            {
+                Logger.Log("Timeout of {0} seconds exceeded for Profile Behavior (start: {1} now: {2}) {3}",
+                                Timeout, _tagStartTime.ToLocalTime(), DateTime.Now, Status());
+                _isDone = true;
+                return true;
+            }
+
+            if (!AllowLongDistance && Position.Distance2D(ZetaDia.Me.Position) > 1500)
+            {
+                Logger.Log("Error! Destination distance is {0}", Position.Distance2D(ZetaDia.Me.Position));
+                _isDone = true;
+                return true;
+            }
+
+            var moveResult = Move();
+
+            switch (moveResult)
+            {
+                case MoveResult.ReachedDestination:
+                    Logger.Log("ReachedDestination! {0}", Status());
+                    _isDone = true;
+                    return true;
+                case MoveResult.PathGenerationFailed:
+                    Logger.Log("Move Failed: {0}! {1}", moveResult, Status());
+                    _isDone = true;
+                    return true;
+            }
+
+            return true;
         }
 
         private MoveResult Move()
@@ -172,7 +181,7 @@ namespace QuestTools.ProfileTags.Movement
         {
             if (QuestTools.EnableDebugLogging)
             {
-                double distance = Math.Round(Position.Distance2D(ZetaDia.Me.Position)/10.0, 0)*10;
+                double distance = Math.Round(Position.Distance2D(ZetaDia.Me.Position) / 10.0, 0) * 10;
 
                 Logger.Debug("Distance to target: {0:0} {1}", distance, Status());
             }

@@ -3,7 +3,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
-             d:DesignHeight="137" d:DesignWidth="175" Foreground="{DynamicResource TextBrush}">
+             d:DesignHeight="137" d:DesignWidth="175" Foreground="White" Background="#393939">
     <UserControl.Resources>
         <Style TargetType="TextBlock">
             <Setter Property="HorizontalAlignment" Value="Center" />
@@ -13,23 +13,23 @@
             <Setter Property="Margin" Value="0,5" />
         </Style>
     </UserControl.Resources>
-    <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Stretch">
-        <StackPanel HorizontalAlignment="Center">
+    <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Center">
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
             <WrapPanel HorizontalAlignment="Right">
                 <TextBlock Text="Skip Cut Scenes" Margin="0,0,10,0" HorizontalAlignment="Right" VerticalAlignment="Center" />
-                <CheckBox IsChecked="{Binding Path=SkipCutScenes, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <CheckBox IsChecked="{Binding Path=SkipCutScenes}"  Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
             </WrapPanel>
             <WrapPanel HorizontalAlignment="Right">
                 <TextBlock Text="Use Debug Logging" Margin="0,0,10,0" HorizontalAlignment="Right" VerticalAlignment="Center" />
-                <CheckBox IsChecked="{Binding Path=DebugEnabled, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <CheckBox IsChecked="{Binding Path=DebugEnabled}"  Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
             </WrapPanel>
             <WrapPanel HorizontalAlignment="Right">
                 <TextBlock Text="Allow Profile Reloading" Margin="0,0,10,0" HorizontalAlignment="Right"  VerticalAlignment="Center"/>
-                <CheckBox IsChecked="{Binding Path=AllowProfileReloading, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <CheckBox IsChecked="{Binding Path=AllowProfileReloading}"  Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
             </WrapPanel>
             <WrapPanel HorizontalAlignment="Right">
                 <TextBlock Text="Allow Profile Restarts" Margin="0,0,10,0" HorizontalAlignment="Right"  VerticalAlignment="Center"/>
-                <CheckBox IsChecked="{Binding Path=AllowProfileRestarts, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                <CheckBox IsChecked="{Binding Path=AllowProfileRestarts}"  Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
             </WrapPanel>
         </StackPanel>
     </StackPanel>

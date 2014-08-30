@@ -240,7 +240,7 @@ namespace QuestTools.Helpers
                     new Decorator(ret => GetNearestUnvisitedMarker(ZetaDia.Me.Position) != null,
                         new Sequence(ctx => GetNearestUnvisitedMarker(near),
                             new Action(ret => LastMoveResult = Navigator.MoveTo((ret as MiniMapMarker).Position)),
-                            new Action(ret => Logger.Log("Moved to inspect nameHash {0} at {1}, IsPOI: {2} IsExit: {3} MoveResult: {4}",
+                            new Action(ret => Logger.Debug("Moved to inspect nameHash {0} at {1}, IsPOI: {2} IsExit: {3} MoveResult: {4}",
                                 (ret as MiniMapMarker).MarkerNameHash,
                                 (ret as MiniMapMarker).Position,
                                 (ret as MiniMapMarker).IsPointOfInterest,

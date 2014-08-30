@@ -241,7 +241,7 @@ namespace QuestTools.ProfileTags.Movement
                             new PrioritySelector(
                                 new Decorator(ret => _lastMoveResult != MoveResult.ReachedDestination,
                                     new Sequence(
-                                        new Action(ret => Logger.Debug("Moving to actor {0} {1}", 
+                                        new Action(ret => Logger.Debug("Moving to actor {0} {1}",
                                             _interactObject.ActorSNO, Status())),
                                         new Action(ret => _lastMoveResult = Navigator.MoveTo(_interactObject.Position))
                                    )

@@ -449,7 +449,8 @@ namespace QuestTools.Helpers
 
                     ZetaDia.Actors.Update();
 
-                    MinimapMarker marker = ZetaDia.Minimap.Markers.CurrentWorldMarkers.OrderBy(m => m.Position.Distance2D(ZetaDia.Me.Position)).FirstOrDefault();
+                    MinimapMarker marker = ZetaDia.Minimap.Markers.CurrentWorldMarkers
+                        .OrderBy(m => !m.IsPortalExit).ThenBy(m => m.Position.Distance2D(ZetaDia.Me.Position)).FirstOrDefault();
 
                     if (marker == null)
                         return;

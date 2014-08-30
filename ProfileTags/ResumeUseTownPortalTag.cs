@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
+using System.Threading.Tasks;
 using QuestTools.Helpers;
 using Zeta.Bot;
+using Zeta.Bot.Coroutines;
 using Zeta.Bot.Profile;
 using Zeta.Game;
 using Zeta.Game.Internals.Actors;
@@ -33,6 +36,8 @@ namespace QuestTools.ProfileTags
             Logger.Log("ResumeUseTownPortal initialized");
         }
 
+        private const int TownPortalSNO = 191492;
+
         protected override Composite CreateBehavior()
         {
 
@@ -48,7 +53,8 @@ namespace QuestTools.ProfileTags
                     new Decorator(ret => IsTownPortalNearby,
                         new Sequence(
                             new Action(ret => Logger.Log("Taking town portal back")),
-                            Zeta.Bot.CommonBehaviors.TakeTownPortalBack(true),
+                            //CommonBehaviors.TakeTownPortalBack(true),
+                            new ActionRunCoroutine(ctx => TakeTownPortalBackTask()),
                             new Sleep(500),
                             new Action(ret => GameEvents.FireWorldTransferStart())
                         )
@@ -58,9 +64,26 @@ namespace QuestTools.ProfileTags
             );
         }
 
+        private async Task<bool> TakeTownPortalBackTask()
+        {
+            var portal = ZetaDia.Actors.GetActorsOfType<DiaObject>(true).FirstOrDefault(o => o.ActorSNO == TownPortalSNO);
+
+            if (portal == null)
+                return false;
+
+            if (portal.Distance > 10f)
+                await CommonCoroutines.MoveTo(portal.Position, "Return Portal");
+
+            if (portal.Distance <= 10f)
+                portal.Interact();
+
+            return true;
+
+        }
+
         private bool IsTownPortalNearby
         {
-            get { return ZetaDia.Actors.GetActorsOfType<DiaObject>(true, false).Where(o => o.ActorSNO == 191492).Any(); }
+            get { return ZetaDia.Actors.GetActorsOfType<DiaObject>(true).Any(o => o.ActorSNO == TownPortalSNO); }
         }
 
         private void ResumeWindowBreached()

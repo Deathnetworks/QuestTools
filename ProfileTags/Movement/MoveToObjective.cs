@@ -206,7 +206,7 @@ namespace QuestTools.ProfileTags.Movement
                                 new Action(ret => _lastMoveResult = Navigator.MoveTo(Position)),
                                 new DecoratorContinue(ret => _lastMoveResult == MoveResult.ReachedDestination,
                                     new Sequence(
-                                        new Action(ret => Logger.Log("ReachedDestination of Position, finished.")),
+                                        new Action(ret => Logger.Log("ReachedDestination of Position, minimap marker not found, finished.")),
                                         new Action(ret => _isDone = true)
                                     )
                                 )
@@ -265,14 +265,14 @@ namespace QuestTools.ProfileTags.Movement
                 .OrderBy(m => m.Position.Distance2DSqr(ZetaDia.Me.Position)).FirstOrDefault();
             }
 
-            if (_miniMapMarker != null)
-            {
-                Logger.Log("Using Objective Style Minimap Marker: {0} dist: {1:0} isExit: {2} isEntrance {3}",
-                    _miniMapMarker.NameHash,
-                    _miniMapMarker.Position.Distance2D(ZetaDia.Me.Position),
-                    _miniMapMarker.IsPortalExit,
-                    _miniMapMarker.IsPortalEntrance);
-            }
+            //if (_miniMapMarker != null)
+            //{
+            //    Logger.Log("Using Objective Style Minimap Marker: {0} dist: {1:0} isExit: {2} isEntrance {3}",
+            //        _miniMapMarker.NameHash,
+            //        _miniMapMarker.Position.Distance2D(ZetaDia.Me.Position),
+            //        _miniMapMarker.IsPortalExit,
+            //        _miniMapMarker.IsPortalEntrance);
+            //}
 
             if (_miniMapMarker != null && _miniMapMarker.Position != Vector3.Zero)
             {
