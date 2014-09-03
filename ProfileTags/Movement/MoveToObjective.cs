@@ -300,17 +300,19 @@ namespace QuestTools.ProfileTags.Movement
                 {
                     // Monsters are the actual objective marker
                     _objectiveObject = ZetaDia.Actors.GetActorsOfType<DiaUnit>(true)
-                            .Where(a => a.CommonData != null && a.Position.Distance2D(_mapMarkerLastPosition) <= PathPrecision
+                            .Where(a => a.CommonData != null && a.IsValid && a.Position.Distance2D(_mapMarkerLastPosition) <= PathPrecision
                                     && (a.CommonData.GetAttribute<int>(ActorAttributeType.BountyObjective) != 0))
-                            .OrderBy(a => a.Position.Distance2D(_mapMarkerLastPosition)).FirstOrDefault();
+                            .OrderBy(a => a.Position.Distance2D(_mapMarkerLastPosition))
+                            .FirstOrDefault();
 
                     if (_objectiveObject == null)
                     {
                         // Portals are not the actual objective but at the marker location
                         _objectiveObject = ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
-                            .Where(o => o != null && o.IsValid && o is GizmoPortal
+                            .Where(o => o != null && o.IsValid && o.IsValid && o is GizmoPortal
                                     && o.Position.Distance2DSqr(_mapMarkerLastPosition) <= 9f)
-                           .OrderBy(o => o.Distance).FirstOrDefault();
+                           .OrderBy(o => o.Distance)
+                           .FirstOrDefault();
                     }
 
                 }
