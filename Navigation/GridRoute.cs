@@ -53,8 +53,6 @@ namespace QuestTools.Navigation
 
             if (NumTotalClientActivatedScenes != ZetaDia.Scenes.NumTotalClientActivatedScenes)
             {
-                Logger.Log("New Scenes loaded, regenerating route");
-
                 Update();
                 NumTotalClientActivatedScenes = ZetaDia.Scenes.NumTotalClientActivatedScenes;
             }
@@ -145,8 +143,8 @@ namespace QuestTools.Navigation
 
         internal static Queue<DungeonNode> GetRoute(RouteMode routeMode = RouteMode.Default)
         {
-            if (GridSegmentation.Nodes.Count == 0)
-                GridSegmentation.Update();
+            if (!GridSegmentation.Update())
+                return _currentRoute;
 
             Queue<DungeonNode> route = new Queue<DungeonNode>();
 
@@ -181,7 +179,7 @@ namespace QuestTools.Navigation
                     break;
             }
 
-            if (SetNodesExploredAutomatically)
+            if (SetNodesExploredAutomatically && route != null)
             {
                 foreach (var node in route.Where(n => ZetaDia.Minimap.IsExplored(n.NavigableCenter, ZetaDia.Me.WorldDynamicId)))
                 {
@@ -249,7 +247,7 @@ namespace QuestTools.Navigation
                 route.Enqueue(node);
             }
 
-            Logger.Log("Generated new Weighted Nearest Unvisited Route in {0}ms", timer.ElapsedMilliseconds);
+            Logger.Log("Generated new Weighted Nearest Unvisited Route with {0} nodes in {1}ms", route.Count, timer.ElapsedMilliseconds);
             return route;
         }
 
@@ -283,7 +281,7 @@ namespace QuestTools.Navigation
             {
                 route.Enqueue(node);
             }
-            Logger.Log("Generated new Weighted Nearest Visited Route in {0}ms", timer.ElapsedMilliseconds);
+            Logger.Log("Generated new Weighted Nearest Visited Route with {0} nodes in {1}ms", route.Count, timer.ElapsedMilliseconds);
             return route;
         }
 
@@ -319,7 +317,7 @@ namespace QuestTools.Navigation
                 route.Enqueue(node);
             }
 
-            Logger.Log("Generated new Weighted Nearest Minimap Unvisited Route in {0}ms", timer.ElapsedMilliseconds);
+            Logger.Log("Generated new Weighted Nearest Minimap Unvisited Route with {0} nodes in {1}ms", route.Count, timer.ElapsedMilliseconds);
             return route;
         }
 
@@ -355,7 +353,7 @@ namespace QuestTools.Navigation
                 route.Enqueue(node);
             }
 
-            Logger.Log("Generated new Weighted Nearest Minimap Unvisited Route in {0}ms", timer.ElapsedMilliseconds);
+            Logger.Log("Generated new Weighted Nearest Minimap Unvisited Route with {0} nodes in {1}ms", route.Count, timer.ElapsedMilliseconds);
             return route;
         }
 
@@ -394,7 +392,7 @@ namespace QuestTools.Navigation
                 }
             }
 
-            Logger.Log("Generated new Scene Route in {0}ms", timer.ElapsedMilliseconds);
+            Logger.Log("Generated new Scene Route with {0} nodes in {1}ms", route.Count, timer.ElapsedMilliseconds);
             return route;
         }
 
@@ -450,7 +448,7 @@ namespace QuestTools.Navigation
                     break;
             }
 
-            Logger.Log("Generated new Scene Direction Route in {0}ms", timer.ElapsedMilliseconds);
+            Logger.Log("Generated new Scene Direction Route with {0} nodes in {1}ms", route.Count, timer.ElapsedMilliseconds);
             return route;
 
         }
