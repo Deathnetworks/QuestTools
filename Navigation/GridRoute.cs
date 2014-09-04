@@ -7,6 +7,7 @@ using Zeta.Bot;
 using Zeta.Bot.Dungeons;
 using Zeta.Common;
 using Zeta.Game;
+using Zeta.Game.Internals;
 
 namespace QuestTools.Navigation
 {
@@ -45,19 +46,36 @@ namespace QuestTools.Navigation
             Pulsator.OnPulse += Pulsator_OnPulse;
         }
 
-        private static uint NumTotalClientActivatedScenes = 0;
         private static void Pulsator_OnPulse(object sender, EventArgs e)
         {
             if (!ZetaDia.IsInGame || ZetaDia.IsLoadingWorld)
                 return;
 
-            if (NumTotalClientActivatedScenes != ZetaDia.Scenes.NumTotalClientActivatedScenes)
+            if (CheckNewSceneLoaded())
             {
                 Update();
-                NumTotalClientActivatedScenes = ZetaDia.Scenes.NumTotalClientActivatedScenes;
             }
         }
+        private static readonly HashSet<int> LoadedSceneIds = new HashSet<int>();
 
+        private static bool CheckNewSceneLoaded()
+        {
+            bool newScenes = false;
+            foreach (Scene scene in ZetaDia.Scenes.GetScenes())
+            {
+                if (!LoadedSceneIds.Contains(scene.Mesh.SceneId))
+                {
+                    newScenes = true;
+                    LoadedSceneIds.Add(scene.Mesh.SceneId);
+                }
+            }
+
+            // No new scenes have been loaded... so ignore it!
+            if (!newScenes)
+                return false;
+
+            return true;
+        }
         private static void GameEvents_OnGameJoined(object sender, EventArgs eventArgs)
         {
             Reset();
