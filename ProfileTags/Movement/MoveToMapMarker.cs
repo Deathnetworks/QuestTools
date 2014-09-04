@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using QuestTools.Navigation;
 using Zeta.Bot;
 using Zeta.Bot.Navigation;
 using Zeta.Bot.Profile;
@@ -507,9 +508,9 @@ namespace QuestTools.ProfileTags.Movement
             return Move(newpos, null);
         }
 
-        List<Vector3> allPoints = new List<Vector3>();
-        List<Vector3> validPoints = new List<Vector3>();
-        private QTNavigator QTNavigator = new QTNavigator();
+        List<Vector3> _allPoints = new List<Vector3>();
+        List<Vector3> _validPoints = new List<Vector3>();
+        private readonly QTNavigator _qtNavigator = new QTNavigator();
 
         /// <summary>
         /// Safely Moves the player to the requested destination <seealso cref="MoveToMapMarker.PathPointLimit"/>
@@ -546,7 +547,7 @@ namespace QuestTools.ProfileTags.Movement
             }
             float destinationDistance = newpos.Distance(ZetaDia.Me.Position);
 
-            _lastMoveResult = QTNavigator.MoveTo(newpos, destinationName);
+            _lastMoveResult = _qtNavigator.MoveTo(newpos, destinationName);
 
             switch (_lastMoveResult)
             {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using QuestTools.Navigation;
 using Zeta.Bot.Navigation;
 using Zeta.Bot.Profile;
 using Zeta.Common;
@@ -158,7 +159,7 @@ namespace QuestTools.ProfileTags.Movement
                 new Sequence(
                     new Action(ret => _mySceneId = ZetaDia.Me.SceneId),
                     new Action(ret => _gpUpdatePosition = myPos),
-                    new Action(ret => Helpers.MiniMapMarker.UpdateFailedMarkers())
+                    new Action(ret => MiniMapMarker.UpdateFailedMarkers())
                 )
             );
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using QuestTools.Helpers;
+using QuestTools.Navigation;
 using Zeta.Bot;
 using Zeta.Bot.Navigation;
 using Zeta.Bot.Profile;

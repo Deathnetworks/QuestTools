@@ -5,11 +5,11 @@ using Zeta.Bot.Navigation;
 using Zeta.Common;
 using Zeta.Game;
 
-namespace QuestTools
+namespace QuestTools.Navigation
 {
     public class QTNavigator // : INavigationProvider
     {
-        private DateTime m_LastGeneratedRoute = DateTime.MinValue;
+        private DateTime _lastGeneratedRoute = DateTime.MinValue;
 
         public QTNavigator()
         {
@@ -27,13 +27,13 @@ namespace QuestTools
         //    return MoveTo(destination, destinationName, useRaycast, true);
         //}
 
-        private List<int> ForcePathFindingLevelAreaIds = new List<int>()
+        private List<int> _forcePathFindingLevelAreaIds = new List<int>
         {
             19953,
             62752,
         };
 
-        private List<int> ForceNavigatorWorldSNOs = new List<int>()
+        private List<int> _forceNavigatorWorldSnOs = new List<int>
         {
             71150,
             70885, 

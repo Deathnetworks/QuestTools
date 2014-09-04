@@ -1,6 +1,6 @@
 ﻿using Zeta.Bot.Navigation;
 
-namespace QuestTools.Helpers
+namespace QuestTools.Navigation
 {
     public class GridProvider
     {

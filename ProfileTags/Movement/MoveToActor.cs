@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Buddy.Coroutines;
 using QuestTools.Helpers;
+using QuestTools.Navigation;
 using Zeta.Bot;
 using Zeta.Bot.Navigation;
 using Zeta.Bot.Profile;

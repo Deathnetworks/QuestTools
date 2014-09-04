@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Demonbuddy;
 using QuestTools.ProfileTags;
 using Zeta.Bot.Navigation;
 using Zeta.Common;
@@ -9,7 +8,7 @@ using Zeta.Game;
 using Zeta.TreeSharp;
 using Action = Zeta.TreeSharp.Action;
 
-namespace QuestTools.Helpers
+namespace QuestTools.Navigation
 {
     /// <summary>
     /// Class to help track MiniMapMarkers during Dungeon Exploration

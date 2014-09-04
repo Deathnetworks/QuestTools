@@ -1,4 +1,5 @@
 ﻿using System;
+using QuestTools.Navigation;
 using Zeta.Bot.Navigation;
 using Zeta.Bot.Pathfinding;
 using Zeta.Bot.Profile;
@@ -85,7 +86,7 @@ namespace QuestTools.ProfileTags.Movement
         }
 
         public Vector3 MyPos { get { return ZetaDia.Me.Position; } }
-        private ISearchAreaProvider MainGridProvider { get { return Helpers.GridProvider.MainGridProvider; } }
+        private ISearchAreaProvider MainGridProvider { get { return GridProvider.MainGridProvider; } }
 
         public override void OnStart()
         {

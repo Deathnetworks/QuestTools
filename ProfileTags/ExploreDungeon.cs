@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using QuestTools.Helpers;
+using QuestTools.Navigation;
 using Zeta.Bot.Dungeons;
 using Zeta.Bot.Logic;
 using Zeta.Bot.Navigation;
@@ -34,6 +35,20 @@ namespace QuestTools.ProfileTags
         public ExploreDungeonTag() { }
 
         #region XML Attributes
+        /// <summary>
+        /// Selectes the Route Mode
+        /// </summary>
+        [XmlAttribute("routeMode")]
+        [DefaultValue(RouteMode.Default)]
+        public RouteMode RouteMode { get; set; }
+
+        /// <summary>
+        /// Sets the direction for scene based directional navigation
+        /// </summary>
+        [XmlAttribute("direction")]
+        [DefaultValue(Direction.Any)]
+        public Direction Direction { get; set; }
+
         /// <summary>
         /// The SNOId of the Actor that we're looking for, used with until="ObjectFound"
         /// </summary>
@@ -263,8 +278,8 @@ namespace QuestTools.ProfileTags
         private class Area
         {
             public Area() { }
-            public Vector2 Min { get; set; }
-            public Vector2 Max { get; set; }
+            private Vector2 Min { get; set; }
+            private Vector2 Max { get; set; }
 
             /// <summary>
             /// Initializes a new instance of the Area class.
@@ -275,7 +290,7 @@ namespace QuestTools.ProfileTags
                 Max = max;
             }
 
-            public bool IsPositionInside(Vector2 position)
+            private bool IsPositionInside(Vector2 position)
             {
                 return position.X >= Min.X && position.X <= Max.X && position.Y >= Min.Y && position.Y <= Max.Y;
             }
@@ -433,11 +448,13 @@ namespace QuestTools.ProfileTags
         {
             get
             {
+                // Priority Scenes
                 if (_prioritySceneTarget != Vector3.Zero)
                 {
                     return _prioritySceneTarget;
                 }
 
+                // Special Pandemonium Fortress routes
                 if (GetIsInPandemoniumFortress())
                 {
                     var marker = MiniMapMarker.GetNearestUnvisitedMarker(MyPosition);
@@ -453,9 +470,10 @@ namespace QuestTools.ProfileTags
                         return _lastPandFortressTarget;
                 }
 
+                // Default Navigation
                 if (GetRouteUnvisitedNodeCount() > 0)
                 {
-                    return BrainBehavior.DungeonExplorer.CurrentNode.NavigableCenter;
+                    return GridRoute.CurrentNode.NavigableCenter;
                 }
                 return Vector3.Zero;
             }
@@ -485,6 +503,11 @@ namespace QuestTools.ProfileTags
         {
             Logger.Log("ExploreDungeon Started");
 
+            GridRoute.RouteMode = RouteMode;
+
+            GridSegmentation.Update();
+            GridRoute.Update();
+
             if (!IgnoreGridReset && !ZetaDia.Me.IsDead && DateTime.UtcNow.Subtract(Death.LastDeathTime).TotalSeconds > 3)
             {
                 UpdateSearchGridProvider();
@@ -492,14 +515,14 @@ namespace QuestTools.ProfileTags
                 CheckResetDungeonExplorer();
 
                 GridSegmentation.Reset();
-                BrainBehavior.DungeonExplorer.Reset();
+                GridRoute.Reset();
                 MiniMapMarker.KnownMarkers.Clear();
             }
 
             if (SetNodesExploredAutomatically)
             {
                 Logger.Log("Dungeon Explorer ignoring already explored nodes!");
-                BrainBehavior.DungeonExplorer.SetNodesExploredAutomatically = SetNodesExploredAutomatically;
+                GridRoute.SetNodesExploredAutomatically = SetNodesExploredAutomatically;
             }
 
             if (!_initDone)
@@ -633,26 +656,24 @@ namespace QuestTools.ProfileTags
             {
                 Logger.Debug("Box Size or Tolerance has been changed! {0}/{1} NodeCount={2}", GridSegmentation.BoxSize, GridSegmentation.BoxTolerance, GetGridSegmentationNodeCount());
 
-                BrainBehavior.DungeonExplorer.Reset();
-                PrintNodeCounts("BrainBehavior.DungeonExplorer.Reset");
+                GridRoute.Reset();
+                PrintNodeCounts("GridRoute.Reset");
 
-                GridSegmentation.BoxSize = BoxSize;
-                GridSegmentation.BoxTolerance = BoxTolerance;
+                GridRoute.BoxSize = BoxSize;
+                GridRoute.BoxTolerance = BoxTolerance;
                 PrintNodeCounts("SetBoxSize+Tolerance");
 
-                BrainBehavior.DungeonExplorer.Update();
-                PrintNodeCounts("BrainBehavior.DungeonExplorer.Update");
             }
         }
 
         private static bool DungeonRouteIsValid()
         {
-            return BrainBehavior.DungeonExplorer != null && BrainBehavior.DungeonExplorer.CurrentRoute != null && BrainBehavior.DungeonExplorer.CurrentRoute.Any();
+            return BrainBehavior.DungeonExplorer != null && GridRoute.CurrentRoute != null && GridRoute.CurrentRoute.Any();
         }
 
         private static bool DungeonRouteIsEmpty()
         {
-            return BrainBehavior.DungeonExplorer != null && BrainBehavior.DungeonExplorer.CurrentRoute != null && !BrainBehavior.DungeonExplorer.CurrentRoute.Any();
+            return BrainBehavior.DungeonExplorer != null && GridRoute.CurrentRoute != null && !GridRoute.CurrentRoute.Any();
         }
 
         private bool CurrentActorIsFinished
@@ -851,10 +872,10 @@ namespace QuestTools.ProfileTags
                 new Decorator(ret => GetRouteUnvisitedNodeCount() == 0,
                     new Sequence(
                         new Action(ret => Logger.Log("Visited all nodes but objective not complete, forcing grid reset!")),
-                        new DecoratorContinue(ret => BrainBehavior.DungeonExplorer.SetNodesExploredAutomatically,
+                        new DecoratorContinue(ret => GridRoute.SetNodesExploredAutomatically,
                             new Sequence(
                                 new Action(ret => Logger.Log("Disabling SetNodesExploredAutomatically")),
-                                new Action(ret => BrainBehavior.DungeonExplorer.SetNodesExploredAutomatically = false)
+                                new Action(ret => GridRoute.SetNodesExploredAutomatically = false)
                             )
                         ),
                         new DecoratorContinue(ret => _timesForcedReset > 2 && GetCurrentRouteNodeCount() == 1,
@@ -873,7 +894,7 @@ namespace QuestTools.ProfileTags
                             ForceUpdateScenes();
                             GridSegmentation.Reset();
                             GridSegmentation.Update();
-                            BrainBehavior.DungeonExplorer.Reset();
+                            GridRoute.Reset();
                             _priorityScenesInvestigated.Clear();
                             UpdateRoute();
                         })
@@ -1187,18 +1208,18 @@ namespace QuestTools.ProfileTags
                 NavZone navZone = scene.Mesh.Zone;
                 NavZoneDef zoneDef = navZone.NavZoneDef;
 
-                Vector3 zoneCenter = GetNavZoneCenter(navZone);
+                Vector3 zoneCenter = SceneSegmentation.GetNavZoneCenter(navZone);
 
                 List<NavCell> navCells = zoneDef.NavCells.Where(c => c.IsValid && c.Flags.HasFlag(NavCellFlags.AllowWalk)).ToList();
 
                 if (!navCells.Any())
                     continue;
 
-                NavCell bestCell = navCells.OrderBy(c => GetNavCellCenter(c.Min, c.Max, navZone).Distance2D(zoneCenter)).FirstOrDefault();
+                NavCell bestCell = navCells.OrderBy(c => SceneSegmentation.GetNavCellCenter(c.Min, c.Max, navZone).Distance2D(zoneCenter)).FirstOrDefault();
 
                 if (bestCell != null && !foundPrioritySceneIndex.ContainsKey(scene.SceneInfo.SNOId))
                 {
-                    foundPrioritySceneIndex.Add(scene.SceneInfo.SNOId, GetNavCellCenter(bestCell, navZone));
+                    foundPrioritySceneIndex.Add(scene.SceneInfo.SNOId, SceneSegmentation.GetNavCellCenter(bestCell, navZone));
                     foundPriorityScenes.Add(scene);
                 }
                 else
@@ -1231,45 +1252,6 @@ namespace QuestTools.ProfileTags
             return PriorityScenes.FirstOrDefault(ps => ps.SceneId != 0 && ps.SceneId == scene.SceneInfo.SNOId || scene.Name.ToLower().Contains(ps.SceneName.ToLower())).PathPrecision;
         }
 
-        /// <summary>
-        /// Gets the center of a given Navigation Zone
-        /// </summary>
-        /// <param name="zone"></param>
-        /// <returns></returns>
-        private Vector3 GetNavZoneCenter(NavZone zone)
-        {
-            float X = zone.ZoneMin.X + ((zone.ZoneMax.X - zone.ZoneMin.X) / 2);
-            float Y = zone.ZoneMin.Y + ((zone.ZoneMax.Y - zone.ZoneMin.Y) / 2);
-
-            return new Vector3(X, Y, 0);
-        }
-
-        /// <summary>
-        /// Gets the center of a given Navigation Cell
-        /// </summary>
-        /// <param name="cell"></param>
-        /// <param name="zone"></param>
-        /// <returns></returns>
-        private Vector3 GetNavCellCenter(NavCell cell, NavZone zone)
-        {
-            return GetNavCellCenter(cell.Min, cell.Max, zone);
-        }
-
-        /// <summary>
-        /// Gets the center of a given box with min/max, adjusted for the Navigation Zone
-        /// </summary>
-        /// <param name="min"></param>
-        /// <param name="max"></param>
-        /// <param name="zone"></param>
-        /// <returns></returns>
-        private Vector3 GetNavCellCenter(Vector3 min, Vector3 max, NavZone zone)
-        {
-            float X = zone.ZoneMin.X + min.X + ((max.X - min.X) / 2);
-            float Y = zone.ZoneMin.Y + min.Y + ((max.Y - min.Y) / 2);
-            float Z = min.Z + ((max.Z - min.Z) / 2);
-
-            return new Vector3(X, Y, Z);
-        }
 
         /// <summary>
         /// Checks to see if the current DungeonExplorer node is in an Ignored scene, and marks the node immediately visited if so
@@ -1338,14 +1320,14 @@ namespace QuestTools.ProfileTags
                         new Action(ret => UpdateRoute())
                     )
                 ),
-                new Decorator(ret => BrainBehavior.DungeonExplorer.CurrentNode.Visited,
+                new Decorator(ret => GridRoute.CurrentNode.Visited,
                     new Sequence(
                         new Action(ret => Logger.Debug("Current node was already marked as visited!")),
-                        new Action(ret => BrainBehavior.DungeonExplorer.CurrentRoute.Dequeue()),
+                        new Action(ret => GridRoute.CurrentRoute.Dequeue()),
                         new Action(ret => UpdateRoute())
                     )
                 ),
-                new Decorator(ret => GetRouteUnvisitedNodeCount() == 0 || !BrainBehavior.DungeonExplorer.CurrentRoute.Any(),
+                new Decorator(ret => GetRouteUnvisitedNodeCount() == 0 || !GridRoute.CurrentRoute.Any(),
                     new Sequence(
                         new Action(ret => Logger.Debug("Error - CheckIsNodeFinished() called while Route is empty!")),
                         new Action(ret => UpdateRoute())
@@ -1381,8 +1363,8 @@ namespace QuestTools.ProfileTags
         {
             CheckResetDungeonExplorer();
 
-            BrainBehavior.DungeonExplorer.Update();
-            PrintNodeCounts("BrainBehavior.DungeonExplorer.Update");
+            GridRoute.Update();
+            PrintNodeCounts("GridRoute.Update");
 
             // Throw an exception if this shiz don't work
             ValidateCurrentRoute();
@@ -1394,7 +1376,7 @@ namespace QuestTools.ProfileTags
         /// <param name="reason"></param>
         private void SetNodeVisited(string reason = "")
         {
-            if (GetIsInPandemoniumFortress() && CurrentNavTarget != BrainBehavior.DungeonExplorer.CurrentNode.NavigableCenter)
+            if (GetIsInPandemoniumFortress() && CurrentNavTarget != GridRoute.CurrentNode.NavigableCenter)
             {
                 var dungeonNode = GridSegmentation.Nodes.FirstOrDefault(n => n.NavigableCenter == CurrentNavTarget);
                 if (dungeonNode != null)
@@ -1403,8 +1385,8 @@ namespace QuestTools.ProfileTags
             else
             {
                 Logger.Debug("Dequeueing current node {0} - {1}", CurrentNavTarget, reason);
-                BrainBehavior.DungeonExplorer.CurrentNode.Visited = true;
-                BrainBehavior.DungeonExplorer.CurrentRoute.Dequeue();
+                GridRoute.CurrentNode.Visited = true;
+                GridRoute.CurrentRoute.Dequeue();
             }
 
             MarkNearbyNodesVisited();
@@ -1429,7 +1411,7 @@ namespace QuestTools.ProfileTags
             if (update)
             {
 
-                BrainBehavior.DungeonExplorer.Update();
+                GridRoute.Update();
             }
         }
 
@@ -1438,7 +1420,7 @@ namespace QuestTools.ProfileTags
         /// </summary>
         private static void ValidateCurrentRoute()
         {
-            if (BrainBehavior.DungeonExplorer.CurrentRoute == null)
+            if (GridRoute.CurrentRoute == null)
             {
                 throw new ApplicationException("DungeonExplorer CurrentRoute is null");
             }
@@ -1478,7 +1460,7 @@ namespace QuestTools.ProfileTags
         private static int GetRouteUnvisitedNodeCount()
         {
             if (GetCurrentRouteNodeCount() > 0)
-                return BrainBehavior.DungeonExplorer.CurrentRoute.Count(n => !n.Visited);
+                return GridRoute.CurrentRoute.Count(n => !n.Visited);
             return 0;
         }
 
@@ -1489,7 +1471,7 @@ namespace QuestTools.ProfileTags
         private int GetRouteVisistedNodeCount()
         {
             if (GetCurrentRouteNodeCount() > 0)
-                return BrainBehavior.DungeonExplorer.CurrentRoute.Count(n => n.Visited);
+                return GridRoute.CurrentRoute.Count(n => n.Visited);
             return 0;
         }
 
@@ -1499,8 +1481,9 @@ namespace QuestTools.ProfileTags
         /// <returns></returns>
         private static int GetCurrentRouteNodeCount()
         {
-            if (BrainBehavior.DungeonExplorer.CurrentRoute != null)
-                return BrainBehavior.DungeonExplorer.CurrentRoute.Count();
+            if (GridRoute.CurrentRoute != null)
+                return GridRoute.CurrentRoute.Count();
+
             return 0;
         }
 
