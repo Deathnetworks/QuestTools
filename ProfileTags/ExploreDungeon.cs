@@ -1333,7 +1333,7 @@ namespace QuestTools.ProfileTags
             new PrioritySelector(
                 new Decorator(ret => _lastMoveResult == MoveResult.ReachedDestination,
                     new Sequence(
-                        new Action(ret => SetNodeVisited("Reached Destination")),
+                        new Action(ret => SetNodeVisited("Reached Destination, distance to NavTarget is " + string.Format("{0:0}", CurrentNavTarget.Distance2D(MyPosition)))),
                         new Action(ret => _lastMoveResult = MoveResult.Moved),
                         new Action(ret => UpdateRoute())
                     )

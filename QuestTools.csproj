@@ -99,11 +99,13 @@
     <Compile Include="Helpers\BotEvents.cs" />
     <Compile Include="Helpers\Death.cs" />
     <Compile Include="Helpers\GridProvider.cs" />
+    <Compile Include="Helpers\GridRoute.cs" />
     <Compile Include="Helpers\MathUtil.cs" />
     <Compile Include="Helpers\MiniMapMarker.cs" />
     <Compile Include="Helpers\PositionCache.cs" />
     <Compile Include="Helpers\StringUtils.cs" />
     <Compile Include="Helpers\TrinityApi.cs" />
+    <Compile Include="Helpers\WeightedDungeonNode.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Plugin.cs" />
     <Compile Include="ProfileTags\Complex\ActBountiesComplete.cs" />

@@ -38,7 +38,7 @@ namespace QuestTools
         }
 
         [XmlElement("DebugEnabled")]
-        [DefaultValue(false)]
+        [DefaultValue(true)]
         [Setting]
         public bool DebugEnabled
         {
@@ -54,7 +54,7 @@ namespace QuestTools
         }
 
         [XmlElement("AllowProfileReloading")]
-        [DefaultValue(false)]
+        [DefaultValue(true)]
         [Setting]
         public bool AllowProfileReloading
         {
