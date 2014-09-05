@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
+using System.Threading.Tasks;
 using QuestTools.Helpers;
 using QuestTools.Navigation;
+using Zeta.Bot;
 using Zeta.Bot.Dungeons;
 using Zeta.Bot.Logic;
 using Zeta.Bot.Navigation;
@@ -50,12 +52,6 @@ namespace QuestTools.ProfileTags
         public Direction Direction { get; set; }
 
         /// <summary>
-        /// The SNOId of the Actor that we're looking for, used with until="ObjectFound"
-        /// </summary>
-        [XmlAttribute("actorId")]
-        public int ActorId { get; set; }
-
-        /// <summary>
         /// Sets a custom grid segmentation Box Size (default 15)
         /// </summary>
         [XmlAttribute("boxSize")]
@@ -66,27 +62,6 @@ namespace QuestTools.ProfileTags
         /// </summary>
         [XmlAttribute("boxTolerance")]
         public float BoxTolerance { get; set; }
-
-        /// <summary>
-        /// The nameHash of the exit the bot will move to and finish the tag when found
-        /// </summary>
-        [XmlAttribute("exitNameHash")]
-        public int ExitNameHash { get; set; }
-
-        [XmlAttribute("ignoreGridReset")]
-        public bool IgnoreGridReset { get; set; }
-
-        /// <summary>
-        /// Not currently implimented
-        /// </summary>
-        [XmlAttribute("leaveWhenFinished")]
-        public bool LeaveWhenExplored { get; set; }
-
-        /// <summary>
-        /// The distance the bot must be from an actor before marking the tag as complete, when used with until="ObjectFound"
-        /// </summary>
-        [XmlAttribute("objectDistance")]
-        public float ObjectDistance { get; set; }
 
         /// <summary>
         /// The until="" atribute must match one of these
@@ -110,6 +85,39 @@ namespace QuestTools.ProfileTags
         public ExploreEndType EndType { get; set; }
 
         /// <summary>
+        /// The distance the bot will mark dungeon nodes as "visited" (default is 1/2 of box size, minimum 10)
+        /// </summary>
+        [XmlAttribute("pathPrecision")]
+        public float PathPrecision { get; set; }
+
+        /// <summary>
+        /// The SNOId of the Actor that we're looking for, used with until="ObjectFound"
+        /// </summary>
+        [XmlAttribute("actorId")]
+        public int ActorId { get; set; }
+
+        /// <summary>
+        /// The nameHash of the exit the bot will move to and finish the tag when found
+        /// </summary>
+        [XmlAttribute("exitNameHash")]
+        public int ExitNameHash { get; set; }
+
+        [XmlAttribute("ignoreGridReset")]
+        public bool IgnoreGridReset { get; set; }
+
+        /// <summary>
+        /// Not currently implimented
+        /// </summary>
+        [XmlAttribute("leaveWhenFinished")]
+        public bool LeaveWhenExplored { get; set; }
+
+        /// <summary>
+        /// The distance the bot must be from an actor before marking the tag as complete, when used with until="ObjectFound"
+        /// </summary>
+        [XmlAttribute("objectDistance")]
+        public float ObjectDistance { get; set; }
+
+        /// <summary>
         /// The Scene SNOId, used with ExploreUntil="SceneFound"
         /// </summary>
         [XmlAttribute("sceneId")]
@@ -120,12 +128,6 @@ namespace QuestTools.ProfileTags
         /// </summary>
         [XmlAttribute("sceneName")]
         public string SceneName { get; set; }
-
-        /// <summary>
-        /// The distance the bot will mark dungeon nodes as "visited" (default is 1/2 of box size, minimum 10)
-        /// </summary>
-        [XmlAttribute("pathPrecision")]
-        public float PathPrecision { get; set; }
 
         /// <summary>
         /// The distance before reaching a MiniMapMarker before marking it as visited
@@ -473,7 +475,8 @@ namespace QuestTools.ProfileTags
                 // Default Navigation
                 if (GetRouteUnvisitedNodeCount() > 0)
                 {
-                    return GridRoute.CurrentNode.NavigableCenter;
+                    var navTarget = GridRoute.CurrentNode.NavigableCenter;
+                    return navTarget;
                 }
                 return Vector3.Zero;
             }
@@ -545,6 +548,13 @@ namespace QuestTools.ProfileTags
             PrintNodeCounts("PostInit");
         }
 
+        private async Task<bool> SetRouteMode()
+        {
+            if (QuestToolsSettings.Instance.ForceRouteMode)
+                RouteMode = QuestToolsSettings.Instance.RouteMode;
+
+            return true;
+        }
 
         /// <summary>
         /// The main profile behavior
@@ -554,6 +564,7 @@ namespace QuestTools.ProfileTags
         {
             return
             new Sequence(
+                new ActionRunCoroutine(ret => SetRouteMode()),
                 new DecoratorContinue(ret => !IgnoreMarkers,
                     new Sequence(
                         MiniMapMarker.DetectMiniMapMarkers(),
@@ -1381,9 +1392,8 @@ namespace QuestTools.ProfileTags
             }
             else
             {
-                Logger.Debug("Dequeueing current node {0} - {1}", CurrentNavTarget, reason);
-                GridRoute.CurrentNode.Visited = true;
-                GridRoute.CurrentRoute.Dequeue();
+                Logger.Debug("Dequeueing current node {0} - {1}", StringUtils.GetSimplePosition(CurrentNavTarget), reason);
+                GridRoute.SetCurrentNodeExplored();
             }
 
             MarkNearbyNodesVisited();
@@ -1395,9 +1405,9 @@ namespace QuestTools.ProfileTags
         public void MarkNearbyNodesVisited()
         {
             bool update = false;
-            foreach (var node in GridSegmentation.Nodes)
+            foreach (var node in GridRoute.GridNodes)
             {
-                if (!node.Visited && node.NavigableCenter.Distance2D(MyPosition) < PathPrecision)
+                if (!node.Visited && node.NavigableCenter.Distance2DSqr(MyPosition) < (PathPrecision * PathPrecision))
                 {
                     Logger.Log("Marking nearby node {0} as visited, distance {1:0}/{2:0}, IsVisisted={3}",
                         node.NavigableCenter, node.NavigableCenter.Distance2D(MyPosition), PathPrecision, node.Visited);
@@ -1495,7 +1505,7 @@ namespace QuestTools.ProfileTags
         private static int GetGridSegmentationUnvisitedNodeCount()
         {
             if (GetGridSegmentationNodeCount() > 0)
-                return GridSegmentation.Nodes.Count(n => !n.Visited);
+                return GridRoute.GridNodes.Count(n => !n.Visited);
             return 0;
         }
 
@@ -1506,7 +1516,7 @@ namespace QuestTools.ProfileTags
         private int GetGridSegmentationVisistedNodeCount()
         {
             if (GetCurrentRouteNodeCount() > 0)
-                return GridSegmentation.Nodes.Count(n => n.Visited);
+                return GridRoute.GridNodes.Count(n => n.Visited);
             return 0;
         }
 
@@ -1517,7 +1527,7 @@ namespace QuestTools.ProfileTags
         private static int GetGridSegmentationNodeCount()
         {
             if (GridSegmentation.Nodes != null)
-                return GridSegmentation.Nodes.Count();
+                return GridRoute.GridNodes.Count();
             return 0;
         }
         #endregion

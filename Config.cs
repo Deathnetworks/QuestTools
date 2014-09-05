@@ -42,7 +42,7 @@ namespace QuestTools
                 UserControl mainControl = (UserControl)XamlReader.Load(new MemoryStream(Encoding.UTF8.GetBytes(xamlContent)));
                 _configWindow.Content = mainControl;
             }
-            _configWindow.Width = 300;
+            _configWindow.Width = 500;
             _configWindow.Height = 200;
             _configWindow.ResizeMode = ResizeMode.NoResize;
             _configWindow.Background = Brushes.DarkGray;

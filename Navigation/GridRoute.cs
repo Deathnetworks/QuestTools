@@ -86,7 +86,7 @@ namespace QuestTools.Navigation
 
         private static DungeonExplorer DungeonExplorer { get { return Zeta.Bot.Logic.BrainBehavior.DungeonExplorer; } }
 
-        private static ConcurrentBag<DungeonNode> GridNodes
+        internal static ConcurrentBag<DungeonNode> GridNodes
         {
             get
             {
@@ -402,8 +402,8 @@ namespace QuestTools.Navigation
             Queue<DungeonNode> route = new Queue<DungeonNode>();
             List<WeightedDungeonNode> weightedNodes = new List<WeightedDungeonNode>();
 
-            // We want to give a high weight to nodes which have unexplored nodes near it
-            // A maximum weight will be given to a node with 4 directly connected unexplored (facing) nodes, and 4 corner-connected nodes
+            // We want to give a high weight to nodes which have Explored nodes near it
+            // A maximum weight will be given to an unexplored node with 4 directly connected explored (facing) nodes, and 4 corner-connected nodes
             // This is theoretically possible if we are standing IN this maximum-weighted unexplored node
             // Typically a node will have 1 or more directly connected nodes and 0 or more corner-connected nodes
 
@@ -411,7 +411,7 @@ namespace QuestTools.Navigation
             {
                 var weightedNode = new WeightedDungeonNode(unWeightedNode.WorldTopLeft, unWeightedNode.WorldBottomRight) { Weight = 0 };
 
-                // Grab unvisited nodes only, this is what we'll use for our Weighting
+                // Number of visited nodes connected to this unvisited node will give higher weight
                 int numNodesConnected = VisitedNodes.Count(node => node.GridCenter.DistanceSqr(weightedNode.GridCenter) <= (MaxCornerDistance * MaxCornerDistance));
                 weightedNode.Weight = numNodesConnected / MaxConnectedNodes;
                 weightedNodes.Add(weightedNode);
@@ -425,7 +425,7 @@ namespace QuestTools.Navigation
                 route.Enqueue(node);
             }
 
-            Logger.Log("Generated new Weighted Nearest Minimap Unvisited Route with {0} nodes in {1}ms", route.Count, timer.ElapsedMilliseconds);
+            Logger.Log("Generated new Weighted Nearest Minimap Visited Route with {0} nodes in {1}ms", route.Count, timer.ElapsedMilliseconds);
             return route;
         }
 
@@ -448,7 +448,6 @@ namespace QuestTools.Navigation
             List<DungeonNode> unsortedNodes = UnVisitedNodes.ToList();
             List<DungeonNode> sortedNodes = new List<DungeonNode>();
 
-
             var nearestNode = unsortedNodes.OrderBy(n => n.NavigableCenter.Distance2DSqr(myPosition)).First();
             sortedNodes.Add(nearestNode);
             unsortedNodes.Remove(nearestNode);
@@ -456,12 +455,13 @@ namespace QuestTools.Navigation
             // Enqueue closest node
             while (unsortedNodes.Any())
             {
-                var nextNode = unsortedNodes.OrderBy(n => n.NavigableCenter.Distance2DSqr(sortedNodes.Last().NavigableCenter)).First();
+                var nextNode = unsortedNodes
+                    // Minimap Unvisited first
+                    .OrderBy(n => ZetaDia.Minimap.IsExplored(n.NavigableCenter, ZetaDia.Me.WorldDynamicId))
+                    .ThenBy(n => n.NavigableCenter.Distance2DSqr(sortedNodes.Last().NavigableCenter))
+                    .First();
                 sortedNodes.Add(nextNode);
-                if (!unsortedNodes.Remove(nextNode))
-                {
-                    throw new InvalidOperationException("Unable to remove node from unsorted nodes list");
-                }
+                unsortedNodes.Remove(nextNode);
             }
 
             route = new Queue<DungeonNode>(sortedNodes);
