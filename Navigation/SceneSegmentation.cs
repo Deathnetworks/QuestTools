@@ -24,17 +24,20 @@ namespace QuestTools.Navigation
 
             int minEdge = (int)Math.Ceiling(scenes.Min(s => Math.Min(s.Mesh.Zone.ZoneMax.X - s.Mesh.Zone.ZoneMin.X, s.Mesh.Zone.ZoneMax.Y - s.Mesh.Zone.ZoneMin.Y)));
 
-            GridRoute.BoxSize = minEdge;
-            GridRoute.BoxTolerance = 0.01f; // Override to make sure we explore all necessary scenes, we can't simulate this through the map viewer
+            //GridRoute.BoxSize = minEdge;
+            //GridRoute.BoxTolerance = 0.01f; // Override to make sure we explore all necessary scenes, we can't simulate this through the map viewer
 
             // The nodes are not actual GridSegmentation nodes, they're defined by the nav zone coordinates here
             var nodes = scenes.Select(scene => new DungeonNode(scene.Mesh.Zone.ZoneMin, scene.Mesh.Zone.ZoneMax)).ToList();
 
-            foreach (var node in nodes)
+            if (oldNodes != null && oldNodes.Any())
             {
-                var oldNode = oldNodes.FirstOrDefault(n => n.Equals(node));
-                if (oldNode != null && oldNode.Visited)
-                    node.Visited = true;
+                foreach (var node in nodes)
+                {
+                    var oldNode = oldNodes.FirstOrDefault(n => n.Equals(node));
+                    if (oldNode != null && oldNode.Visited)
+                        node.Visited = true;
+                }
             }
 
             Nodes = new ConcurrentBag<DungeonNode>(nodes);

@@ -168,8 +168,17 @@ namespace QuestTools.Navigation
         internal static void Update()
         {
             GridSegmentation.Update();
-            if (RouteMode == RouteMode.Default)
-                DungeonExplorer.Update();
+
+            switch (RouteMode)
+            {
+                case RouteMode.Default:
+                    DungeonExplorer.Update();
+                    break;
+                case RouteMode.SceneTSP:
+                case RouteMode.SceneDirection:
+                    SceneSegmentation.Update();
+                    break;
+            }
 
             _currentRoute = GetRoute();
         }
@@ -441,19 +450,21 @@ namespace QuestTools.Navigation
 
 
             var nearestNode = unsortedNodes.OrderBy(n => n.NavigableCenter.Distance2DSqr(myPosition)).First();
-            route.Enqueue(nearestNode);
+            sortedNodes.Add(nearestNode);
             unsortedNodes.Remove(nearestNode);
 
             // Enqueue closest node
             while (unsortedNodes.Any())
             {
                 var nextNode = unsortedNodes.OrderBy(n => n.NavigableCenter.Distance2DSqr(sortedNodes.Last().NavigableCenter)).First();
-                route.Enqueue(nextNode);
+                sortedNodes.Add(nextNode);
                 if (!unsortedNodes.Remove(nextNode))
                 {
                     throw new InvalidOperationException("Unable to remove node from unsorted nodes list");
                 }
             }
+
+            route = new Queue<DungeonNode>(sortedNodes);
 
             Logger.Log("Generated new Scene Route with {0} nodes in {1}ms", route.Count, timer.ElapsedMilliseconds);
             return route;
