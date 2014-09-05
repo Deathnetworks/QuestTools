@@ -508,14 +508,16 @@ namespace QuestTools.ProfileTags
             GridSegmentation.Update();
             GridRoute.Update();
 
+            // Don't forget this...
+            BrainBehavior.DungeonExplorer.SetNodesExploredAutomatically = SetNodesExploredAutomatically;
+
             if (!IgnoreGridReset && !ZetaDia.Me.IsDead && DateTime.UtcNow.Subtract(Death.LastDeathTime).TotalSeconds > 3)
             {
                 UpdateSearchGridProvider();
 
                 CheckResetDungeonExplorer();
 
-                GridSegmentation.Reset();
-                GridRoute.Reset();
+                GridRoute.Reset(BoxSize, BoxTolerance);
                 MiniMapMarker.KnownMarkers.Clear();
             }
 
@@ -656,13 +658,8 @@ namespace QuestTools.ProfileTags
             {
                 Logger.Debug("Box Size or Tolerance has been changed! {0}/{1} NodeCount={2}", GridSegmentation.BoxSize, GridSegmentation.BoxTolerance, GetGridSegmentationNodeCount());
 
-                GridRoute.Reset();
+                GridRoute.Reset(BoxSize, BoxTolerance);
                 PrintNodeCounts("GridRoute.Reset");
-
-                GridRoute.BoxSize = BoxSize;
-                GridRoute.BoxTolerance = BoxTolerance;
-                PrintNodeCounts("SetBoxSize+Tolerance");
-
             }
         }
 
@@ -894,7 +891,7 @@ namespace QuestTools.ProfileTags
                             ForceUpdateScenes();
                             GridSegmentation.Reset();
                             GridSegmentation.Update();
-                            GridRoute.Reset();
+                            GridRoute.Reset(BoxSize, BoxTolerance);
                             _priorityScenesInvestigated.Clear();
                             UpdateRoute();
                         })
@@ -1400,7 +1397,7 @@ namespace QuestTools.ProfileTags
             bool update = false;
             foreach (var node in GridSegmentation.Nodes)
             {
-                if (!node.Visited && node.NavigableCenter.Distance2DSqr(MyPosition) < PathPrecision * PathPrecision)
+                if (!node.Visited && node.NavigableCenter.Distance2D(MyPosition) < PathPrecision)
                 {
                     Logger.Log("Marking nearby node {0} as visited, distance {1:0}/{2:0}, IsVisisted={3}",
                         node.NavigableCenter, node.NavigableCenter.Distance2D(MyPosition), PathPrecision, node.Visited);
@@ -1435,16 +1432,17 @@ namespace QuestTools.ProfileTags
             if (!QuestToolsSettings.Instance.DebugEnabled)
                 return;
 
-            var log = String.Format("Nodes [Unvisited: Route:{0} Grid:{2} | Grid-Visited: {1}] Box:{3}/{4} Step:{5} PP:{6:0} Dir: {7} Current: {8}",
+            var log = String.Format("Nodes [Unvisited: Route:{0} Grid:{1} | Grid-Visited: {2}/{3}] Box:{4}/{5} Step:{6} PP:{7:0} Dir: {8} Current: {9}",
                 GetRouteUnvisitedNodeCount(),                                // 0
-                GetGridSegmentationVisistedNodeCount(),                      // 1
                 GetGridSegmentationUnvisitedNodeCount(),                     // 2
-                GridSegmentation.BoxSize,                                    // 3
-                GridSegmentation.BoxTolerance,                               // 4
-                step,                                                        // 5
-                PathPrecision,                                               // 6
-                MathUtil.GetHeadingToPoint(CurrentNavTarget),                // 7
-                StringUtils.GetSimplePosition(CurrentNavTarget)              // 8
+                GetGridSegmentationVisistedNodeCount(),                      // 1
+                GetGridSegmentationNodeCount(),                              // 3
+                GridSegmentation.BoxSize,                                    // 4
+                GridSegmentation.BoxTolerance,                               // 5
+                step,                                                        // 6
+                PathPrecision,                                               // 7
+                MathUtil.GetHeadingToPoint(CurrentNavTarget),                // 8
+                StringUtils.GetSimplePosition(CurrentNavTarget)              // 9
                 );
 
             Logger.Debug(log);
@@ -1543,21 +1541,10 @@ namespace QuestTools.ProfileTags
                 UpdateSearchGridProvider();
                 ClearDeathGateCheck();
 
-                Logger.Log("New Nav Target: {0}", CurrentNavTarget);
-                _lastDestination = CurrentNavTarget;
+                var navTarget = CurrentNavTarget;
+                Logger.Log("New Nav Target={0} Dir={1} Dist={2:0}", StringUtils.GetSimplePosition(navTarget), MathUtil.GetHeadingToPoint(navTarget), navTarget.Distance2D(ZetaDia.Me.Position));
+                _lastDestination = navTarget;
             }
-
-            //if (QuestToolsSettings.Instance.DebugEnabled)
-            //{
-            //    //NavigationProvider.EnableDebugLogging = true;
-
-            //    nodeName = String.Format("DungeonNode {0} Distance: {1:0} Direction: {2}",
-            //     StringUtils.GetProfileCoordinates(CurrentNavTarget),
-            //     CurrentNavTarget.Distance(ZetaDia.Me.Position),
-            //     MathUtil.GetHeadingToPoint(CurrentNavTarget));
-            //}
-
-            //Logger.Log("MoveToNextNode {0}", CurrentNavTarget);
 
             _lastMoveResult = Navigator.MoveTo(CurrentNavTarget);
         }
@@ -1618,9 +1605,9 @@ namespace QuestTools.ProfileTags
             {
                 Logger.Debug(
                     "Initialized ExploreDungeon: boxSize={0} boxTolerance={1:0.00} endType={2} timeoutType={3} timeoutValue={4} " +
-                    "pathPrecision={5:0} sceneId={6} actorId={7} objectDistance={8} markerDistance={9} exitNameHash={10}",
+                    "pathPrecision={5:0} sceneId={6} actorId={7} objectDistance={8} markerDistance={9} exitNameHash={10} routeMode={11} direction={12}",
                     GridSegmentation.BoxSize, GridSegmentation.BoxTolerance, EndType, ExploreTimeoutType, TimeoutValue,
-                    PathPrecision, SceneId, ActorId, ObjectDistance, MarkerDistance, ExitNameHash);
+                    PathPrecision, SceneId, ActorId, ObjectDistance, MarkerDistance, ExitNameHash, RouteMode, Direction);
             }
             _initDone = true;
         }

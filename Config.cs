@@ -33,14 +33,17 @@ namespace QuestTools
 
                 string xamlContent = File.ReadAllText(xamlPath);
 
+                xamlContent = xamlContent.Replace("xmlns:nav=\"clr-namespace:QuestTools.Navigation\"", 
+                    "xmlns:nav=\"clr-namespace:QuestTools.Navigation;assembly=" + Assembly.GetExecutingAssembly().GetName().Name + "\"");
+
                 // This hooks up our object with our UserControl DataBinding
                 _configWindow.DataContext = QuestToolsSettings.Instance;
 
                 UserControl mainControl = (UserControl)XamlReader.Load(new MemoryStream(Encoding.UTF8.GetBytes(xamlContent)));
                 _configWindow.Content = mainControl;
             }
-            _configWindow.Width = 200;
-            _configWindow.Height = 175;
+            _configWindow.Width = 300;
+            _configWindow.Height = 200;
             _configWindow.ResizeMode = ResizeMode.NoResize;
             _configWindow.Background = Brushes.DarkGray;
 

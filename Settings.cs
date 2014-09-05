@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel;
 using System.Configuration;
 using System.IO;
+using QuestTools.Navigation;
 using Zeta.Common.Xml;
 using Zeta.Game;
 using Zeta.XmlEngine;
@@ -15,6 +16,8 @@ namespace QuestTools
         private bool _allowProfileReloading;
         private bool _allowProfileRestarts;
         private bool _skipCutScenes;
+        private bool _forceRouteMode;
+        private RouteMode _routeMode;
 
         private static string _battleTagName;
         public static string BattleTagName
@@ -35,6 +38,38 @@ namespace QuestTools
         public static QuestToolsSettings Instance
         {
             get { return _instance ?? (_instance = new QuestToolsSettings()); }
+        }
+
+        [XmlElement("ForceRouteMode")]
+        [DefaultValue(false)]
+        [Setting]
+        public bool ForceRouteMode
+        {
+            get
+            {
+                return _forceRouteMode;
+            }
+            set
+            {
+                _forceRouteMode = value;
+                OnPropertyChanged("ForceRouteMode");
+            }
+        }
+
+        [XmlElement("RouteMode")]
+        [DefaultValue(Navigation.RouteMode.Default)]
+        [Setting]
+        public Navigation.RouteMode RouteMode
+        {
+            get
+            {
+                return _routeMode;
+            }
+            set
+            {
+                _routeMode = value;
+                OnPropertyChanged("RouteMode");
+            }
         }
 
         [XmlElement("DebugEnabled")]
