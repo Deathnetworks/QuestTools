@@ -23,7 +23,7 @@ namespace QuestTools.ProfileTags.Movement
     {
         public MoveToActor() { }
 
-        private bool _done = false;
+        private bool _done;
         public override bool IsDone
         {
             get { return !IsActiveQuestStep || _done; }
@@ -69,11 +69,11 @@ namespace QuestTools.ProfileTags.Movement
         public int InteractAttempts { get; set; }
 
         /// <summary>
-        /// The "safe" distance that we will request a dynamic nav point to. We will never actually reach this nav point as it's always going to be <see cref="pathPointLimit"/> away.
+        /// The "safe" distance that we will request a dynamic nav point to. We will never actually reach this nav point as it's always going to be <see cref="PathPointLimit"/> away.
         /// If the target is closer than this distance, we will just move to the target.
         /// </summary>
         [XmlAttribute("pathPointLimit")]
-        public int pathPointLimit { get; set; }
+        public int PathPointLimit { get; set; }
 
         /// <summary>
         /// Boolean defining special portal handling
@@ -112,20 +112,20 @@ namespace QuestTools.ProfileTags.Movement
         public bool ExitWithConversation { get; set; }
 
         // Special configuration if you want to tweak things:
-        private bool verbose = false;
-        private int interactWaitSeconds = 1;
+        private bool _verbose;
+        private int _interactWaitMilliSeconds = 250;
 
-        private int completedInteractions = 0;
-        private int startingWorldId = 0;
-        private DateTime lastInteract = DateTime.MinValue;
-        private DateTime lastPositionUpdate = DateTime.UtcNow;
-        private DateTime tagStartTime = DateTime.MinValue;
-        private DiaObject actor = null;
-        private Vector3 startInteractPosition = Vector3.Zero;
-        private Vector3 lastPosition = Vector3.Zero;
-        private QTNavigator QTNavigator = new QTNavigator();
-        private MoveResult moveResult = MoveResult.Moved;
-        private SNOAnim endAnimation = SNOAnim.Invalid;
+        private int _completedInteractions;
+        private int _startingWorldId;
+        private DateTime _lastInteract = DateTime.MinValue;
+        private DateTime _lastPositionUpdate = DateTime.UtcNow;
+        private DateTime _tagStartTime = DateTime.MinValue;
+        private DiaObject _actor;
+        private Vector3 _startInteractPosition = Vector3.Zero;
+        private Vector3 _lastPosition = Vector3.Zero;
+        private readonly QTNavigator _qtNavigator = new QTNavigator();
+        private MoveResult _moveResult = MoveResult.Moved;
+        private SNOAnim _endAnimation = SNOAnim.Invalid;
 
         public override void OnStart()
         {
@@ -136,38 +136,38 @@ namespace QuestTools.ProfileTags.Movement
                 InteractRange = 10;
             if (InteractAttempts == 0)
                 InteractAttempts = 5;
-            if (pathPointLimit == 0)
-                pathPointLimit = 250;
+            if (PathPointLimit == 0)
+                PathPointLimit = 250;
             if (Timeout == 0)
                 Timeout = 180;
 
 
-            startingWorldId = ZetaDia.CurrentWorldId;
-            tagStartTime = DateTime.UtcNow;
+            _startingWorldId = ZetaDia.CurrentWorldId;
+            _tagStartTime = DateTime.UtcNow;
 
             if (!String.IsNullOrEmpty(EndAnimation))
             {
                 try
                 {
-                    Enum.TryParse<Zeta.Game.SNOAnim>(EndAnimation, out endAnimation);
+                    Enum.TryParse(EndAnimation, out _endAnimation);
                 }
                 catch
                 {
-                    endAnimation = SNOAnim.Invalid;
+                    _endAnimation = SNOAnim.Invalid;
                 }
             }
 
             Navigator.Clear();
 
-            verbose = true;
+            _verbose = true;
 
-            completedInteractions = 0;
-            startingWorldId = 0;
-            lastInteract = DateTime.MinValue;
-            actor = null;
-            startInteractPosition = Vector3.Zero;
-            lastPosition = ZetaDia.Me.Position;
-            lastPositionUpdate = DateTime.UtcNow;
+            _completedInteractions = 0;
+            _startingWorldId = 0;
+            _lastInteract = DateTime.MinValue;
+            _actor = null;
+            _startInteractPosition = Vector3.Zero;
+            _lastPosition = ZetaDia.Me.Position;
+            _lastPositionUpdate = DateTime.UtcNow;
 
             Logger.Debug("Initialized {0}", Status());
         }
@@ -192,16 +192,16 @@ namespace QuestTools.ProfileTags.Movement
             if (ZetaDia.IsLoadingWorld)
                 return false;
 
-            if (DateTime.UtcNow.Subtract(lastInteract).TotalMilliseconds < 500 && WorldHasChanged())
+            if (DateTime.UtcNow.Subtract(_lastInteract).TotalMilliseconds < 500 && WorldHasChanged())
                 return true;
 
-            if (DateTime.UtcNow.Subtract(tagStartTime).TotalSeconds > Timeout)
+            if (DateTime.UtcNow.Subtract(_tagStartTime).TotalSeconds > Timeout)
             {
                 End("Timeout of {0} seconds exceeded for Profile Behavior {1}", Timeout, Status());
                 return true;
             }
 
-            if (DungeonStonesPresent && GameUI.IsElementVisible(GameUI.GenericOK))
+            if (TargetIsDungeonStone && GameUI.IsElementVisible(GameUI.GenericOK))
             {
                 GameUI.SafeClickElement(GameUI.GenericOK);
                 await Coroutine.Yield();
@@ -212,29 +212,29 @@ namespace QuestTools.ProfileTags.Movement
 
             SafeUpdateActor();
 
-            if (Vector3.Distance(lastPosition, ZetaDia.Me.Position) > 5f)
+            if (Vector3.Distance(_lastPosition, ZetaDia.Me.Position) > 5f)
             {
-                lastPositionUpdate = DateTime.UtcNow;
-                lastPosition = ZetaDia.Me.Position;
+                _lastPositionUpdate = DateTime.UtcNow;
+                _lastPosition = ZetaDia.Me.Position;
             }
 
-            if ((actor == null || !actor.IsValid) && Position == Vector3.Zero && !WorldHasChanged())
+            if ((_actor == null || !_actor.IsValid) && Position == Vector3.Zero && !WorldHasChanged())
             {
                 EndDebug("ERROR: Could not find an actor or position to move to, finished! {0}", Status());
                 return true;
             }
             if (IsPortal && WorldHasChanged())
             {
-                if (DestinationWorldId > 0 && ZetaDia.CurrentWorldId != DestinationWorldId && ZetaDia.CurrentWorldId != startingWorldId)
+                if (DestinationWorldId > 0 && ZetaDia.CurrentWorldId != DestinationWorldId && ZetaDia.CurrentWorldId != _startingWorldId)
                 {
                     EndDebug("Error! We used a portal intending to go from WorldId={0} to WorldId={1} but ended up in WorldId={2} {3}",
-                                                    startingWorldId, DestinationWorldId, ZetaDia.CurrentWorldId, Status());
+                                                    _startingWorldId, DestinationWorldId, ZetaDia.CurrentWorldId, Status());
                     return true;
                 }
                 EndDebug("Successfully used portal {0} to WorldId {1} {2}", ActorId, ZetaDia.CurrentWorldId, Status());
                 return true;
             }
-            if ((actor == null || !actor.IsValid) && ((MaxSearchDistance > 0 && WithinMaxSearchDistance()) || WithinInteractRange()))
+            if ((_actor == null || !_actor.IsValid) && ((MaxSearchDistance > 0 && WithinMaxSearchDistance()) || WithinInteractRange()))
             {
                 EndDebug("Finished: Actor {0} not found, within InteractRange {1} and  MaxSearchDistance {2} of Position {3} {4}",
                                             ActorId, InteractRange, MaxSearchDistance, Position, Status());
@@ -245,7 +245,7 @@ namespace QuestTools.ProfileTags.Movement
                 EndDebug("ERROR: Position distance is {0} - this is too far! {1}", Position.Distance(ZetaDia.Me.Position), Status());
                 return true;
             }
-            if (actor == null || !actor.IsValid)
+            if (_actor == null || !_actor.IsValid)
             {
                 if (MaxSearchDistance > 0 && !WithinMaxSearchDistance())
                 {
@@ -259,57 +259,58 @@ namespace QuestTools.ProfileTags.Movement
                 }
             }
 
-            if (((!IsPortal && completedInteractions >= InteractAttempts && InteractAttempts > 0) || (IsPortal && WorldHasChanged()) || AnimationMatch()))
+            if (_actor == null)
+                return true;
+
+            if (((!IsPortal && _completedInteractions >= InteractAttempts && InteractAttempts > 0) || (IsPortal && WorldHasChanged()) || AnimationMatch()))
             {
-                EndDebug("Successfully interacted with Actor {0} at Position {1}", actor.ActorSNO, actor.Position);
+                EndDebug("Successfully interacted with Actor {0} at Position {1}", _actor.ActorSNO, _actor.Position);
                 return true;
             }
             if (InteractAttempts <= 0 && WithinInteractRange())
             {
-                EndDebug("Actor is within interact range {0:0} - no interact attempts", actor.Distance);
+                EndDebug("Actor is within interact range {0:0} - no interact attempts", _actor.Distance);
             }
-            if (completedInteractions >= InteractAttempts)
+            if (_completedInteractions >= InteractAttempts)
             {
-                EndDebug("Interaction failed after {0} interact attempts", completedInteractions);
+                EndDebug("Interaction failed after {0} interact attempts", _completedInteractions);
             }
             if (ExitWithConversation && GameUI.IsElementVisible(GameUI.TalktoInteractButton1))
             {
                 GameUI.SafeClickElement(GameUI.TalktoInteractButton1, "Conversation Interaction Button 1");
                 EndDebug("Clicked Conversation Interaction Button 1");
             }
-            if (moveResult == MoveResult.ReachedDestination && actor == null)
+            if (_moveResult == MoveResult.ReachedDestination && _actor == null)
             {
                 EndDebug("Reached Destination, no actor found!");
             }
             if (!WithinInteractRange())
             {
-                Move(actor.Position);
+                Move(_actor.Position);
                 return true;
             }
 
-            bool doInteract = await Coroutine.Wait(interactWaitSeconds, ShouldWaitForInteraction);
-            if (doInteract)
+            await Coroutine.Wait(_interactWaitMilliSeconds, ShouldWaitForInteraction);
+            if ((WithinInteractRange() || DateTime.UtcNow.Subtract(_lastPositionUpdate).TotalMilliseconds > 750) && _completedInteractions < InteractAttempts)
             {
-                if ((WithinInteractRange() || DateTime.UtcNow.Subtract(lastPositionUpdate).TotalMilliseconds > 750) && completedInteractions < InteractAttempts)
-                {
-                    return await InteractRoutine();
-                }
+                return await InteractRoutine();
             }
 
             Logger.Debug("No action taken");
             return true;
         }
 
-        private bool DungeonStonesPresent
+        private bool TargetIsDungeonStone
         {
             get
             {
-                return
-                ZetaDia.Actors.GetActorsOfType<DiaGizmo>(true)
-                    .Any(o =>
-                        o.IsValid &&
-                        o.ActorInfo.GizmoType == GizmoType.ReturnPortal &&
-                        o.Position.Distance2D(ZetaDia.Me.Position) <= 30f);
+                return (_actor is DiaGizmo && _actor.ActorInfo.GizmoType == GizmoType.ReturnPortal);
+                //return
+                //ZetaDia.Actors.GetActorsOfType<DiaGizmo>(true)
+                //    .Any(o =>
+                //        o.IsValid &&
+                //        o.ActorInfo.GizmoType == GizmoType.ReturnPortal &&
+                //        o.Position.Distance2D(ZetaDia.Me.Position) <= 30f);
             }
         }
 
@@ -320,39 +321,38 @@ namespace QuestTools.ProfileTags.Movement
         /// </summary>
         private void SafeUpdateActor()
         {
-            DiaObject newActor = null;
-            DiaUnit newUnit = null;
+            DiaObject newActor;
 
             // Find closest actor if we have a position and MaxSearchDistance (only actors within radius MaxSearchDistance from Position)
             if (Position != Vector3.Zero && MaxSearchDistance > 0)
             {
-                newActor = ZetaDia.Actors.GetActorsOfType<DiaObject>(true, false)
+                newActor = ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
                     .Where(o => o.ActorSNO == ActorId && o.Position.Distance(Position) <= MaxSearchDistance)
                     .OrderBy(o => !(o is DiaUnit && ((DiaUnit)o).IsQuestGiver))
-                    .OrderBy(o => Position.Distance(o.Position)).FirstOrDefault();
+                    .ThenBy(o => Position.Distance(o.Position)).FirstOrDefault();
             }
             // Otherwise just OrderBy distance from Position (any actor found)
             else if (Position != Vector3.Zero)
             {
-                newActor = ZetaDia.Actors.GetActorsOfType<DiaObject>(true, false)
+                newActor = ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
                    .Where(o => o.ActorSNO == ActorId)
                    .OrderBy(o => !(o is DiaUnit && ((DiaUnit)o).IsQuestGiver))
-                   .OrderBy(o => Position.Distance(o.Position)).FirstOrDefault();
+                   .ThenBy(o => Position.Distance(o.Position)).FirstOrDefault();
             }
             // If all else fails, get first matching Actor closest to Player
             else
             {
-                newActor = ZetaDia.Actors.GetActorsOfType<DiaObject>(true, false)
+                newActor = ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
                    .Where(o => o.ActorSNO == ActorId)
                    .OrderBy(o => !(o is DiaUnit && ((DiaUnit)o).IsQuestGiver))
-                   .OrderBy(o => o.Distance).FirstOrDefault();
+                   .ThenBy(o => o.Distance).FirstOrDefault();
             }
 
             if (newActor != null && newActor.IsValid && newActor.Position != Vector3.Zero)
             {
                 //if (!IsPortal || Position == Vector3.Zero)
                 Position = newActor.Position;
-                actor = newActor;
+                _actor = newActor;
 
                 if (newActor is GizmoLootContainer)
                 {
@@ -363,41 +363,36 @@ namespace QuestTools.ProfileTags.Movement
                     }
                     catch { }
                     if (chestOpen)
-                        actor = null;
+                        _actor = null;
                 }
 
                 switch (newActor.ActorType)
                 {
                     case ActorType.Monster:
                         {
-                            newUnit = (DiaUnit)newActor;
-                            if (!newUnit.IsDead)
-                            {
-                                actor = newActor;
-                            }
-                            else
-                                actor = null;
+                            DiaUnit newUnit = (DiaUnit)newActor;
+                            _actor = !newUnit.IsDead ? newActor : null;
                             break;
                         }
                 }
             }
             else
             {
-                actor = null;
+                _actor = null;
             }
         }
 
         private bool ShouldWaitForInteraction()
         {
-            return ZetaDia.Me.LoopingAnimationEndTime > 0 || Math.Abs(DateTime.UtcNow.Subtract(lastInteract).TotalSeconds) > interactWaitSeconds;
+            return ZetaDia.Me.LoopingAnimationEndTime > 0 || Math.Abs(DateTime.UtcNow.Subtract(_lastInteract).TotalSeconds) > _interactWaitMilliSeconds;
         }
 
         private async Task<bool> InteractRoutine()
         {
-            if (Player.IsPlayerValid() && actor.IsValid)
+            if (Player.IsPlayerValid() && _actor.IsValid)
             {
 
-                if (DungeonStonesPresent && (GameUI.IsElementVisible(GameUI.GenericOK) || GameUI.IsElementVisible(UIElements.ConfirmationDialogOkButton)))
+                if (TargetIsDungeonStone && (GameUI.IsElementVisible(GameUI.GenericOK) || GameUI.IsElementVisible(UIElements.ConfirmationDialogOkButton)))
                 {
                     GameUI.SafeClickElement(GameUI.GenericOK);
                     await Coroutine.Yield();
@@ -410,12 +405,12 @@ namespace QuestTools.ProfileTags.Movement
                 }
 
 
-                if (startingWorldId <= 0)
+                if (_startingWorldId <= 0)
                 {
-                    startingWorldId = ZetaDia.CurrentWorldId;
+                    _startingWorldId = ZetaDia.CurrentWorldId;
                 }
 
-                interactWaitSeconds = DungeonStonesPresent ? 4 : 1;
+                _interactWaitMilliSeconds = TargetIsDungeonStone ? 4000 : 250;
                 LogInteraction();
 
                 if (IsPortal)
@@ -423,54 +418,54 @@ namespace QuestTools.ProfileTags.Movement
                     GameEvents.FireWorldTransferStart();
                 }
 
-                await Coroutine.Wait(TimeSpan.FromSeconds(3), () => IsChanneling);
+                if (IsChanneling)
+                    await Coroutine.Wait(TimeSpan.FromSeconds(3), () => IsChanneling);
 
-                switch (actor.ActorType)
+                switch (_actor.ActorType)
                 {
                     case ActorType.Gizmo:
-                        switch (actor.ActorInfo.GizmoType)
+                        switch (_actor.ActorInfo.GizmoType)
                         {
                             case GizmoType.BossPortal:
                             case GizmoType.Portal:
                             case GizmoType.ReturnPortal:
-                                ZetaDia.Me.UsePower(SNOPower.GizmoOperatePortalWithAnimation, actor.Position);
+                                ZetaDia.Me.UsePower(SNOPower.GizmoOperatePortalWithAnimation, _actor.Position);
                                 break;
                             default:
-                                ZetaDia.Me.UsePower(SNOPower.Axe_Operate_Gizmo, actor.Position);
+                                ZetaDia.Me.UsePower(SNOPower.Axe_Operate_Gizmo, _actor.Position);
                                 break;
                         }
                         break;
                     case ActorType.Monster:
-                        ZetaDia.Me.UsePower(SNOPower.Axe_Operate_NPC, actor.Position);
+                        ZetaDia.Me.UsePower(SNOPower.Axe_Operate_NPC, _actor.Position);
                         break;
                 }
 
                 // Doubly-make sure we interact
-                actor.Interact();
+                _actor.Interact();
 
                 GameUI.SafeClickElement(GameUI.GenericOK);
                 GameUI.SafeClickElement(UIElements.ConfirmationDialogOkButton);
 
-                if (startInteractPosition == Vector3.Zero)
-                    startInteractPosition = ZetaDia.Me.Position;
+                if (_startInteractPosition == Vector3.Zero)
+                    _startInteractPosition = ZetaDia.Me.Position;
 
-                lastPosition = ZetaDia.Me.Position;
-                completedInteractions++;
-                lastInteract = DateTime.UtcNow;
-                if (DungeonStonesPresent || IsPortal)
-                    await Coroutine.Sleep(500);
+                _lastPosition = ZetaDia.Me.Position;
+                _completedInteractions++;
+                _lastInteract = DateTime.UtcNow;
+                if (TargetIsDungeonStone || IsPortal)
+                    await Coroutine.Sleep(250);
 
                 return true;
-
             }
             return false;
         }
-      
+
 
         private void LogInteraction()
         {
             Logger.Debug("Interacting with Object: {0} {1} attempt: {2}, lastInteractDuration: {3:0}",
-                actor.ActorSNO, Status(), completedInteractions, Math.Abs(DateTime.UtcNow.Subtract(lastInteract).TotalSeconds));
+                _actor.ActorSNO, Status(), _completedInteractions, Math.Abs(DateTime.UtcNow.Subtract(_lastInteract).TotalSeconds));
         }
 
         private bool WithinMaxSearchDistance()
@@ -478,7 +473,7 @@ namespace QuestTools.ProfileTags.Movement
             return ZetaDia.Me.Position.Distance(Position) < MaxSearchDistance;
         }
 
-        private string interactReason = "";
+        private string _interactReason = "";
         private bool WithinInteractRange()
         {
             if (!ZetaDia.IsInGame)
@@ -492,34 +487,34 @@ namespace QuestTools.ProfileTags.Movement
             if (ZetaDia.Me.HitpointsCurrent <= 0)
                 return false;
 
-            if (actor != null && actor.IsValid)
+            if (_actor != null && _actor.IsValid)
             {
-                float distance = ZetaDia.Me.Position.Distance2D(actor.Position);
-                float radiusDistance = actor.Distance - actor.CollisionSphere.Radius;
-                Vector3 radiusPoint = MathEx.CalculatePointFrom(actor.Position, ZetaDia.Me.Position, actor.CollisionSphere.Radius);
-                if (moveResult == MoveResult.ReachedDestination)
+                float distance = ZetaDia.Me.Position.Distance2D(_actor.Position);
+                float radiusDistance = _actor.Distance - _actor.CollisionSphere.Radius;
+                Vector3 radiusPoint = MathEx.CalculatePointFrom(_actor.Position, ZetaDia.Me.Position, _actor.CollisionSphere.Radius);
+                if (_moveResult == MoveResult.ReachedDestination)
                 {
-                    interactReason = "ReachedDestination";
+                    _interactReason = "ReachedDestination";
                     return true;
                 }
                 if (distance < 7.5f)
                 {
-                    interactReason = "Distance < 7.5f";
+                    _interactReason = "Distance < 7.5f";
                     return true;
                 }
-                if (distance < InteractRange && actor.InLineOfSight && !Navigator.Raycast(ZetaDia.Me.Position, radiusPoint))
+                if (distance < InteractRange && _actor.InLineOfSight && !Navigator.Raycast(ZetaDia.Me.Position, radiusPoint))
                 {
-                    interactReason = "InLoSRaycast";
+                    _interactReason = "InLoSRaycast";
                     return true;
                 }
                 if (radiusDistance < 5f)
                 {
-                    interactReason = "Radius < 2.5f";
+                    _interactReason = "Radius < 2.5f";
                     return true;
                 }
                 return false;
             }
-            interactReason = "DefaultInteractRange";
+            _interactReason = "DefaultInteractRange";
             return ZetaDia.Me.Position.Distance(Position) < InteractRange;
         }
 
@@ -547,7 +542,7 @@ namespace QuestTools.ProfileTags.Movement
         {
             try
             {
-                bool match = endAnimation != SNOAnim.Invalid && actor.CommonData.CurrentAnimation == endAnimation;
+                bool match = _endAnimation != SNOAnim.Invalid && _actor.CommonData.CurrentAnimation == _endAnimation;
 
                 return match;
             }
@@ -568,68 +563,62 @@ namespace QuestTools.ProfileTags.Movement
                 if (IsPortal && DestinationWorldId > 0)
                 {
                     // DestinationWorld Id matches
-                    return completedInteractions > 0 && ZetaDia.CurrentWorldId == DestinationWorldId && ZetaDia.Me.Position.Distance(startInteractPosition) > InteractRange;
+                    return _completedInteractions > 0 && ZetaDia.CurrentWorldId == DestinationWorldId && ZetaDia.Me.Position.Distance(_startInteractPosition) > InteractRange;
                 }
-                else if (IsPortal && (DestinationWorldId > 0 || DestinationWorldId == -1) && startingWorldId != 0)
+                if (IsPortal && (DestinationWorldId > 0 || DestinationWorldId == -1) && _startingWorldId != 0)
                 {
                     // WorldId Changed
-                    return completedInteractions > 0 && ZetaDia.CurrentWorldId != startingWorldId;
+                    return _completedInteractions > 0 && ZetaDia.CurrentWorldId != _startingWorldId;
                 }
-                else if (IsPortal && startInteractPosition != Vector3.Zero)
+                if (IsPortal && _startInteractPosition != Vector3.Zero)
                 {
                     // Player moved from the original interaction position (same world portals and such)
-                    return completedInteractions > 0 && ZetaDia.Me.Position.Distance(startInteractPosition) > InteractRange;
+                    return _completedInteractions > 0 && ZetaDia.Me.Position.Distance(_startInteractPosition) > InteractRange;
                 }
-                else
-                {
-                    return false;
-                }
+                return false;
             }
             catch
             {
                 return false;
             }
         }
-        private bool Move(Vector3 NavTarget)
+        private void Move(Vector3 navTarget)
         {
-            bool result = false;
-            if (lastPosition != Vector3.Zero && lastPosition.Distance(ZetaDia.Me.Position) >= 1)
+            if (_lastPosition != Vector3.Zero && _lastPosition.Distance(ZetaDia.Me.Position) >= 1)
             {
-                lastPosition = ZetaDia.Me.Position;
+                _lastPosition = ZetaDia.Me.Position;
             }
             // DB 300+ always uses local nav! Yay :)
-            if (NavTarget.Distance(ZetaDia.Me.Position) > pathPointLimit)
-                NavTarget = MathEx.CalculatePointFrom(ZetaDia.Me.Position, NavTarget, NavTarget.Distance(ZetaDia.Me.Position) - pathPointLimit);
+            if (navTarget.Distance(ZetaDia.Me.Position) > PathPointLimit)
+                navTarget = MathEx.CalculatePointFrom(ZetaDia.Me.Position, navTarget, navTarget.Distance(ZetaDia.Me.Position) - PathPointLimit);
 
             if (StraightLinePathing)
             {
                 Navigator.PlayerMover.MoveTowards(Position);
-                moveResult = MoveResult.Moved;
+                _moveResult = MoveResult.Moved;
             }
             else
             {
-                moveResult = QTNavigator.MoveTo(NavTarget, Status(), true);
+                _moveResult = _qtNavigator.MoveTo(navTarget, Status());
             }
-            switch (moveResult)
+            switch (_moveResult)
             {
                 case MoveResult.Moved:
                 case MoveResult.ReachedDestination:
                 case MoveResult.PathGenerated:
                 case MoveResult.PathGenerating:
-                    result = true;
                     break;
                 case MoveResult.PathGenerationFailed:
                 case MoveResult.UnstuckAttempt:
                 case MoveResult.Failed:
                     break;
             }
-            lastPosition = ZetaDia.Me.Position;
+            _lastPosition = ZetaDia.Me.Position;
 
             if (QuestTools.EnableDebugLogging)
             {
-                Logger.Debug("MoveResult: {0} {1}", moveResult.ToString(), Status());
+                Logger.Debug("MoveResult: {0} {1}", _moveResult.ToString(), Status());
             }
-            return result;
         }
         private String Status()
         {
@@ -639,36 +628,35 @@ namespace QuestTools.ProfileTags.Movement
                 if (!QuestToolsSettings.Instance.DebugEnabled)
                     return status;
 
-                if (verbose)
+                if (_verbose)
                 {
                     status = String.Format(
                         "questId=\"{0}\" stepId=\"{1}\" actorId=\"{10}\" x=\"{2:0}\" y=\"{3:0}\" z=\"{4:0}\" interactRange=\"{5}\" interactAttempts={11} distance=\"{6:0}\" maxSearchDistance={7} rayCastDistance={8} lastPosition={9}, isPortal={12} destinationWorldId={13}, startInteractPosition={14} completedInteractAttempts={15} interactReason={16}",
                         ZetaDia.CurrentQuest.QuestSNO, ZetaDia.CurrentQuest.StepId, X, Y, Z, InteractRange,
-                        (actor != null ? actor.Distance : Position.Distance(ZetaDia.Me.Position)),
-                        this.MaxSearchDistance, this.pathPointLimit, this.lastPosition, this.ActorId, this.InteractAttempts, this.IsPortal, this.DestinationWorldId, startInteractPosition, completedInteractions, interactReason);
+                        (_actor != null ? _actor.Distance : Position.Distance(ZetaDia.Me.Position)),
+                        MaxSearchDistance, PathPointLimit, _lastPosition, ActorId, InteractAttempts, IsPortal, DestinationWorldId, _startInteractPosition, _completedInteractions, _interactReason);
                 }
                 else
                 {
-                    status = String.Format("questId=\"{0}\" stepId=\"{1}\" x=\"{2:0}\" y=\"{3:0}\" z=\"{4:0}\" interactRange=\"{5}\" interactAttempts={11} maxSearchDistance={7} rayCastDistance={8} lastPosition={9}, actorId=\"{10}\" isPortal={11} destinationWorldId={12}",
-                        ZetaDia.CurrentQuest.QuestSNO, ZetaDia.CurrentQuest.StepId, X, Y, Z, InteractRange,
-                        this.MaxSearchDistance, this.pathPointLimit, this.lastPosition, this.ActorId, this.InteractAttempts, this.IsPortal, this.DestinationWorldId);
+                    status = String.Format("questId=\"{0}\" stepId=\"{1}\" x=\"{2:0}\" y=\"{3:0}\" z=\"{4:0}\" interactRange=\"{5}\" interactAttempts={10} maxSearchDistance={6} rayCastDistance={7} lastPosition={8}, actorId=\"{9}\" isPortal={10} destinationWorldId={11}",
+                        ZetaDia.CurrentQuest.QuestSNO, ZetaDia.CurrentQuest.StepId, X, Y, Z, InteractRange, PathPointLimit, _lastPosition, ActorId, InteractAttempts, IsPortal, DestinationWorldId);
                 }
             }
             catch (Exception ex)
             {
-                Logger.Log("Error in MoveToActor Status(): " + ex.ToString());
+                Logger.Log("Error in MoveToActor Status(): " + ex);
             }
             try
             {
-                if (actor != null && actor.IsValid && actor.CommonData != null && actor.CommonData.Position != null)
+                if (_actor != null && _actor.IsValid && _actor.CommonData != null)
                 {
                     status += String.Format(" actorId=\"{0}\", Name={1} InLineOfSight={2} ActorType={3} Position= {4}",
-                        actor.ActorSNO, actor.Name, actor.InLineOfSight, actor.ActorType, StringUtils.GetProfileCoordinates(actor.Position));
+                        _actor.ActorSNO, _actor.Name, _actor.InLineOfSight, _actor.ActorType, StringUtils.GetProfileCoordinates(_actor.Position));
                 }
             }
             catch (Exception ex)
             {
-                Logger.Log("Error in MoveToActor Status(): " + ex.ToString());
+                Logger.Log("Error in MoveToActor Status(): " + ex);
             }
             return status;
 
@@ -697,10 +685,10 @@ namespace QuestTools.ProfileTags.Movement
         public override void ResetCachedDone()
         {
             _done = false;
-            actor = null;
-            tagStartTime = DateTime.UtcNow;
-            completedInteractions = 0;
-            startingWorldId = 0;
+            _actor = null;
+            _tagStartTime = DateTime.UtcNow;
+            _completedInteractions = 0;
+            _startingWorldId = 0;
             base.ResetCachedDone();
         }
     }

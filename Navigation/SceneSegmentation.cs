@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -30,6 +31,8 @@ namespace QuestTools.Navigation
         private static readonly Regex SceneConnectionDirectionsRegex = new Regex("_([NSEW]{2,})_", RegexOptions.Compiled | RegexOptions.CultureInvariant);
         public static void Update()
         {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
             var oldNodes = _nodes;
 
             var scenes = ZetaDia.Scenes.GetScenes().Where(s => s.Mesh.Zone != null).ToList();
@@ -41,7 +44,7 @@ namespace QuestTools.Navigation
             List<DungeonNode> nodes = new List<DungeonNode>();
 
             // Iterate through scenes, find connecting scene names and create a dungeon node to navigate to the scene center
-            foreach (Scene scene in scenes)
+            scenes.AsParallel().ForEach(scene =>
             {
                 var zone = scene.Mesh.Zone;
                 var zoneMin = zone.ZoneMin;
@@ -49,68 +52,51 @@ namespace QuestTools.Navigation
 
                 // The nodes are not actual GridSegmentation nodes, they're defined by the nav zone coordinates here
                 var baseNode = new DungeonNode(zoneMin, zoneMax);
-                nodes.Add(baseNode);
+                if (nodes.All(node => node.WorldTopLeft != baseNode.WorldTopLeft))
+                    nodes.Add(baseNode);
 
-                nodes.Add(new DungeonNode(new Vector2(zoneMin.X - halfEdgeLength, zoneMin.Y), new Vector2(zoneMax.X - halfEdgeLength, zoneMin.Y)));
-                nodes.Add(new DungeonNode(new Vector2(zoneMin.X + halfEdgeLength, zoneMin.Y), new Vector2(zoneMax.X + halfEdgeLength, zoneMin.Y)));
-                nodes.Add(new DungeonNode(new Vector2(zoneMin.X, zoneMin.Y - halfEdgeLength), new Vector2(zoneMax.X, zoneMin.Y - halfEdgeLength)));
-                nodes.Add(new DungeonNode(new Vector2(zoneMin.X, zoneMin.Y + halfEdgeLength), new Vector2(zoneMax.X, zoneMin.Y + halfEdgeLength)));
-                
-                //bool isExit = scene.Name.ToUpper().Contains("EXIT");
+                // North
+                var northNode = (new DungeonNode(new Vector2(zoneMin.X - halfEdgeLength, zoneMin.Y), new Vector2(zoneMax.X - halfEdgeLength, zoneMin.Y)));
+                if (nodes.All(node => node.WorldTopLeft != northNode.WorldTopLeft))
+                    nodes.Add(northNode);
 
-                //var nameMatch = SceneConnectionDirectionsRegex.Match(scene.Name.ToUpper());
-                //string directions = "";
-                //if (nameMatch.Success)
-                //{
-                //    directions = nameMatch.Groups[1].Value;
-                //}
-                //if (true || !string.IsNullOrWhiteSpace(directions) || isExit)
-                //{
+                // South
+                var southNode = (new DungeonNode(new Vector2(zoneMin.X + halfEdgeLength, zoneMin.Y), new Vector2(zoneMax.X + halfEdgeLength, zoneMin.Y)));
+                if (nodes.All(node => node.WorldTopLeft != southNode.WorldTopLeft))
+                    nodes.Add(southNode);
 
-                //    if (directions.Contains("N") || isExit)
-                //    {
-                //        var node = new DungeonNode(new Vector2(zoneMin.X - halfEdgeLength, zoneMin.Y), new Vector2(zoneMax.X - halfEdgeLength, zoneMin.Y));
-                //        nodes.Add(node);
-                //    }
-                //    if (directions.Contains("S") || isExit)
-                //    {
-                //        var node = new DungeonNode(new Vector2(zoneMin.X + halfEdgeLength, zoneMin.Y), new Vector2(zoneMax.X + halfEdgeLength, zoneMin.Y));
-                //        nodes.Add(node);
-                //    }
-                //    if (directions.Contains("W") || isExit)
-                //    {
-                //        var node = new DungeonNode(new Vector2(zoneMin.X, zoneMin.Y - halfEdgeLength), new Vector2(zoneMax.X, zoneMin.Y - halfEdgeLength));
-                //        nodes.Add(node);
-                //    }
-                //    if (directions.Contains("E") || isExit)
-                //    {
-                //        var node = new DungeonNode(new Vector2(zoneMin.X, zoneMin.Y + halfEdgeLength), new Vector2(zoneMax.X, zoneMin.Y + halfEdgeLength));
-                //        nodes.Add(node);
-                //    }
-                //}
-            }
+                // East
+                var eastNode = (new DungeonNode(new Vector2(zoneMin.X, zoneMin.Y - halfEdgeLength), new Vector2(zoneMax.X, zoneMin.Y - halfEdgeLength)));
+                if (nodes.All(node => node.WorldTopLeft != eastNode.WorldTopLeft))
+                    nodes.Add(eastNode);
+
+                // West
+                var westNode = (new DungeonNode(new Vector2(zoneMin.X, zoneMin.Y + halfEdgeLength), new Vector2(zoneMax.X, zoneMin.Y + halfEdgeLength)));
+                if (nodes.All(node => node.WorldTopLeft != westNode.WorldTopLeft))
+                    nodes.Add(westNode);
+
+            });
 
             if (oldNodes != null && oldNodes.Any())
             {
-                foreach (var node in nodes)
+                nodes.AsParallel().ForEach(node =>
                 {
-                    var oldNode = oldNodes.FirstOrDefault(n => n.Equals(node));
+                    var oldNode = oldNodes.FirstOrDefault(n => node.WorldTopLeft == n.WorldTopLeft);
                     if (oldNode != null && oldNode.Visited)
                         node.Visited = true;
-                }
+                });
 
-                // Make sure to add old nodes!
-                foreach (var oldNode in oldNodes)
-                {
-                    if (nodes.All(newNode => !newNode.Equals(oldNode)))
+                oldNodes.AsParallel().ForEach(oldNode =>
                     {
-                        nodes.Add(oldNode);
-                    }
-                }
-
+                        if (nodes.All(newNode => newNode.Center != oldNode.WorldTopLeft))
+                        {
+                            nodes.Add(oldNode);
+                        }
+                    });
             }
 
-            _nodes = new ConcurrentBag<DungeonNode>(nodes);
+            _nodes = new ConcurrentBag<DungeonNode>(nodes.Distinct());
+            Logger.Debug("Updated SceneSegmentation with {0} nodes in {1:0}ms", _nodes.Count, stopwatch.ElapsedMilliseconds);
         }
 
         /// <summary>

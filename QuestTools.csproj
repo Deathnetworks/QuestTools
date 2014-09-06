@@ -105,6 +105,7 @@
     <Compile Include="Helpers\PositionCache.cs" />
     <Compile Include="Helpers\StringUtils.cs" />
     <Compile Include="Helpers\TrinityApi.cs" />
+    <Compile Include="Navigation\SceneDungeonNode.cs" />
     <Compile Include="Navigation\SceneSegmentation.cs" />
     <Compile Include="Navigation\WeightedDungeonNode.cs" />
     <Compile Include="Player.cs" />
@@ -120,6 +121,7 @@
     <Compile Include="ProfileTags\Depreciated\TrinityLoadProfile.cs" />
     <Compile Include="ProfileTags\Depreciated\TrinityLog.cs" />
     <Compile Include="ProfileTags\Depreciated\TrinityMoveToSNO.cs" />
+    <Compile Include="ProfileTags\GetItemFromStashTag.cs" />
     <Compile Include="ProfileTags\Movement\MoveToScene.cs" />
     <Compile Include="ProfileTags\Movement\MoveToObjective.cs" />
     <Compile Include="ProfileTags\RandomRoll.cs" />

@@ -96,6 +96,16 @@ namespace QuestTools
             }
         }
 
+        public static UIElement StashCloseButton
+        {
+            get
+            {
+                try { return UIElement.FromHash(0x5CF7230E045FF4DF); }
+                catch { return null; }
+            }
+        }
+
+
         public static bool IsElementVisible(UIElement element)
         {
             if (element == null)

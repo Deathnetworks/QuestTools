@@ -416,17 +416,23 @@ namespace QuestTools.Navigation
             List<DungeonNode> unsortedNodes = UnVisitedNodes.ToList();
             List<DungeonNode> sortedNodes = new List<DungeonNode>();
 
-            var nearestNode = unsortedNodes.OrderBy(n => n.NavigableCenter.Distance2DSqr(myPosition)).First();
+            var nearestNode = unsortedNodes
+                .OrderBy(node => ZetaDia.Minimap.IsExplored(node.NavigableCenter, ZetaDia.Me.WorldDynamicId))
+                .ThenBy(node => node.NavigableCenter.Distance2DSqr(myPosition))
+                .First();
             sortedNodes.Add(nearestNode);
             unsortedNodes.Remove(nearestNode);
+
+            Dictionary<Vector2, bool> nodeExploredMap = unsortedNodes
+                .ToDictionary(node => node.WorldTopLeft, node => ZetaDia.Minimap.IsExplored(node.NavigableCenter, ZetaDia.Me.WorldDynamicId));
 
             // Enqueue closest node
             while (unsortedNodes.Any())
             {
                 var nextNode = unsortedNodes
                     // Minimap Unvisited first
-                    .OrderBy(n => ZetaDia.Minimap.IsExplored(n.NavigableCenter, ZetaDia.Me.WorldDynamicId))
-                    .ThenBy(n => n.NavigableCenter.Distance2DSqr(sortedNodes.Last().NavigableCenter))
+                    .OrderBy(n => nodeExploredMap[n.WorldTopLeft])
+                    .ThenBy(n => n.Center.DistanceSqr(sortedNodes.Last().Center))
                     .First();
                 sortedNodes.Add(nextNode);
                 unsortedNodes.Remove(nextNode);
