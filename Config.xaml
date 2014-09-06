@@ -5,7 +5,7 @@
              xmlns:sys="clr-namespace:System;assembly=mscorlib"
              xmlns:nav="clr-namespace:QuestTools.Navigation"
              mc:Ignorable="d" 
-             d:DesignHeight="200" d:DesignWidth="300" Foreground="White" Background="#393939">
+             d:DesignHeight="200" d:DesignWidth="500" Foreground="White" Background="#393939">
     <UserControl.Resources>
         <Style TargetType="TextBlock">
             <Setter Property="HorizontalAlignment" Value="Center" />
@@ -30,7 +30,10 @@
             </WrapPanel>
             <WrapPanel HorizontalAlignment="Right">
                 <TextBlock Text="Explorer Route Mode" Margin="0,0,10,0" HorizontalAlignment="Right" VerticalAlignment="Center" IsEnabled="{Binding Path=ForceRouteMode}" />
-                <ComboBox ItemsSource="{Binding Source={StaticResource RouteModes}}" SelectedItem="{Binding Path=RouteMode}" IsEnabled="{Binding Path=ForceRouteMode}" Width="150"/>
+                <ComboBox ItemsSource="{Binding Source={StaticResource RouteModes}}" 
+                          SelectedItem="{Binding Path=RouteMode}" 
+                          IsEnabled="{Binding Path=ForceRouteMode}"
+                          Width="250"/>
             </WrapPanel>
             <WrapPanel HorizontalAlignment="Right">
                 <TextBlock Text="Skip Cut Scenes" Margin="0,0,10,0" HorizontalAlignment="Right" VerticalAlignment="Center" />

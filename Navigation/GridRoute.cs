@@ -15,9 +15,7 @@ namespace QuestTools.Navigation
     {
         Default = 0, // TSP, default is default
         NearestUnvisited, // Simple sort on distance
-        FurthestUnvisited, // Simple sort on distance
         NearestMinimapUnvisited, // Simple sort on distance with Minimap checking
-        FurthestMinimapUnvisited, // Simple sort on distance with Minimap checking
         WeightedNearestUnvisited, // Rank by number of unvisited nodes connected to node
         WeightedNearestVisisted, // Rank by number of visisted nodes connected to node
         WeightedNearestMinimapUnvisited, // Rank by number of unvisited nodes connected to node, as shown on minimap
@@ -86,7 +84,7 @@ namespace QuestTools.Navigation
 
         private static DungeonExplorer DungeonExplorer { get { return Zeta.Bot.Logic.BrainBehavior.DungeonExplorer; } }
 
-        internal static ConcurrentBag<DungeonNode> GridNodes
+        internal static ConcurrentBag<DungeonNode> Nodes
         {
             get
             {
@@ -114,9 +112,9 @@ namespace QuestTools.Navigation
             }
         }
 
-        private static List<DungeonNode> AllNodes { get { return GridNodes.ToList(); } }
-        private static List<DungeonNode> VisitedNodes { get { return GridNodes.Where(n => n.Visited).ToList(); } }
-        private static List<DungeonNode> UnVisitedNodes { get { return GridNodes.Where(n => !n.Visited).ToList(); } }
+        private static List<DungeonNode> AllNodes { get { return Nodes.ToList(); } }
+        private static List<DungeonNode> VisitedNodes { get { return Nodes.Where(n => n.Visited).ToList(); } }
+        private static List<DungeonNode> UnVisitedNodes { get { return Nodes.Where(n => !n.Visited).ToList(); } }
 
         private static RouteMode _routeMode = RouteMode.Default;
         internal static RouteMode RouteMode
@@ -152,8 +150,8 @@ namespace QuestTools.Navigation
 
         internal static void SetCurrentNodeExplored()
         {
-            var currentNode = CurrentRoute.Dequeue();
-            currentNode.Visited = true;
+            Nodes.Where(node => node.Equals(CurrentNode)).ForEach(node => node.Visited = true);
+            CurrentRoute.Dequeue();
         }
 
         internal static Vector3 GetCurrentDestination()
@@ -167,16 +165,17 @@ namespace QuestTools.Navigation
 
         internal static void Update()
         {
+            SceneSegmentation.Update();
             GridSegmentation.Update();
 
             switch (RouteMode)
             {
                 case RouteMode.Default:
+                    GridSegmentation.Update();
                     DungeonExplorer.Update();
                     break;
                 case RouteMode.SceneTSP:
                 case RouteMode.SceneDirection:
-                    SceneSegmentation.Update();
                     break;
             }
 
@@ -193,17 +192,11 @@ namespace QuestTools.Navigation
                 case RouteMode.Default:
                     route = Zeta.Bot.Logic.BrainBehavior.DungeonExplorer.CurrentRoute;
                     break;
-                case RouteMode.FurthestUnvisited:
-                    route = GetFurthestUnvisitedRoute();
-                    break;
                 case RouteMode.NearestUnvisited:
                     route = GetNearestUnvisitedRoute();
                     break;
                 case RouteMode.NearestMinimapUnvisited:
                     route = GetNearestMinimapUnvisitedRoute();
-                    break;
-                case RouteMode.FurthestMinimapUnvisited:
-                    route = GetFurthestMinimapUnvisitedRoute();
                     break;
                 case RouteMode.WeightedNearestUnvisited:
                     route = GetWeightedNearestUnvisitedRoute();
@@ -240,18 +233,7 @@ namespace QuestTools.Navigation
         {
             Queue<DungeonNode> route = new Queue<DungeonNode>();
             Vector3 myPosition = ZetaDia.Me.Position;
-            foreach (var node in GridNodes.Where(node => !node.Visited).OrderBy(node => node.NavigableCenter.Distance2DSqr(myPosition)).ToList())
-            {
-                route.Enqueue(node);
-            }
-            return route;
-        }
-
-        private static Queue<DungeonNode> GetFurthestUnvisitedRoute()
-        {
-            Queue<DungeonNode> route = new Queue<DungeonNode>();
-            Vector3 myPosition = ZetaDia.Me.Position;
-            foreach (var node in GridNodes.Where(node => !node.Visited).OrderByDescending(node => node.NavigableCenter.Distance2DSqr(myPosition)).ToList())
+            foreach (var node in Nodes.Where(node => !node.Visited).OrderBy(node => node.NavigableCenter.Distance2DSqr(myPosition)).ToList())
             {
                 route.Enqueue(node);
             }
@@ -262,22 +244,9 @@ namespace QuestTools.Navigation
         {
             Queue<DungeonNode> route = new Queue<DungeonNode>();
             Vector3 myPosition = ZetaDia.Me.Position;
-            foreach (var node in GridNodes.Where(node => !node.Visited)
+            foreach (var node in Nodes.Where(node => !node.Visited)
                 .OrderBy(node => ZetaDia.Minimap.IsExplored(node.NavigableCenter, ZetaDia.Me.WorldDynamicId))
                 .ThenBy(node => node.NavigableCenter.Distance2DSqr(myPosition)).ToList())
-            {
-                route.Enqueue(node);
-            }
-            return route;
-        }
-
-        private static Queue<DungeonNode> GetFurthestMinimapUnvisitedRoute()
-        {
-            Queue<DungeonNode> route = new Queue<DungeonNode>();
-            Vector3 myPosition = ZetaDia.Me.Position;
-            foreach (var node in GridNodes.Where(node => !node.Visited)
-                .OrderBy(node => ZetaDia.Minimap.IsExplored(node.NavigableCenter, ZetaDia.Me.WorldDynamicId))
-                .ThenByDescending(node => node.NavigableCenter.Distance2DSqr(myPosition)).ToList())
             {
                 route.Enqueue(node);
             }
@@ -439,7 +408,6 @@ namespace QuestTools.Navigation
             timer.Start();
             Vector3 myPosition = ZetaDia.Me.Position;
 
-            Queue<DungeonNode> route = new Queue<DungeonNode>();
             SceneSegmentation.Update();
 
             if (!UnVisitedNodes.Any())
@@ -464,7 +432,7 @@ namespace QuestTools.Navigation
                 unsortedNodes.Remove(nextNode);
             }
 
-            route = new Queue<DungeonNode>(sortedNodes);
+            Queue<DungeonNode> route = new Queue<DungeonNode>(sortedNodes);
 
             Logger.Log("Generated new Scene Route with {0} nodes in {1}ms", route.Count, timer.ElapsedMilliseconds);
             return route;

@@ -463,7 +463,7 @@ namespace QuestTools.ProfileTags
                     if (marker != null)
                         return marker.Position;
 
-                    if (_lastPandFortressTarget != Vector3.Zero && GridSegmentation.Nodes.Any(n => !n.Visited && n.NavigableCenter == _lastPandFortressTarget))
+                    if (_lastPandFortressTarget != Vector3.Zero && GridRoute.Nodes.Any(n => !n.Visited && n.NavigableCenter == _lastPandFortressTarget))
                         return _lastPandFortressTarget;
 
                     GetPandFortressNavTarget();
@@ -476,6 +476,8 @@ namespace QuestTools.ProfileTags
                 if (GetRouteUnvisitedNodeCount() > 0)
                 {
                     var navTarget = GridRoute.CurrentNode.NavigableCenter;
+                    if (navTarget == Vector3.Zero)
+                        navTarget = GridRoute.CurrentNode.Center.ToVector3();
                     return navTarget;
                 }
                 return Vector3.Zero;
@@ -665,9 +667,9 @@ namespace QuestTools.ProfileTags
                 return;
 
             // I added this because GridSegmentation may (rarely) reset itself without us doing it to 15/.55.
-            if ((BoxSize != 0 && BoxTolerance != 0) && (GridSegmentation.BoxSize != BoxSize || GridSegmentation.BoxTolerance != BoxTolerance) || (GetGridSegmentationNodeCount() == 0))
+            if ((BoxSize != 0 && BoxTolerance != 0) && (GridSegmentation.BoxSize != BoxSize || GridSegmentation.BoxTolerance != BoxTolerance) || (GetGridRouteNodeCount() == 0))
             {
-                Logger.Debug("Box Size or Tolerance has been changed! {0}/{1} NodeCount={2}", GridSegmentation.BoxSize, GridSegmentation.BoxTolerance, GetGridSegmentationNodeCount());
+                Logger.Debug("Box Size or Tolerance has been changed! {0}/{1} NodeCount={2}", GridSegmentation.BoxSize, GridSegmentation.BoxTolerance, GetGridRouteNodeCount());
 
                 GridRoute.Reset(BoxSize, BoxTolerance);
                 PrintNodeCounts("GridRoute.Reset");
@@ -676,12 +678,12 @@ namespace QuestTools.ProfileTags
 
         private static bool DungeonRouteIsValid()
         {
-            return BrainBehavior.DungeonExplorer != null && GridRoute.CurrentRoute != null && GridRoute.CurrentRoute.Any();
+            return GridRoute.CurrentRoute != null && GridRoute.CurrentRoute.Any();
         }
 
         private static bool DungeonRouteIsEmpty()
         {
-            return BrainBehavior.DungeonExplorer != null && GridRoute.CurrentRoute != null && !GridRoute.CurrentRoute.Any();
+            return GridRoute.CurrentRoute != null && !GridRoute.CurrentRoute.Any();
         }
 
         private bool CurrentActorIsFinished
@@ -980,7 +982,7 @@ namespace QuestTools.ProfileTags
                         new Action(ret => _isDone = true)
                     )
                 ),
-                new Decorator(ret => EndType == ExploreEndType.FullyExplored && IgnoreLastNodes > 0 && GetRouteUnvisitedNodeCount() <= IgnoreLastNodes && GetGridSegmentationVisistedNodeCount() >= MinVisistedNodes,
+                new Decorator(ret => EndType == ExploreEndType.FullyExplored && IgnoreLastNodes > 0 && GetRouteUnvisitedNodeCount() <= IgnoreLastNodes && GetGridRouteVisistedNodeCount() >= MinVisistedNodes,
                     new Sequence(
                         new Action(ret => Logger.Log("Fully explored area! Ignoring {0} nodes. Tag Finished.", IgnoreLastNodes)),
                         new Action(ret => _isDone = true)
@@ -1386,7 +1388,7 @@ namespace QuestTools.ProfileTags
         {
             if (GetIsInPandemoniumFortress() && CurrentNavTarget != GridRoute.CurrentNode.NavigableCenter)
             {
-                var dungeonNode = GridSegmentation.Nodes.FirstOrDefault(n => n.NavigableCenter == CurrentNavTarget);
+                var dungeonNode = GridRoute.Nodes.FirstOrDefault(n => n.NavigableCenter == CurrentNavTarget);
                 if (dungeonNode != null)
                     dungeonNode.Visited = true;
             }
@@ -1405,7 +1407,7 @@ namespace QuestTools.ProfileTags
         public void MarkNearbyNodesVisited()
         {
             bool update = false;
-            foreach (var node in GridRoute.GridNodes)
+            foreach (var node in GridRoute.Nodes)
             {
                 if (!node.Visited && node.NavigableCenter.Distance2DSqr(MyPosition) < (PathPrecision * PathPrecision))
                 {
@@ -1445,8 +1447,8 @@ namespace QuestTools.ProfileTags
             var log = String.Format("Nodes [Unvisited: Route:{0} Grid:{1} | Grid-Visited: {2}/{3}] Box:{4}/{5} Step:{6} PP:{7:0} Dir: {8} Current: {9}",
                 GetRouteUnvisitedNodeCount(),                                // 0
                 GetGridSegmentationUnvisitedNodeCount(),                     // 2
-                GetGridSegmentationVisistedNodeCount(),                      // 1
-                GetGridSegmentationNodeCount(),                              // 3
+                GetGridRouteVisistedNodeCount(),                      // 1
+                GetGridRouteNodeCount(),                              // 3
                 GridSegmentation.BoxSize,                                    // 4
                 GridSegmentation.BoxTolerance,                               // 5
                 step,                                                        // 6
@@ -1504,8 +1506,8 @@ namespace QuestTools.ProfileTags
         /// <returns></returns>
         private static int GetGridSegmentationUnvisitedNodeCount()
         {
-            if (GetGridSegmentationNodeCount() > 0)
-                return GridRoute.GridNodes.Count(n => !n.Visited);
+            if (GetGridRouteNodeCount() > 0)
+                return GridRoute.Nodes.Count(n => !n.Visited);
             return 0;
         }
 
@@ -1513,10 +1515,10 @@ namespace QuestTools.ProfileTags
         /// Gets the number of Visited nodes as reported by the Grid Segmentation provider
         /// </summary>
         /// <returns></returns>
-        private int GetGridSegmentationVisistedNodeCount()
+        private int GetGridRouteVisistedNodeCount()
         {
             if (GetCurrentRouteNodeCount() > 0)
-                return GridRoute.GridNodes.Count(n => n.Visited);
+                return GridRoute.Nodes.Count(n => n.Visited);
             return 0;
         }
 
@@ -1524,10 +1526,10 @@ namespace QuestTools.ProfileTags
         /// Gets the total number of nodes with the current BoxSize/Tolerance as reported by the Grid Segmentation Provider
         /// </summary>
         /// <returns></returns>
-        private static int GetGridSegmentationNodeCount()
+        private static int GetGridRouteNodeCount()
         {
-            if (GridSegmentation.Nodes != null)
-                return GridRoute.GridNodes.Count();
+            if (GridRoute.Nodes != null)
+                return GridRoute.Nodes.Count();
             return 0;
         }
         #endregion
@@ -1615,9 +1617,11 @@ namespace QuestTools.ProfileTags
             {
                 Logger.Debug(
                     "Initialized ExploreDungeon: boxSize={0} boxTolerance={1:0.00} endType={2} timeoutType={3} timeoutValue={4} " +
-                    "pathPrecision={5:0} sceneId={6} actorId={7} objectDistance={8} markerDistance={9} exitNameHash={10} routeMode={11} direction={12}",
+                    "pathPrecision={5:0} sceneId={6} actorId={7} objectDistance={8} markerDistance={9} exitNameHash={10} routeMode={11} direction={12} " +
+                    "setNodesExploredAutomatically={13}",
                     GridSegmentation.BoxSize, GridSegmentation.BoxTolerance, EndType, ExploreTimeoutType, TimeoutValue,
-                    PathPrecision, SceneId, ActorId, ObjectDistance, MarkerDistance, ExitNameHash, RouteMode, Direction);
+                    PathPrecision, SceneId, ActorId, ObjectDistance, MarkerDistance, ExitNameHash, RouteMode, Direction, 
+                    SetNodesExploredAutomatically);
             }
             _initDone = true;
         }
@@ -1762,12 +1766,12 @@ namespace QuestTools.ProfileTags
 
         private void GetPandFortressNavTarget()
         {
-            if (_lastPandFortressTarget != Vector3.Zero && GridSegmentation.Nodes.Any(n => n.Visited && n.NavigableCenter == _lastPandFortressTarget))
+            if (_lastPandFortressTarget != Vector3.Zero && GridRoute.Nodes.Any(n => n.Visited && n.NavigableCenter == _lastPandFortressTarget))
             {
                 _lastPandFortressTarget = Vector3.Zero;
             }
 
-            List<Tuple<Vector3, Vector2>> nodeList = GridSegmentation.Nodes
+            List<Tuple<Vector3, Vector2>> nodeList = GridRoute.Nodes
                 .Where(n => !n.Visited)
                 .OrderBy(n => n.Center.DistanceSqr(MyPosition.ToVector2()))
                 .Select(n => new Tuple<Vector3, Vector2>(n.NavigableCenter, n.Center))
