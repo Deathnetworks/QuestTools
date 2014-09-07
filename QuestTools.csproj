@@ -113,6 +113,8 @@
     <Compile Include="ProfileTags\CompleteGreaterRift.cs" />
     <Compile Include="ProfileTags\Complex\ActBountiesComplete.cs" />
     <Compile Include="ProfileTags\Complex\BaseComplexNodeTag.cs" />
+    <Compile Include="ProfileTags\Complex\HasNoRiftKeysTag.cs" />
+    <Compile Include="ProfileTags\Complex\HasNormalRiftKeysTag.cs" />
     <Compile Include="ProfileTags\Complex\IfRandom.cs" />
     <Compile Include="ProfileTags\Complex\LoadOnce.cs" />
     <Compile Include="ProfileTags\Depreciated\TrinityCombatIgnore.cs" />

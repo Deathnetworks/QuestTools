@@ -111,6 +111,9 @@ namespace QuestTools.ProfileTags.Movement
         [XmlAttribute("exitWithConversation")]
         public bool ExitWithConversation { get; set; }
 
+        [XmlAttribute("exitWithVendorWindow")]
+        public bool ExitWithVendorWindow { get; set; }
+
         // Special configuration if you want to tweak things:
         private bool _verbose;
         private int _interactWaitMilliSeconds = 250;
@@ -279,6 +282,10 @@ namespace QuestTools.ProfileTags.Movement
             {
                 GameUI.SafeClickElement(GameUI.TalktoInteractButton1, "Conversation Interaction Button 1");
                 EndDebug("Clicked Conversation Interaction Button 1");
+            }
+            if (ExitWithVendorWindow && UIElements.VendorWindow.IsVisible)
+            {
+                EndDebug("Vendor window is visible");
             }
             if (_moveResult == MoveResult.ReachedDestination && _actor == null)
             {

@@ -11,8 +11,6 @@ namespace QuestTools
 {
     class Config
     {
-        public int ServerPort { get; set; }
-
         private static Window _configWindow;
 
         public static void CloseWindow()

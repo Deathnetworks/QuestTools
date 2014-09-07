@@ -2,7 +2,9 @@
 using System.Threading.Tasks;
 using Buddy.Coroutines;
 using Zeta.Bot;
+using Zeta.Bot.Logic;
 using Zeta.Bot.Profile;
+using Zeta.Game;
 using Zeta.Game.Internals;
 using Zeta.TreeSharp;
 using Zeta.XmlEngine;
@@ -64,35 +66,40 @@ namespace QuestTools.ProfileTags
                 UIElement selectedGemButton = UIElement.FromName(selectedGem);
                 if (selectedGemButton != null && selectedGemButton.IsVisible && selectedGemButton.IsEnabled)
                 {
-                    GameUI.SafeClickElement(selectedGemButton);
+                    GameUI.SafeClickElement(selectedGemButton, "Gem Selection Icon");
                     await Coroutine.Sleep(250);
                     await Coroutine.Yield();
                 }
 
                 if (UpgradeButton != null && UpgradeButton.IsVisible && UpgradeButton.IsEnabled)
                 {
-                    GameUI.SafeClickElement(UpgradeButton);
+                    GameUI.SafeClickElement(UpgradeButton, "Upgrade Button");
                     await Coroutine.Sleep(250);
                     await Coroutine.Yield();
                 }
             }
 
-            if (GameUI.IsElementVisible(ContinueButton) && ContinueButton.IsVisible)
+            if (GameUI.IsElementVisible(ContinueButton) && ContinueButton.IsVisible && ContinueButton.IsEnabled)
             {
-                GameUI.SafeClickElement(ContinueButton);
+                GameUI.SafeClickElement(ContinueButton,"Continue Button");
                 await Coroutine.Sleep(250);
                 await Coroutine.Yield();
             }
 
-            if (GameUI.IsElementVisible(UpgradeKeystoneButton) && UpgradeKeystoneButton.IsEnabled)
+            if (GameUI.IsElementVisible(UpgradeKeystoneButton) && UpgradeKeystoneButton.IsEnabled && UpgradeKeystoneButton.IsEnabled)
             {
-                GameUI.SafeClickElement(UpgradeKeystoneButton);
+                // new DWordDataMessage(Opcode.DWordDataMessage19, 3).Send();
+                var keyStonedm = new DwordDataMessage(Opcode.DWordDataMessage18, 3);
+
+                
+
+                GameUI.SafeClickElement(UpgradeKeystoneButton, "Upgrade Keystone Option Button");
                 await Coroutine.Sleep(250);
                 await Coroutine.Yield();
             }
-            else if (GameUI.IsElementVisible(UpgradeGemButton) && UpgradeGemButton.IsEnabled)
+            else if (GameUI.IsElementVisible(UpgradeGemButton) && UpgradeGemButton.IsEnabled && UpgradeGemButton.IsEnabled)
             {
-                GameUI.SafeClickElement(UpgradeGemButton);
+                GameUI.SafeClickElement(UpgradeGemButton, "Upgrade Gem Option Button");
                 await Coroutine.Sleep(250);
                 await Coroutine.Yield();
             }

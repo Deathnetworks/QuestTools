@@ -31,7 +31,7 @@ namespace QuestTools
         }
 
         public QuestToolsSettings() :
-            base(Path.Combine(SettingsDirectory, "QuestTools", BattleTagName, "QuestToolsSettings.xml"))
+            base(Path.Combine(SettingsDirectory, BattleTagName, "QuestTools", "QuestToolsSettings.xml"))
         {
         }
 
