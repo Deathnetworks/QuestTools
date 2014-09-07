@@ -98,6 +98,7 @@
     <Compile Include="Helpers\DataDictionary.cs" />
     <Compile Include="Helpers\BotEvents.cs" />
     <Compile Include="Helpers\Death.cs" />
+    <Compile Include="Helpers\ItemManager.cs" />
     <Compile Include="Navigation\GridProvider.cs" />
     <Compile Include="Navigation\GridRoute.cs" />
     <Compile Include="Helpers\MathUtil.cs" />
@@ -105,7 +106,6 @@
     <Compile Include="Helpers\PositionCache.cs" />
     <Compile Include="Helpers\StringUtils.cs" />
     <Compile Include="Helpers\TrinityApi.cs" />
-    <Compile Include="Navigation\SceneDungeonNode.cs" />
     <Compile Include="Navigation\SceneSegmentation.cs" />
     <Compile Include="Navigation\WeightedDungeonNode.cs" />
     <Compile Include="Player.cs" />

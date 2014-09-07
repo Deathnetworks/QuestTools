@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Reflection;
 using System.Text;
 using System.Windows;
@@ -25,33 +26,39 @@ namespace QuestTools
             {
                 _configWindow = new Window();
             }
-
-            string assemblyPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
-            if (assemblyPath != null)
+            try
             {
-                string xamlPath = Path.Combine(assemblyPath, "Plugins", "QuestTools", "Config.xaml");
 
-                string xamlContent = File.ReadAllText(xamlPath);
+                string assemblyPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
+                if (assemblyPath != null)
+                {
+                    string xamlPath = Path.Combine(assemblyPath, "Plugins", "QuestTools", "Config.xaml");
 
-                xamlContent = xamlContent.Replace("xmlns:nav=\"clr-namespace:QuestTools.Navigation\"", 
-                    "xmlns:nav=\"clr-namespace:QuestTools.Navigation;assembly=" + Assembly.GetExecutingAssembly().GetName().Name + "\"");
+                    string xamlContent = File.ReadAllText(xamlPath);
 
-                // This hooks up our object with our UserControl DataBinding
-                _configWindow.DataContext = QuestToolsSettings.Instance;
+                    xamlContent = xamlContent.Replace("xmlns:nav=\"clr-namespace:QuestTools.Navigation\"",
+                        "xmlns:nav=\"clr-namespace:QuestTools.Navigation;assembly=" + Assembly.GetExecutingAssembly().GetName().Name + "\"");
 
-                UserControl mainControl = (UserControl)XamlReader.Load(new MemoryStream(Encoding.UTF8.GetBytes(xamlContent)));
-                _configWindow.Content = mainControl;
+                    // This hooks up our object with our UserControl DataBinding
+                    _configWindow.DataContext = QuestToolsSettings.Instance;
+
+                    UserControl mainControl = (UserControl)XamlReader.Load(new MemoryStream(Encoding.UTF8.GetBytes(xamlContent)));
+                    _configWindow.Content = mainControl;
+                }
+                _configWindow.Width = 500;
+                _configWindow.Height = 200;
+                _configWindow.ResizeMode = ResizeMode.NoResize;
+                _configWindow.Background = Brushes.DarkGray;
+
+                _configWindow.Title = "QuestTools";
+
+                _configWindow.Closed += ConfigWindow_Closed;
+                Application.Current.Exit += ConfigWindow_Closed;
             }
-            _configWindow.Width = 500;
-            _configWindow.Height = 200;
-            _configWindow.ResizeMode = ResizeMode.NoResize;
-            _configWindow.Background = Brushes.DarkGray;
-
-            _configWindow.Title = "QuestTools";
-
-            _configWindow.Closed += ConfigWindow_Closed;
-            Application.Current.Exit += ConfigWindow_Closed;
-
+            catch (Exception ex)
+            {
+                Logger.LogError("Error opening QuestTools Config Window: {0}", ex);
+            }
             return _configWindow;
         }
 

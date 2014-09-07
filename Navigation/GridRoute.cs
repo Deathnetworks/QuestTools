@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.Linq;
 using Zeta.Bot;
 using Zeta.Bot.Dungeons;
+using Zeta.Bot.Logic;
 using Zeta.Common;
 using Zeta.Game;
 using Zeta.Game.Internals;
@@ -19,7 +20,7 @@ namespace QuestTools.Navigation
         WeightedNearestUnvisited, // Rank by number of unvisited nodes connected to node
         WeightedNearestVisisted, // Rank by number of visisted nodes connected to node
         WeightedNearestMinimapUnvisited, // Rank by number of unvisited nodes connected to node, as shown on minimap
-        WeightedNearestMinimapVisisted, // Rank by number of visisted nodes connected to node, as shown on minimap
+        WeightedNearestMinimapVisited, // Rank by number of visisted nodes connected to node, as shown on minimap
         SceneTSP, // Scene exploration, traveling salesman problem
         SceneDirection, // Scene exploration, by direction
     }
@@ -165,17 +166,19 @@ namespace QuestTools.Navigation
 
         internal static void Update()
         {
-            SceneSegmentation.Update();
-            GridSegmentation.Update();
 
             switch (RouteMode)
             {
                 case RouteMode.Default:
-                    GridSegmentation.Update();
+                    // GridSegmentation.Update();
                     DungeonExplorer.Update();
                     break;
                 case RouteMode.SceneTSP:
                 case RouteMode.SceneDirection:
+                    SceneSegmentation.Update();
+                    break;
+                default:
+                    GridSegmentation.Update();
                     break;
             }
 
@@ -190,7 +193,11 @@ namespace QuestTools.Navigation
             switch (RouteMode)
             {
                 case RouteMode.Default:
-                    route = Zeta.Bot.Logic.BrainBehavior.DungeonExplorer.CurrentRoute;
+                    {
+                        if (BrainBehavior.DungeonExplorer.CurrentRoute == null)
+                            BrainBehavior.DungeonExplorer.Update();
+                        route = BrainBehavior.DungeonExplorer.CurrentRoute;
+                    }
                     break;
                 case RouteMode.NearestUnvisited:
                     route = GetNearestUnvisitedRoute();
@@ -207,7 +214,7 @@ namespace QuestTools.Navigation
                 case RouteMode.WeightedNearestMinimapUnvisited:
                     route = GetWeightedNearestMinimapUnvisitedRoute();
                     break;
-                case RouteMode.WeightedNearestMinimapVisisted:
+                case RouteMode.WeightedNearestMinimapVisited:
                     route = GetWeightedNearestMinimapVisitedRoute();
                     break;
                 case RouteMode.SceneTSP:
@@ -532,7 +539,6 @@ namespace QuestTools.Navigation
         internal static void Reset(int boxSize = 30, float boxTolerance = 0.05f)
         {
             GridSegmentation.Reset(boxSize, boxTolerance);
-            GridSegmentation.Update();
 
             switch (RouteMode)
             {

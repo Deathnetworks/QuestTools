@@ -510,7 +510,8 @@ namespace QuestTools.ProfileTags
 
             GridRoute.RouteMode = RouteMode;
 
-            GridSegmentation.Update();
+            if (RouteMode != RouteMode.Default)
+                GridSegmentation.Update();
             GridRoute.Update();
 
             // Don't forget this...
@@ -902,8 +903,6 @@ namespace QuestTools.ProfileTags
                             PositionCache.Cache.Clear();
                             MiniMapMarker.KnownMarkers.Clear();
                             ForceUpdateScenes();
-                            GridSegmentation.Reset();
-                            GridSegmentation.Update();
                             GridRoute.Reset(BoxSize, BoxTolerance);
                             _priorityScenesInvestigated.Clear();
                             UpdateRoute();
@@ -1620,7 +1619,7 @@ namespace QuestTools.ProfileTags
                     "pathPrecision={5:0} sceneId={6} actorId={7} objectDistance={8} markerDistance={9} exitNameHash={10} routeMode={11} direction={12} " +
                     "setNodesExploredAutomatically={13}",
                     GridSegmentation.BoxSize, GridSegmentation.BoxTolerance, EndType, ExploreTimeoutType, TimeoutValue,
-                    PathPrecision, SceneId, ActorId, ObjectDistance, MarkerDistance, ExitNameHash, RouteMode, Direction, 
+                    PathPrecision, SceneId, ActorId, ObjectDistance, MarkerDistance, ExitNameHash, RouteMode, Direction,
                     SetNodesExploredAutomatically);
             }
             _initDone = true;

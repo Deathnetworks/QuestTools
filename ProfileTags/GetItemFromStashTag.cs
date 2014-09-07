@@ -8,6 +8,7 @@ using Buddy.Coroutines;
 using Zeta.Bot;
 using Zeta.Bot.Coroutines;
 using Zeta.Bot.Profile;
+using Zeta.Bot.Settings;
 using Zeta.Common;
 using Zeta.Game;
 using Zeta.Game.Internals;
@@ -22,8 +23,11 @@ namespace QuestTools.ProfileTags
     {
         private const int SharedStashSNO = 130400;
 
-        [XmlAttribute("itemDynamicId")]
-        public int ItemDynamicId { get; set; }
+        [XmlAttribute("gameBalanceId")]
+        public int GameBalanceId { get; set; }
+
+        [XmlAttribute("actorId")]
+        public int ActorId { get; set; }
 
         [XmlAttribute("stackCount")]
         public int StackCount { get; set; }
@@ -71,12 +75,33 @@ namespace QuestTools.ProfileTags
 
         private async Task<bool> GetItemFromStashRoutine()
         {
+            // Validate parameters
+            if (GameBalanceId == 0 && ActorId == 0)
+            {
+                Logger.LogError("GetItemFromStash: invalid parameters. Please specify at least gameBalanceId=\"\" or actorId=\"\" with valid ID numbers");
+                _isDone = true;
+                return true;
+            }
+
+            var backPackCount = ZetaDia.Me.Inventory.Backpack.Where(i => i.GameBalanceId == GameBalanceId || i.ActorSNO == ActorId).Sum(i => i.ItemStackQuantity);
+
+            // Check to see if we already have the stack in our backpack
+            if (StackCount != 0 && backPackCount >= StackCount)
+            {
+                Logger.Log("Already have {0} items in our backpack (GameBalanceId={1} ActorSNO={2})", backPackCount, GameBalanceId, ActorId);
+                _isDone = true;
+                return true;
+            }
+
+            // Go to Town
             if (!ZetaDia.IsInTown)
                 await CommonCoroutines.UseTownPortal("Returning to Town to get Item");
 
+            // Move to Stash
             if (StashLocation.Distance2D(ZetaDia.Me.Position) > 10f)
                 await CommonCoroutines.MoveAndStop(StashLocation, 10f, "Stash Location");
 
+            // Open Stash
             if (StashLocation.Distance2D(ZetaDia.Me.Position) <= 10f && SharedStash != null && !UIElements.StashWindow.IsVisible)
             {
                 SharedStash.Interact();
@@ -85,16 +110,48 @@ namespace QuestTools.ProfileTags
 
             if (UIElements.StashWindow.IsVisible)
             {
-               var itemList = ZetaDia.Me.Inventory.StashItems.ToList();
-               if (itemList.All(item => item.DynamicId != ItemDynamicId))
-               {
-                   Logger.LogError("Unable to find item in stash with ItemId {0}", ItemDynamicId);
-                   _isDone = true;
-               }
+                var itemList = ZetaDia.Me.Inventory.StashItems.Where(i => i.GameBalanceId == GameBalanceId || i.ActorSNO == ActorId).ToList();
+                var firstItem = itemList.FirstOrDefault();
+
+                // Check to see if we have the item in the stash
+                bool invalidGameBalanceId = false, invalidActorId = false;
+                if (GameBalanceId != 0 && itemList.All(item => item.GameBalanceId != GameBalanceId))
+                {
+                    Logger.LogError("Unable to find item in stash with GameBalanceId {0}", GameBalanceId);
+                    invalidGameBalanceId = true;
+                }
+                if (ActorId != 0 && itemList.All(item => item.GameBalanceId != GameBalanceId))
+                {
+                    Logger.LogError("Unable to find item in stash with ActorSNO {0}", GameBalanceId);
+                    invalidActorId = true;
+                }
+                if (invalidGameBalanceId && invalidActorId)
+                {
+                    _isDone = true;
+                    return true;
+                }
+
+                Vector2 freeItemSlot = Helpers.ItemManager.FindValidBackpackLocation(firstItem.IsTwoSquareItem);
+
+                if (freeItemSlot.X == -1 && freeItemSlot.Y == -1)
+                {
+                    Logger.Log("No free slots to move items to");
+                    _isDone = true;
+                    return true;
+                }
+
+                while (StackCount < backPackCount)
+                {
+                    var item = ZetaDia.Me.Inventory.StashItems.FirstOrDefault(i => i.GameBalanceId == GameBalanceId || i.ActorSNO == ActorId);
+                    Logger.Debug("Withdrawing item {0} from stash {0}", item.Name);
+                    ZetaDia.Me.Inventory.QuickWithdraw(item);
+                    await Coroutine.Yield();
+                }
             }
 
             return true;
         }
 
+      
     }
 }
