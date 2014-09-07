@@ -110,6 +110,7 @@
     <Compile Include="Navigation\WeightedDungeonNode.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Plugin.cs" />
+    <Compile Include="ProfileTags\CompleteGreaterRift.cs" />
     <Compile Include="ProfileTags\Complex\ActBountiesComplete.cs" />
     <Compile Include="ProfileTags\Complex\BaseComplexNodeTag.cs" />
     <Compile Include="ProfileTags\Complex\IfRandom.cs" />
@@ -122,6 +123,7 @@
     <Compile Include="ProfileTags\Depreciated\TrinityLog.cs" />
     <Compile Include="ProfileTags\Depreciated\TrinityMoveToSNO.cs" />
     <Compile Include="ProfileTags\GetItemFromStashTag.cs" />
+    <Compile Include="ProfileTags\HasGreaterRiftKeys.cs" />
     <Compile Include="ProfileTags\Movement\MoveToScene.cs" />
     <Compile Include="ProfileTags\Movement\MoveToObjective.cs" />
     <Compile Include="ProfileTags\RandomRoll.cs" />

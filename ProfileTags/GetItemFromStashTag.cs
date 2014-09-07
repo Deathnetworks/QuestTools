@@ -1,14 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using Buddy.Coroutines;
 using Zeta.Bot;
 using Zeta.Bot.Coroutines;
 using Zeta.Bot.Profile;
-using Zeta.Bot.Settings;
 using Zeta.Common;
 using Zeta.Game;
 using Zeta.Game.Internals;
@@ -31,6 +28,9 @@ namespace QuestTools.ProfileTags
 
         [XmlAttribute("stackCount")]
         public int StackCount { get; set; }
+
+        [XmlAttribute("greaterRiftKey")]
+        public bool GreaterRiftKey { get; set; }
 
         private bool _isDone;
         public override bool IsDone
@@ -73,17 +73,30 @@ namespace QuestTools.ProfileTags
             return new ActionRunCoroutine(ret => GetItemFromStashRoutine());
         }
 
+        private Func<ACDItem, bool> ItemMatcherFunc
+        {
+            get
+            {
+                return i => (
+                    i.GameBalanceId == GameBalanceId || 
+                    i.ActorSNO == ActorId ||
+                    (GreaterRiftKey && i.GetAttribute<int>(ActorAttributeType.TieredLootRunKeyLevel) > 0)
+                    );
+            }
+        }
+
         private async Task<bool> GetItemFromStashRoutine()
         {
+            ConditionParser p;
             // Validate parameters
-            if (GameBalanceId == 0 && ActorId == 0)
+            if (GameBalanceId == 0 && ActorId == 0 && !GreaterRiftKey)
             {
-                Logger.LogError("GetItemFromStash: invalid parameters. Please specify at least gameBalanceId=\"\" or actorId=\"\" with valid ID numbers");
+                Logger.LogError("GetItemFromStash: invalid parameters. Please specify at least gameBalanceId=\"\" or actorId=\"\" with valid ID numbers or set greaterRiftKey=\"True\"");
                 _isDone = true;
                 return true;
             }
 
-            var backPackCount = ZetaDia.Me.Inventory.Backpack.Where(i => i.GameBalanceId == GameBalanceId || i.ActorSNO == ActorId).Sum(i => i.ItemStackQuantity);
+            var backPackCount = ZetaDia.Me.Inventory.Backpack.Where(ItemMatcherFunc).Sum(i => i.ItemStackQuantity);
 
             // Check to see if we already have the stack in our backpack
             if (StackCount != 0 && backPackCount >= StackCount)
@@ -110,7 +123,7 @@ namespace QuestTools.ProfileTags
 
             if (UIElements.StashWindow.IsVisible)
             {
-                var itemList = ZetaDia.Me.Inventory.StashItems.Where(i => i.GameBalanceId == GameBalanceId || i.ActorSNO == ActorId).ToList();
+                var itemList = ZetaDia.Me.Inventory.StashItems.Where(ItemMatcherFunc).ToList();
                 var firstItem = itemList.FirstOrDefault();
 
                 // Check to see if we have the item in the stash
@@ -125,7 +138,7 @@ namespace QuestTools.ProfileTags
                     Logger.LogError("Unable to find item in stash with ActorSNO {0}", GameBalanceId);
                     invalidActorId = true;
                 }
-                if (invalidGameBalanceId && invalidActorId)
+                if (firstItem == null || (invalidGameBalanceId && invalidActorId))
                 {
                     _isDone = true;
                     return true;
@@ -142,7 +155,9 @@ namespace QuestTools.ProfileTags
 
                 while (StackCount < backPackCount)
                 {
-                    var item = ZetaDia.Me.Inventory.StashItems.FirstOrDefault(i => i.GameBalanceId == GameBalanceId || i.ActorSNO == ActorId);
+                    var item = ZetaDia.Me.Inventory.StashItems.FirstOrDefault(ItemMatcherFunc);
+                    if (item == null)
+                        break;
                     Logger.Debug("Withdrawing item {0} from stash {0}", item.Name);
                     ZetaDia.Me.Inventory.QuickWithdraw(item);
                     await Coroutine.Yield();
@@ -151,7 +166,5 @@ namespace QuestTools.ProfileTags
 
             return true;
         }
-
-      
     }
 }

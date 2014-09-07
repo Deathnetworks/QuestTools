@@ -20,7 +20,7 @@ namespace QuestTools
             var method = frame.GetMethod();
             var type = method.DeclaringType;
 
-            string msg = string.Format("[{0}] " + string.Format(message, args), type.Name);
+            string msg = "[QuestTools][" + type.Name + "] " + string.Format(message, args);
 
             if (_lastLogMessage == msg)
                 return;

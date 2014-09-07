@@ -937,13 +937,6 @@ namespace QuestTools.ProfileTags
                 .FirstOrDefault();
             }
 
-            //if (miniMapMarker != null)
-            //{
-            //    Logger.Debug("Using Objective Style Minimap Marker: {0} isExit: {1} isEntrance {2}",
-            //        miniMapMarker.NameHash,
-            //        miniMapMarker.IsPortalExit,
-            //        miniMapMarker.IsPortalEntrance);
-            //}
             return miniMapMarker;
         }
 
@@ -1220,7 +1213,6 @@ namespace QuestTools.ProfileTags
                 Vector3 zoneCenter = SceneSegmentation.GetNavZoneCenter(navZone);
 
                 List<NavCell> navCells = zoneDef.NavCells.Where(c => c.IsValid && c.Flags.HasFlag(NavCellFlags.AllowWalk)).ToList();
-
                 if (!navCells.Any())
                     continue;
 
