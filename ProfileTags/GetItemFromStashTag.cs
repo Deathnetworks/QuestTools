@@ -92,7 +92,6 @@ namespace QuestTools.ProfileTags
 
         private async Task<bool> GetItemFromStashRoutine()
         {
-            ConditionParser p;
             // Validate parameters
             if (GameBalanceId == 0 && ActorId == 0 && !GreaterRiftKey)
             {
