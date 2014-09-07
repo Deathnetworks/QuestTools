@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Data;
@@ -10,6 +11,8 @@ using Zeta.Common;
 using Zeta.Game;
 using Zeta.Game.Internals;
 using Zeta.Game.Internals.Actors;
+using Zeta.Game.Internals.Actors.Gizmos;
+using Zeta.Game.Internals.SNO;
 using Zeta.TreeSharp;
 using Zeta.XmlEngine;
 
@@ -60,11 +63,13 @@ namespace QuestTools.ProfileTags
             }
         }
 
+        // [202472F0] GizmoType: SharedStash Name: Player_Shared_Stash-2767 ActorSNO: 130400 Distance: 3.39224 Position: <502.8296, 739.7472, 2.598635> Barracade: False Radius: 7.982353
         private static DiaGizmo SharedStash
         {
             get
             {
-                return ZetaDia.Actors.GetActorsOfType<DiaGizmo>().FirstOrDefault(o => o.IsValid && o.ActorSNO == SharedStashSNO);
+                return ZetaDia.Actors.GetActorsOfType<GizmoPlayerSharedStash>()
+                    .FirstOrDefault(o => o.IsValid && o.ActorInfo.IsValid && o.ActorInfo.GizmoType == GizmoType.SharedStash);
             }
         }
 
@@ -78,9 +83,9 @@ namespace QuestTools.ProfileTags
             get
             {
                 return i => (
-                    i.GameBalanceId == GameBalanceId || 
+                    i.GameBalanceId == GameBalanceId ||
                     i.ActorSNO == ActorId ||
-                    (GreaterRiftKey && i.GetAttribute<int>(ActorAttributeType.TieredLootRunKeyLevel) > 0)
+                    (GreaterRiftKey && i.GetAttribute<int>(ActorAttributeType.TieredLootRunKeyLevel) > -1)
                     );
             }
         }
@@ -114,15 +119,22 @@ namespace QuestTools.ProfileTags
             if (StashLocation.Distance2D(ZetaDia.Me.Position) > 10f)
                 await CommonCoroutines.MoveAndStop(StashLocation, 10f, "Stash Location");
 
+            if (StashLocation.Distance2D(ZetaDia.Me.Position) <= 10f && SharedStash == null)
+            {
+                Logger.LogError("Shared Stash actor is null!");
+            }
+
             // Open Stash
             if (StashLocation.Distance2D(ZetaDia.Me.Position) <= 10f && SharedStash != null && !UIElements.StashWindow.IsVisible)
             {
+                Logger.Log("Opening Stash");
                 SharedStash.Interact();
                 await Coroutine.Sleep(500);
             }
 
             if (UIElements.StashWindow.IsVisible)
             {
+                Logger.Debug("Stash window is visible");
                 var itemList = ZetaDia.Me.Inventory.StashItems.Where(ItemMatcherFunc).ToList();
                 var firstItem = itemList.FirstOrDefault();
 
@@ -153,7 +165,7 @@ namespace QuestTools.ProfileTags
                     return true;
                 }
 
-                while (StackCount < backPackCount)
+                while (StackCount == 0 || StackCount < backPackCount)
                 {
                     var item = ZetaDia.Me.Inventory.StashItems.FirstOrDefault(ItemMatcherFunc);
                     if (item == null)
@@ -164,6 +176,7 @@ namespace QuestTools.ProfileTags
                 }
             }
 
+            Logger.Debug("No Action Taken");
             return true;
         }
     }
