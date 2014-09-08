@@ -18,7 +18,7 @@ namespace QuestTools.Navigation
         NearestUnvisited, // Simple sort on distance
         NearestMinimapUnvisited, // Simple sort on distance with Minimap checking
         WeightedNearestUnvisited, // Rank by number of unvisited nodes connected to node
-        WeightedNearestVisisted, // Rank by number of visisted nodes connected to node
+        WeightedNearestVisited, // Rank by number of visisted nodes connected to node
         WeightedNearestMinimapUnvisited, // Rank by number of unvisited nodes connected to node, as shown on minimap
         WeightedNearestMinimapVisited, // Rank by number of visisted nodes connected to node, as shown on minimap
         SceneTSP, // Scene exploration, traveling salesman problem
@@ -208,7 +208,7 @@ namespace QuestTools.Navigation
                 case RouteMode.WeightedNearestUnvisited:
                     route = GetWeightedNearestUnvisitedRoute();
                     break;
-                case RouteMode.WeightedNearestVisisted:
+                case RouteMode.WeightedNearestVisited:
                     route = GetWeightedNearestVisitedRoute();
                     break;
                 case RouteMode.WeightedNearestMinimapUnvisited:
