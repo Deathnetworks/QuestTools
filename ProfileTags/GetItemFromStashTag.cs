@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Data;
@@ -144,9 +143,9 @@ namespace QuestTools.ProfileTags
                     Logger.LogError("Unable to find item in stash with GameBalanceId {0}", GameBalanceId);
                     invalidGameBalanceId = true;
                 }
-                if (ActorId != 0 && itemList.All(item => item.GameBalanceId != GameBalanceId))
+                if (ActorId != 0 && itemList.All(item => item.ActorSNO != ActorId))
                 {
-                    Logger.LogError("Unable to find item in stash with ActorSNO {0}", GameBalanceId);
+                    Logger.LogError("Unable to find item in stash with ActorSNO {0}", ActorId);
                     invalidActorId = true;
                 }
                 if (firstItem == null || (invalidGameBalanceId && invalidActorId))
@@ -164,19 +163,37 @@ namespace QuestTools.ProfileTags
                     return true;
                 }
 
-                while (StackCount == 0 || StackCount < backPackCount)
+                while (StackCount == 0 || StackCount > backPackCount)
                 {
-                    var item = ZetaDia.Me.Inventory.StashItems.FirstOrDefault(ItemMatcherFunc);
+                    var item = ZetaDia.Me.Inventory.StashItems.Where(ItemMatcherFunc).OrderByDescending(i => i.ItemStackQuantity).FirstOrDefault();
                     if (item == null)
                         break;
                     Logger.Debug("Withdrawing item {0} from stash {0}", item.Name);
                     ZetaDia.Me.Inventory.QuickWithdraw(item);
                     await Coroutine.Yield();
+                    backPackCount = ZetaDia.Me.Inventory.Backpack.Where(ItemMatcherFunc).Sum(i => i.ItemStackQuantity);
+                }
+
+                if (backPackCount >= StackCount)
+                {
+                    _isDone = true;
+                    Logger.Log("Have stack count of {0} items in backpack", backPackCount);
+                    return true;
                 }
             }
 
-            Logger.Debug("No Action Taken");
+            Logger.Debug("No Action Taken (StackCount={0} backPackCount={1} GameBalanceId={2} ActorId={3} GreaterRiftKey={4}",
+                StackCount,
+                backPackCount,
+                GameBalanceId,
+                ActorId,
+                GreaterRiftKey);
             return true;
+        }
+        public override void ResetCachedDone()
+        {
+            _isDone = false;
+            base.ResetCachedDone();
         }
     }
 }

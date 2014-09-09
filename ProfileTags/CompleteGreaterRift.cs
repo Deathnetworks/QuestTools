@@ -1,11 +1,15 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Buddy.Coroutines;
 using Zeta.Bot;
+using Zeta.Bot.Coroutines;
 using Zeta.Bot.Logic;
 using Zeta.Bot.Profile;
+using Zeta.Bot.Profile.Common;
 using Zeta.Game;
 using Zeta.Game.Internals;
+using Zeta.Game.Internals.Actors;
 using Zeta.TreeSharp;
 using Zeta.XmlEngine;
 
@@ -37,7 +41,7 @@ namespace QuestTools.ProfileTags
         // C1 R1 [227F5FB0] Mouseover: 0x680DF143A98CB58E, Name: Root.NormalLayer.vendor_dialog_mainPage.riftReward_dialog.LayoutRoot.gemUpgradePane.items_list._content._stackpanel._tilerow0._item2
         // C2 R1 [1C5AABB0] Mouseover: 0x680DF043A98CB3DB, Name: Root.NormalLayer.vendor_dialog_mainPage.riftReward_dialog.LayoutRoot.gemUpgradePane.items_list._content._stackpanel._tilerow0._item1
         // C3 R1 [21CDCF70] Mouseover: 0x680DEF43A98CB228, Name: Root.NormalLayer.vendor_dialog_mainPage.riftReward_dialog.LayoutRoot.gemUpgradePane.items_list._content._stackpanel._tilerow0._item0        
-        
+
         public async Task<bool> CompleteGreaterRiftRoutine()
         {
             if (!GameUI.IsElementVisible(VendorDialog))
@@ -81,30 +85,38 @@ namespace QuestTools.ProfileTags
 
             if (GameUI.IsElementVisible(ContinueButton) && ContinueButton.IsVisible && ContinueButton.IsEnabled)
             {
-                GameUI.SafeClickElement(ContinueButton,"Continue Button");
+                GameUI.SafeClickElement(ContinueButton, "Continue Button");
                 await Coroutine.Sleep(250);
                 await Coroutine.Yield();
             }
 
-            if (GameUI.IsElementVisible(UpgradeKeystoneButton) && UpgradeKeystoneButton.IsEnabled && UpgradeKeystoneButton.IsEnabled)
+            if (ZetaDia.Me.AttemptUpgradeKeystone())
             {
-                // new DWordDataMessage(Opcode.DWordDataMessage19, 3).Send();
-                var keyStonedm = new DwordDataMessage(Opcode.DWordDataMessage18, 3);
-
-                
-
-                GameUI.SafeClickElement(UpgradeKeystoneButton, "Upgrade Keystone Option Button");
+                Logger.Log("Keystone Upgraded");
                 await Coroutine.Sleep(250);
                 await Coroutine.Yield();
             }
             else if (GameUI.IsElementVisible(UpgradeGemButton) && UpgradeGemButton.IsEnabled && UpgradeGemButton.IsEnabled)
             {
-                GameUI.SafeClickElement(UpgradeGemButton, "Upgrade Gem Option Button");
-                await Coroutine.Sleep(250);
-                await Coroutine.Yield();
+                var gems = ZetaDia.Actors.GetActorsOfType<ACDItem>().Where(item => item.ItemType == ItemType.LegendaryGem && item.InventorySlot == (InventorySlot)20);
+                if (!gems.Any())
+                    gems = ZetaDia.Actors.GetActorsOfType<ACDItem>().Where(item => item.ItemType == ItemType.LegendaryGem);
+                if (gems.Any())
+                {
+                    Logger.Log("Upgrading Gem");
+                    await CommonCoroutines.AttemptUpgradeGem(gems.FirstOrDefault());
+                    await Coroutine.Sleep(250);
+                    await Coroutine.Yield();
+                }
             }
 
             return true;
+        }
+
+        public override void ResetCachedDone()
+        {
+            _isDone = false;
+            base.ResetCachedDone();
         }
     }
 }

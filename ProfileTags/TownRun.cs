@@ -21,9 +21,15 @@ namespace QuestTools.ProfileTags
             get { return _isDone; }
         }
 
+        /// <summary>
+        /// The number of free bag slots we must have in order to NOT do a town run
+        /// </summary>
         [XmlAttribute("minFreeBagSlots")]
         public int MinFreeBagSlots { get; set; }
 
+        /// <summary>
+        /// The minimum durability we must have in order to NOT do a townrun
+        /// </summary>
         [XmlAttribute("minDurabilityPercent")]
         public int MinDurability { get; set; }
 
