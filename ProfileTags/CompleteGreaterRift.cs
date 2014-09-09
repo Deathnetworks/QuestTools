@@ -34,6 +34,7 @@ namespace QuestTools.ProfileTags
         public UIElement UpgradeGemButton { get { return UIElement.FromHash(0x826E5716E8D4DD05); } }
         public UIElement ContinueButton { get { return UIElement.FromHash(0x1A089FAFF3CB6576); } }
         public UIElement UpgradeButton { get { return UIElement.FromHash(0xD365EA84F587D2FE); } }
+        public UIElement VendorCloseButton { get { return UIElement.FromHash(0xF98A8466DE237BD5); } }
 
         // Upgrade Keystone: [1D898330] Mouseover: 0x4BDE2D63B5C36134, Name: Root.NormalLayer.vendor_dialog_mainPage.riftReward_dialog.LayoutRoot.rewardChoicePane.Container.advance_button
         // Upgrade Gem: [1D897180] Mouseover: 0x826E5716E8D4DD05, Name: Root.NormalLayer.vendor_dialog_mainPage.riftReward_dialog.LayoutRoot.rewardChoicePane.Container.upgrade_button1
@@ -51,61 +52,36 @@ namespace QuestTools.ProfileTags
                 return true;
             }
 
-            if (UpgradeButton.IsVisible)
-            {
-                const string gemButtonUpgradeBase = "Root.NormalLayer.vendor_dialog_mainPage.riftReward_dialog.LayoutRoot.gemUpgradePane.items_list._content._stackpanel._tile"; // row0._item0";
-                int gemsVisible = 0;
-                for (int c = 0; c < 5; c++)
-                {
-                    string rowcol = gemButtonUpgradeBase + string.Format("row0._item{0}", c);
-                    var gemUIbtn = UIElement.FromName(rowcol);
-                    if (gemUIbtn != null && gemUIbtn.IsVisible)
-                    {
-                        gemsVisible++;
-                    }
-                }
-                Random rand = new Random(DateTime.Now.Millisecond);
-                var randGem = rand.Next(0, gemsVisible);
-                string selectedGem = gemButtonUpgradeBase + string.Format("row0._item{0}", randGem);
-                UIElement selectedGemButton = UIElement.FromName(selectedGem);
-                if (selectedGemButton != null && selectedGemButton.IsVisible && selectedGemButton.IsEnabled)
-                {
-                    GameUI.SafeClickElement(selectedGemButton, "Gem Selection Icon");
-                    await Coroutine.Sleep(250);
-                    await Coroutine.Yield();
-                }
-
-                if (UpgradeButton != null && UpgradeButton.IsVisible && UpgradeButton.IsEnabled)
-                {
-                    GameUI.SafeClickElement(UpgradeButton, "Upgrade Button");
-                    await Coroutine.Sleep(250);
-                    await Coroutine.Yield();
-                }
-            }
-
             if (GameUI.IsElementVisible(ContinueButton) && ContinueButton.IsVisible && ContinueButton.IsEnabled)
             {
                 GameUI.SafeClickElement(ContinueButton, "Continue Button");
+                GameUI.SafeClickElement(VendorCloseButton);
                 await Coroutine.Sleep(250);
                 await Coroutine.Yield();
             }
 
-            if (ZetaDia.Me.AttemptUpgradeKeystone())
+            if (GameUI.IsElementVisible(UpgradeKeystoneButton) && UpgradeKeystoneButton.IsEnabled && ZetaDia.Me.AttemptUpgradeKeystone())
             {
                 Logger.Log("Keystone Upgraded");
+                GameUI.SafeClickElement(VendorCloseButton);
                 await Coroutine.Sleep(250);
                 await Coroutine.Yield();
             }
-            else if (GameUI.IsElementVisible(UpgradeGemButton) && UpgradeGemButton.IsEnabled && UpgradeGemButton.IsEnabled)
+            else if (VendorDialog.IsVisible)
             {
-                var gems = ZetaDia.Actors.GetActorsOfType<ACDItem>().Where(item => item.ItemType == ItemType.LegendaryGem && item.InventorySlot == (InventorySlot)20);
+                var gems = ZetaDia.Actors.GetActorsOfType<ACDItem>()
+                    .OrderByDescending(item => item.GetAttribute<int>(ActorAttributeType.JewelRank))
+                    .Where(item => item.ItemType == ItemType.LegendaryGem && item.InventorySlot == (InventorySlot)20);
                 if (!gems.Any())
-                    gems = ZetaDia.Actors.GetActorsOfType<ACDItem>().Where(item => item.ItemType == ItemType.LegendaryGem);
+                    gems = ZetaDia.Actors.GetActorsOfType<ACDItem>()
+                        .OrderByDescending(item => item.GetAttribute<int>(ActorAttributeType.JewelRank))
+                        .Where(item => item.ItemType == ItemType.LegendaryGem);
                 if (gems.Any())
                 {
                     Logger.Log("Upgrading Gem");
                     await CommonCoroutines.AttemptUpgradeGem(gems.FirstOrDefault());
                     await Coroutine.Sleep(250);
+                    GameUI.SafeClickElement(VendorCloseButton);
                     await Coroutine.Yield();
                 }
             }

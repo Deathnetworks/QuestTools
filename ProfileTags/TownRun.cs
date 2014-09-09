@@ -1,7 +1,10 @@
 ﻿using System.Linq;
+using System.Threading.Tasks;
 using QuestTools.Helpers;
+using Zeta.Bot;
 using Zeta.Bot.Profile;
 using Zeta.Game;
+using Zeta.Game.Internals.Actors;
 using Zeta.TreeSharp;
 using Zeta.XmlEngine;
 
@@ -39,6 +42,8 @@ namespace QuestTools.ProfileTags
         /// <returns></returns>
         public bool CheckMinBagSlots()
         {
+            if (MinFreeBagSlots > 60)
+                MinFreeBagSlots = 60;
             return GetFreeSlots() < MinFreeBagSlots;
         }
 
@@ -46,6 +51,13 @@ namespace QuestTools.ProfileTags
         {
             const int maxFreeSlots = 60;
             int slotsTaken = 0;
+
+            bool participatingInTieredLootRun = ZetaDia.Me.CommonData.GetAttribute<int>(ActorAttributeType.ParticipatingInTieredLootRun) > 0;
+            if (participatingInTieredLootRun)
+            {
+                return maxFreeSlots;
+            }
+
 
             if (MinFreeBagSlots == 0)
                 return maxFreeSlots;
@@ -84,20 +96,23 @@ namespace QuestTools.ProfileTags
 
         protected override Composite CreateBehavior()
         {
-            return new PrioritySelector(
-                new Decorator(ret => CheckDurability() || CheckMinBagSlots(),
-                    new Sequence(
-                        new Action(ret => Logger.Log("Town-run request received, will town-run at next possible moment.")),
-                //new Action(ret => Trinity.ForceVendorRunASAP = true),
-                        new Action(ret => TrinityApi.SetField("Trinity", "ForceVendorRunASAP", true)),
-                        new Action(ret => _isDone = true)
-                    )
-                ),
-                    new Sequence(
-                        new Action(ret => Logger.Log("Skipping TrinityTownRun")),
-                        new Action(ret => _isDone = true)
-                    )
-            );
+            return new ActionRunCoroutine(ret => TownRun());
+        }
+
+        private async Task<bool> TownRun()
+        {
+            if (CheckDurability() || CheckMinBagSlots())
+            {
+                Logger.Log("Town-run request received, will town-run at next possible moment.");
+                TrinityApi.SetField("Trinity", "ForceVendorRunASAP", true);
+                _isDone = true;
+            }
+            else
+            {
+                Logger.Log("Skipping TrinityTownRun");
+                _isDone = true;
+            }
+            return true;
         }
 
         public override void ResetCachedDone()
