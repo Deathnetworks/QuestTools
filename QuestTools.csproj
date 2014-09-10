@@ -83,6 +83,7 @@
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xaml" />
     <Reference Include="System.Xml.Linq" />
@@ -93,12 +94,15 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Config.cs" />
+    <Compile Include="UI\ConfigWindow.cs" />
+    <Compile Include="UI\BoolInverterConverter.cs" />
     <Compile Include="Helpers\ChangeMonitor.cs" />
     <Compile Include="Helpers\DataDictionary.cs" />
     <Compile Include="Helpers\BotEvents.cs" />
     <Compile Include="Helpers\Death.cs" />
     <Compile Include="Helpers\ItemManager.cs" />
+    <Compile Include="Helpers\ObservableDictionary.cs" />
+    <Compile Include="UI\PercentConverter.cs" />
     <Compile Include="Navigation\GridProvider.cs" />
     <Compile Include="Navigation\GridRoute.cs" />
     <Compile Include="Helpers\MathUtil.cs" />
@@ -156,12 +160,13 @@
     <Compile Include="Settings.cs" />
     <Compile Include="Helpers\TabUI.cs" />
     <Compile Include="Helpers\ZetaCacheHelper.cs" />
+    <Compile Include="SettingsModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="Config.xaml">
+    <Page Include="UI\ConfigWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

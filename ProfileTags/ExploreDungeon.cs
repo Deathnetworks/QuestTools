@@ -180,13 +180,13 @@ namespace QuestTools.ProfileTags
 
         /// <summary>
         /// Used with IgnoreLastNodes, minimum visited node count before tag can end. 
-        /// The minVisistedNodes is purely, and only for use with ignoreLastNodes - it does not serve any other function like you expect. 
+        /// The minVisitedNodes is purely, and only for use with ignoreLastNodes - it does not serve any other function like you expect. 
         /// The reason this attribute exists, is to prevent prematurely exiting the dungeon exploration when used with ignoreLastNodes. 
         /// For example, when the bot first starts exploring an area, it needs to navigate a few dungeon nodes first before other dungeon nodes even appear - otherwise with ignoreLastNodes > 2, 
         /// the bot would immediately exit from navigation without exploring anything at all.
         /// </summary>
         [XmlAttribute("minVisitedNodes")]
-        public int MinVisistedNodes { get; set; }
+        public int MinVisitedNodes { get; set; }
 
         [XmlAttribute("minObjectOccurances")]
         public int MinOccurances { get; set; }
@@ -974,7 +974,7 @@ namespace QuestTools.ProfileTags
                         new Action(ret => _isDone = true)
                     )
                 ),
-                new Decorator(ret => EndType == ExploreEndType.FullyExplored && IgnoreLastNodes > 0 && GetRouteUnvisitedNodeCount() <= IgnoreLastNodes && GetGridRouteVisistedNodeCount() >= MinVisistedNodes,
+                new Decorator(ret => EndType == ExploreEndType.FullyExplored && IgnoreLastNodes > 0 && GetRouteUnvisitedNodeCount() <= IgnoreLastNodes && GetGridRouteVisitedNodeCount() >= MinVisitedNodes,
                     new Sequence(
                         new Action(ret => Logger.Log("Fully explored area! Ignoring {0} nodes. Tag Finished.", IgnoreLastNodes)),
                         new Action(ret => _isDone = true)
@@ -1402,7 +1402,7 @@ namespace QuestTools.ProfileTags
             {
                 if (!node.Visited && node.NavigableCenter.Distance2DSqr(MyPosition) < (PathPrecision * PathPrecision))
                 {
-                    Logger.Log("Marking nearby node {0} as visited, distance {1:0}/{2:0}, IsVisisted={3}",
+                    Logger.Log("Marking nearby node {0} as visited, distance {1:0}/{2:0}, IsVisited={3}",
                         node.NavigableCenter, node.NavigableCenter.Distance2D(MyPosition), PathPrecision, node.Visited);
                     node.Visited = true;
                     update = true;
@@ -1438,7 +1438,7 @@ namespace QuestTools.ProfileTags
             var log = String.Format("Nodes [Unvisited: Route:{0} Grid:{1} | Grid-Visited: {2}/{3}] Box:{4}/{5} Step:{6} PP:{7:0} Dir: {8} Current: {9}",
                 GetRouteUnvisitedNodeCount(),                                // 0
                 GetGridSegmentationUnvisitedNodeCount(),                     // 2
-                GetGridRouteVisistedNodeCount(),                      // 1
+                GetGridRouteVisitedNodeCount(),                      // 1
                 GetGridRouteNodeCount(),                              // 3
                 GridSegmentation.BoxSize,                                    // 4
                 GridSegmentation.BoxTolerance,                               // 5
@@ -1466,10 +1466,10 @@ namespace QuestTools.ProfileTags
         }
 
         /// <summary>
-        /// Gets the number of visisted nodes in the DungeonExplorer Route
+        /// Gets the number of visited nodes in the DungeonExplorer Route
         /// </summary>
         /// <returns></returns>
-        private int GetRouteVisistedNodeCount()
+        private int GetRouteVisitedNodeCount()
         {
             if (GetCurrentRouteNodeCount() > 0)
                 return GridRoute.CurrentRoute.Count(n => n.Visited);
@@ -1506,7 +1506,7 @@ namespace QuestTools.ProfileTags
         /// Gets the number of Visited nodes as reported by the Grid Segmentation provider
         /// </summary>
         /// <returns></returns>
-        private int GetGridRouteVisistedNodeCount()
+        private int GetGridRouteVisitedNodeCount()
         {
             if (GetCurrentRouteNodeCount() > 0)
                 return GridRoute.Nodes.Count(n => n.Visited);

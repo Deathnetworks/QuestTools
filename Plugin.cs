@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using QuestTools.Helpers;
+using QuestTools.UI;
 using Zeta.Common.Plugins;
 
 namespace QuestTools
@@ -56,7 +57,7 @@ namespace QuestTools
 
         public System.Windows.Window DisplayWindow
         {
-            get { return Config.GetDisplayWindow(); }
+            get { return ConfigWindow.GetDisplayWindow(); }
         }
 
         public string Name

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using Buddy.Coroutines;
@@ -23,6 +24,16 @@ namespace QuestTools.ProfileTags
         {
             get { return _isDone || !IsActiveQuestStep; }
         }
+
+        public enum UpgradeType
+        {
+            RiftKey,
+            Gem,
+        }
+
+        [XmlAttribute("upgrade")]
+        [DefaultValue(UpgradeType.RiftKey)]
+        public UpgradeType Upgrade { get; set; }
 
         protected override Composite CreateBehavior()
         {
@@ -60,7 +71,7 @@ namespace QuestTools.ProfileTags
                 await Coroutine.Yield();
             }
 
-            if (GameUI.IsElementVisible(UpgradeKeystoneButton) && UpgradeKeystoneButton.IsEnabled && ZetaDia.Me.AttemptUpgradeKeystone())
+            if (Upgrade != UpgradeType.Gem && GameUI.IsElementVisible(UpgradeKeystoneButton) && UpgradeKeystoneButton.IsEnabled && ZetaDia.Me.AttemptUpgradeKeystone())
             {
                 Logger.Log("Keystone Upgraded");
                 GameUI.SafeClickElement(VendorCloseButton);

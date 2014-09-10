@@ -182,9 +182,7 @@ namespace QuestTools.ProfileTags.Movement
         {
             if (QuestTools.EnableDebugLogging)
             {
-                double distance = Math.Round(Position.Distance2D(ZetaDia.Me.Position) / 10.0, 0) * 10;
-
-                Logger.Debug("Distance to target: {0:0} {1}", distance, Status());
+                Logger.Debug(Status());
             }
         }
 

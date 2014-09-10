@@ -4,6 +4,27 @@ namespace QuestTools
 {
     class DataDictionary
     {
+        public static readonly Dictionary<int, string> LegendaryGems = new Dictionary<int, string>
+        {
+            {0,"Equipped Gems"},
+            {1,"Lowest Rank"},
+            {2,"Highest Rank"},
+            {405775,"Bane of the Powerful"},
+            {405781,"Bane of the Trapped"},
+            {405792,"Wreath of Lightning"},
+            {405793,"Gem of Efficacious Toxin"},
+            {405794,"Pain Enhancer"},
+            {405795,"Mirinae, Teardrop of the Starweaver"},
+            {405796,"Gogok of Swiftness"},
+            {405797,"Invigorating Gemstone"},
+            {405798,"Enforcer"},
+            {405800,"Moratorium"},
+            {405801,"Zei's Stone of Vengeance"},
+            {405802,"Simplicity's Strength"},
+            {405803,"Boon of the Hoarder"},
+            {405804,"Taeguk"},
+        };
+
         public static HashSet<int> PandemoniumFortressWorlds { get { return _pandemoniumFortressWorlds; } }
         private static readonly HashSet<int> _pandemoniumFortressWorlds = new HashSet<int>
         {

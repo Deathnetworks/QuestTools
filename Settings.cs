@@ -1,6 +1,9 @@
-﻿using System.ComponentModel;
+﻿using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Configuration;
 using System.IO;
+using System.Linq;
 using QuestTools.Navigation;
 using Zeta.Common.Xml;
 using Zeta.Game;
@@ -11,6 +14,19 @@ namespace QuestTools
     [XmlElement("QuestToolsSettings")]
     class QuestToolsSettings : XmlSettings
     {
+        public enum RiftUpgradePriority
+        {
+            RiftKey,
+            Gem
+        }
+
+        public enum RiftKeyUsePriority
+        {
+            Normal,
+            Trial,
+            Greater
+        }
+
         private static QuestToolsSettings _instance;
         private bool _debugEnabled;
         private bool _allowProfileReloading;
@@ -33,6 +49,18 @@ namespace QuestTools
         public QuestToolsSettings() :
             base(Path.Combine(SettingsDirectory, BattleTagName, "QuestTools", "QuestToolsSettings.xml"))
         {
+            if (_riftKeyUsePriority == null)
+            {
+                _riftKeyUsePriority = new List<RiftKeyUsePriority>();
+                foreach (var use in Enum.GetValues(typeof(RiftKeyUsePriority)).Cast<RiftKeyUsePriority>())
+                {
+                    _riftKeyUsePriority.Add(use);
+                }
+            }
+            if (_gemPriority == null)
+            {
+                _gemPriority = DataDictionary.LegendaryGems.Select(g => g.Value).ToList();
+            }
         }
 
         public static QuestToolsSettings Instance
@@ -57,9 +85,9 @@ namespace QuestTools
         }
 
         [XmlElement("RouteMode")]
-        [DefaultValue(Navigation.RouteMode.Default)]
+        [DefaultValue(RouteMode.Default)]
         [Setting]
-        public Navigation.RouteMode RouteMode
+        public RouteMode RouteMode
         {
             get
             {
@@ -137,5 +165,67 @@ namespace QuestTools
             }
         }
 
+        // 2.1 Rift Settings below
+
+        private List<RiftKeyUsePriority> _riftKeyUsePriority;
+        [XmlElement("RiftKeyPriority")]
+        public List<RiftKeyUsePriority> RiftKeyPriority
+        {
+            get
+            {
+                return _riftKeyUsePriority;
+            }
+            set
+            {
+                _riftKeyUsePriority = value;
+                OnPropertyChanged("RiftKeyPriority");
+            }
+        }
+
+        private List<string> _gemPriority;
+        [XmlElement("GemPriority")]
+        public List<string> GemPriority
+        {
+            get
+            {
+                return _gemPriority;
+            }
+            set
+            {
+                _gemPriority = value;
+                OnPropertyChanged("GemPriority");
+            }
+        }
+        private float _minimumGemChance;
+        [XmlElement("MinimumGemChance")]
+        [DefaultValue(0.6f)]
+        public float MinimumGemChance
+        {
+            get
+            {
+                return _minimumGemChance;
+            }
+            set
+            {
+                _minimumGemChance = value;
+                OnPropertyChanged("MinimumGemChance");
+            }
+        }
+
+        private bool _upgradeKeyStones;
+        [XmlElement("UpgradeKeyStones")]
+        [DefaultValue(true)]
+        public bool UpgradeKeyStones
+        {
+            get
+            {
+                return _upgradeKeyStones;
+            }
+            set
+            {
+                _upgradeKeyStones = value;
+                OnPropertyChanged("UpgradeKeyStones");
+            }
+        }
     }
 }
