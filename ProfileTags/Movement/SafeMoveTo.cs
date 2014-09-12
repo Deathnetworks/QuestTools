@@ -97,7 +97,7 @@ namespace QuestTools.ProfileTags.Movement
 
             GameUI.SafeClickUIButtons();
 
-            if (_tagStartTime != DateTime.UtcNow && DateTime.UtcNow.Subtract(_tagStartTime).TotalSeconds > Timeout)
+            if (DateTime.UtcNow.Subtract(_tagStartTime).TotalHours < 1 && Timeout > 0 && DateTime.UtcNow.Subtract(_tagStartTime).TotalSeconds > Timeout)
             {
                 Logger.Log("Timeout of {0} seconds exceeded for Profile Behavior (start: {1} now: {2}) {3}",
                                 Timeout, _tagStartTime.ToLocalTime(), DateTime.Now, Status());

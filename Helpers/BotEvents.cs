@@ -36,6 +36,7 @@ namespace QuestTools.Helpers
 
         private static void BotMain_OnStart(IBot bot)
         {
+            Logger.Log("Bot is Starting");
             LastBotStart = DateTime.UtcNow;
             PositionCache.Cache = new HashSet<Vector3>();
             ReloadProfileTag.LastReloadLoopQuestStep = "";

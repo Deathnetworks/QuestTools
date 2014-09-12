@@ -1,10 +1,13 @@
 using System;
 using System.Diagnostics;
+using System.Linq;
 using QuestTools.Helpers;
 using QuestTools.ProfileTags;
 using QuestTools.ProfileTags.Complex;
 using Zeta.Bot;
+using Zeta.Bot.Logic;
 using Zeta.Game;
+using Zeta.Game.Internals;
 
 namespace QuestTools
 {
@@ -69,6 +72,7 @@ namespace QuestTools
                 }
                 LoadOnceTag.RecordLoadOnceProfile();
 
+                RiftTrial.Pulse();
                 CheckGamesPerHourStop();
                 SkipCutScene();
                 AdvanceConversation();
@@ -77,6 +81,78 @@ namespace QuestTools
             {
                 Logger.Log(ex.ToString());
             }
+        }
+
+        public static class RiftTrial
+        {
+            public static bool InProgress;
+            public static int CurrentWave;
+
+            private static bool _countedWave;
+            private static bool _lastCheckBelowThreshold;
+            private static bool _finished;
+            private static bool _isAborting;
+
+            public static void Pulse()
+            {
+                int maxWave = QuestToolsSettings.Instance.TrialRiftMaxLevel;
+
+                if (!ZetaDia.IsInGame || !ZetaDia.Actors.Me.IsValid || !ZetaDia.ActInfo.IsValid)
+                    return;
+
+                var quest = ZetaDia.ActInfo.ActiveQuests.FirstOrDefault(q => q.QuestSNO == 405695);
+
+                if (quest == null || ZetaDia.IsInTown || ZetaDia.WorldInfo.SNOId != 405684)
+                {
+                    InProgress = false;
+                    CurrentWave = 0;
+                    _countedWave = false;
+                    _lastCheckBelowThreshold = false;
+                    _finished = false;
+
+                    if (_isAborting)
+                    {
+                        Logger.Log("Re-Enabling Combat");
+                        TrinityApi.SetProperty("CombatBase", "IsCombatAllowed", true);
+                        _isAborting = false;
+                    }
+
+                    return;
+                }
+
+                if (quest.State == QuestState.InProgress && quest.QuestStep != 9)
+                {
+                    if (!InProgress)
+                        InProgress = true;
+
+                    if (!_countedWave && quest.QuestMeter >= 0.95f)
+                    {
+                        _countedWave = true;
+                        CurrentWave = CurrentWave + 1;
+                        Logger.Log("Starting Wave: {0}", CurrentWave);
+                    }
+
+                    if (_lastCheckBelowThreshold && quest.QuestMeter >= 0.95)
+                    {
+                        _countedWave = false;
+                    }
+
+                    _lastCheckBelowThreshold = quest.QuestMeter < 0.95f && quest.QuestMeter >= 0;
+                }
+
+                if (CurrentWave == maxWave && !_isAborting)
+                {
+                    Logger.Log("Reached Wave {0} Disabling Combat", maxWave);
+                    TrinityApi.SetProperty("CombatBase", "IsCombatAllowed", false);
+
+                    BrainBehavior.ForceTownrun("Abort Trial", true);
+
+                    _isAborting = true;
+                }
+
+
+            }
+
         }
 
         private static void CheckGamesPerHourStop()

@@ -9,6 +9,7 @@ using System.Threading;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using QuestTools.Helpers;
 using Zeta.Bot;
 using Zeta.Bot.Dungeons;
 using Zeta.Bot.Logic;
@@ -18,7 +19,7 @@ using Zeta.Game.Internals;
 using Zeta.Game.Internals.Actors;
 using Zeta.Game.Internals.Actors.Gizmos;
 
-namespace QuestTools.Helpers
+namespace QuestTools.UI
 {
     class TabUi
     {

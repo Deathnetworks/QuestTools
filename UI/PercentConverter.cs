@@ -20,12 +20,11 @@ namespace QuestTools.UI
             {
                 return (float)Math.Round((float)value * 100,0);
             }
-            else if (value is double)
+            if (value is double)
             {
-                return (double)Math.Round((double)value * 100,0);
+                return Math.Round((double)value * 100,0);
             }
-            else
-                return 0f;
+            return 0f;
         }
 
         /// <summary>Converts a value.</summary>
@@ -42,13 +41,13 @@ namespace QuestTools.UI
             {
                 return (float)Math.Round((float)value / 100,2);
             }
-            else if (value is double)
+            if (value is double)
             {
                 return Math.Round((double)value / 100,2);
             }
-            else
-                return 0f;
+            return 0f;
         }
+
         #endregion
     }
 }

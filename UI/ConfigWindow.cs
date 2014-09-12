@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Windows;
@@ -25,6 +26,9 @@ namespace QuestTools.UI
             return xaml.Replace(xmlns, newxmlns);
         }
 
+        private static string _xamlContent;
+        private static UserControl _mainControl;
+
         public static Window GetDisplayWindow()
         {
             if (_configWindow == null)
@@ -33,44 +37,41 @@ namespace QuestTools.UI
             }
             try
             {
-
                 string assemblyPath = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
                 if (assemblyPath != null)
                 {
-                    string xamlPath = Path.Combine(assemblyPath, "Plugins", "QuestTools","UI", "ConfigWindow.xaml");
-
-                    string xamlContent = File.ReadAllText(xamlPath);
-
-                    xamlContent = replaceNamespace(xamlContent, "xmlns:qt=\"clr-namespace:QuestTools\"");
-                    xamlContent = replaceNamespace(xamlContent, "xmlns:ui=\"clr-namespace:QuestTools.UI\"");
-                    xamlContent = replaceNamespace(xamlContent, "xmlns:nav=\"clr-namespace:QuestTools.Navigation\"");
-                    xamlContent = replaceNamespace(xamlContent, "xmlns:h=\"clr-namespace:QuestTools.Helpers\"");
-
-                    //xamlContent = xamlContent.Replace("xmlns:qt=\"clr-namespace:QuestTools\"",
-                    //    "xmlns:qt=\"clr-namespace:QuestTools;assembly=" + asmName + "\"");
-                    //xamlContent = xamlContent.Replace("xmlns:ui=\"clr-namespace:QuestTools.UI\"",
-                    //    "xmlns:ui=\"clr-namespace:QuestTools.UI;assembly=" + asmName + "\"");
-                    //xamlContent = xamlContent.Replace("xmlns:nav=\"clr-namespace:QuestTools.Navigation\"",
-                    //    "xmlns:nav=\"clr-namespace:QuestTools.Navigation;assembly=" + asmName + "\"");
-                    //xamlContent = xamlContent.Replace(,
-                    //    "xmlns:nav=\"clr-namespace:QuestTools.Helpers;assembly=" + asmName + "\"");
-
                     // This hooks up our object with our UserControl DataBinding
-                    _configWindow.DataContext = QuestToolsSettings.Instance;
+                    _configWindow.DataContext = SettingsModel.Instance;
                     _configWindow.Resources["LegendaryGems"] = DataDictionary.LegendaryGems;
 
-                    UserControl mainControl = (UserControl)XamlReader.Load(new MemoryStream(Encoding.UTF8.GetBytes(xamlContent)));
-                    _configWindow.Content = mainControl;
+                    if (String.IsNullOrWhiteSpace(_xamlContent))
+                    {
+                        _xamlContent = File.ReadAllText(Path.Combine(assemblyPath, "Plugins", "QuestTools", "UI", "ConfigWindow.xaml"));
+
+                        _xamlContent = replaceNamespace(_xamlContent, "xmlns:qt=\"clr-namespace:QuestTools\"");
+                        _xamlContent = replaceNamespace(_xamlContent, "xmlns:ui=\"clr-namespace:QuestTools.UI\"");
+                        _xamlContent = replaceNamespace(_xamlContent, "xmlns:nav=\"clr-namespace:QuestTools.Navigation\"");
+                        _xamlContent = replaceNamespace(_xamlContent, "xmlns:h=\"clr-namespace:QuestTools.Helpers\"");
+                    }
+
+                    if (_mainControl == null)
+                        _mainControl = (UserControl)XamlReader.Load(new MemoryStream(Encoding.UTF8.GetBytes(_xamlContent)));
+
+                    _configWindow.Content = _mainControl;
                 }
                 _configWindow.MinWidth = 600;
                 _configWindow.Width = 600;
-                _configWindow.MinHeight = 450;
-                _configWindow.Height = 450;
+                _configWindow.MinHeight = 500;
+                _configWindow.Height = 500;
                 _configWindow.ResizeMode = ResizeMode.CanResize;
-                _configWindow.Foreground = Brushes.White;
-                _configWindow.Background = Brushes.DarkGray;
 
                 _configWindow.Title = "QuestTools";
+
+                if (SettingsModel.Instance.Settings.GemPriority == null)
+                    SettingsModel.Instance.Settings.SetDefaultGemPriority();
+
+                if (SettingsModel.Instance.Settings.RiftKeyPriority == null)
+                    SettingsModel.Instance.Settings.SetDefaultRiftKeyPriority();
 
                 _configWindow.Closed += ConfigWindow_Closed;
                 Application.Current.Exit += ConfigWindow_Closed;
@@ -88,6 +89,7 @@ namespace QuestTools.UI
             if (_configWindow == null)
                 return;
             _configWindow.Closed -= ConfigWindow_Closed;
+            Application.Current.Exit -= ConfigWindow_Closed;
             _configWindow = null;
         }
     }

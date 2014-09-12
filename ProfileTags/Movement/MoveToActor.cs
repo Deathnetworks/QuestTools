@@ -198,7 +198,7 @@ namespace QuestTools.ProfileTags.Movement
             if (DateTime.UtcNow.Subtract(_lastInteract).TotalMilliseconds < 500 && WorldHasChanged())
                 return true;
 
-            if (DateTime.UtcNow.Subtract(_tagStartTime).TotalSeconds > Timeout)
+            if (Timeout > 0 && DateTime.UtcNow.Subtract(_tagStartTime).TotalSeconds > Timeout)
             {
                 End("Timeout of {0} seconds exceeded for Profile Behavior {1}", Timeout, Status());
                 return true;

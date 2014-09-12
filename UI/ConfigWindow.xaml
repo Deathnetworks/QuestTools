@@ -6,7 +6,7 @@
              xmlns:nav="clr-namespace:QuestTools.Navigation"
              xmlns:ui="clr-namespace:QuestTools.UI"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="600" Foreground="{DynamicResource TextBrush}" Background="#555">
+             d:DesignHeight="450" d:DesignWidth="600" Foreground="{DynamicResource TextBrush}">
     <UserControl.Resources>
         <ui:PercentConverter x:Key="PercentConverter" />
         <ui:BoolInverterConverter x:Key="BoolInverterConverter" />
@@ -25,98 +25,136 @@
             </ObjectDataProvider.MethodParameters>
         </ObjectDataProvider>
     </UserControl.Resources>
-    <TabControl>
-        <TabItem Header="General Options">
-            <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Top">
-                <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
-                    <WrapPanel HorizontalAlignment="Right">
-                        <TextBlock Text="Force Route Mode" Margin="0,0,10,0" HorizontalAlignment="Right" VerticalAlignment="Center" />
-                        <CheckBox IsChecked="{Binding Path=Settings.ForceRouteMode}"  Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                    </WrapPanel>
-                    <WrapPanel HorizontalAlignment="Right">
-                        <TextBlock Text="Explorer Route Mode" Margin="0,0,10,0" HorizontalAlignment="Right" VerticalAlignment="Center" IsEnabled="{Binding Path=Settings.ForceRouteMode}" />
-                        <ComboBox ItemsSource="{Binding Source={StaticResource RouteModes}}" 
+    <DockPanel Background="#333">
+        <UniformGrid HorizontalAlignment="Center" DockPanel.Dock="Bottom">
+            <Button Content="Reset All Settings" Command="{Binding ResetAllSettingsCommand}" />
+        </UniformGrid>
+        <TabControl Background="#333">
+            <TabItem Header="General Options" Foreground="{DynamicResource TextBrush}">
+                <StackPanel HorizontalAlignment="Stretch" VerticalAlignment="Top">
+                    <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+                        <WrapPanel HorizontalAlignment="Right">
+                            <TextBlock Text="Force Route Mode" Margin="0,0,10,0" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            <CheckBox IsChecked="{Binding Path=Settings.ForceRouteMode}"  Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        </WrapPanel>
+                        <WrapPanel HorizontalAlignment="Right">
+                            <TextBlock Text="Explorer Route Mode" Margin="0,0,10,0" HorizontalAlignment="Right" VerticalAlignment="Center" IsEnabled="{Binding Path=Settings.ForceRouteMode}" />
+                            <ComboBox ItemsSource="{Binding Source={StaticResource RouteModes}}" 
                           SelectedItem="{Binding Path=Settings.RouteMode}" 
                           IsEnabled="{Binding Path=Settings.ForceRouteMode}"
                           Width="250"/>
-                    </WrapPanel>
-                    <WrapPanel HorizontalAlignment="Right">
-                        <TextBlock Text="Skip Cut Scenes" Margin="0,0,10,0" HorizontalAlignment="Right" VerticalAlignment="Center" />
-                        <CheckBox IsChecked="{Binding Path=Settings.SkipCutScenes}"  Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                    </WrapPanel>
-                    <WrapPanel HorizontalAlignment="Right">
-                        <TextBlock Text="Use Debug Logging" Margin="0,0,10,0" HorizontalAlignment="Right" VerticalAlignment="Center" />
-                        <CheckBox IsChecked="{Binding Path=Settings.DebugEnabled}"  Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                    </WrapPanel>
-                    <WrapPanel HorizontalAlignment="Right">
-                        <TextBlock Text="Allow Profile Reloading" Margin="0,0,10,0" HorizontalAlignment="Right"  VerticalAlignment="Center"/>
-                        <CheckBox IsChecked="{Binding Path=Settings.AllowProfileReloading}"  Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                    </WrapPanel>
-                    <WrapPanel HorizontalAlignment="Right">
-                        <TextBlock Text="Allow Profile Restarts" Margin="0,0,10,0" HorizontalAlignment="Right"  VerticalAlignment="Center"/>
-                        <CheckBox IsChecked="{Binding Path=Settings.AllowProfileRestarts}"  Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
-                    </WrapPanel>
+                        </WrapPanel>
+                        <WrapPanel HorizontalAlignment="Right">
+                            <TextBlock Text="Skip Cut Scenes" Margin="0,0,10,0" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            <CheckBox IsChecked="{Binding Path=Settings.SkipCutScenes}"  Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        </WrapPanel>
+                        <WrapPanel HorizontalAlignment="Right">
+                            <TextBlock Text="Use Debug Logging" Margin="0,0,10,0" HorizontalAlignment="Right" VerticalAlignment="Center" />
+                            <CheckBox IsChecked="{Binding Path=Settings.DebugEnabled}"  Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        </WrapPanel>
+                        <WrapPanel HorizontalAlignment="Right">
+                            <TextBlock Text="Allow Profile Reloading" Margin="0,0,10,0" HorizontalAlignment="Right"  VerticalAlignment="Center"/>
+                            <CheckBox IsChecked="{Binding Path=Settings.AllowProfileReloading}"  Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        </WrapPanel>
+                        <WrapPanel HorizontalAlignment="Right">
+                            <TextBlock Text="Allow Profile Restarts" Margin="0,0,10,0" HorizontalAlignment="Right"  VerticalAlignment="Center"/>
+                            <CheckBox IsChecked="{Binding Path=Settings.AllowProfileRestarts}"  Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        </WrapPanel>
+                    </StackPanel>
                 </StackPanel>
-            </StackPanel>
-        </TabItem>
-        <TabItem Header="Rift Control">
-            <StackPanel>
+            </TabItem>
+            <TabItem Header="Rift Control" Foreground="{DynamicResource TextBrush}">
                 <UniformGrid Columns="2">
-                    <TextBlock HorizontalAlignment="Right" Margin="0 0 10 0">Rift Key Usage Preference</TextBlock>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"></RowDefinition>
-                            <RowDefinition Height="Auto"></RowDefinition>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="4*"></ColumnDefinition>
-                            <ColumnDefinition Width="*"></ColumnDefinition>
-                        </Grid.ColumnDefinitions>
-                        <ListBox Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" ItemsSource="{Binding Path=Settings.RiftKeyUsagePreference}" SelectionMode="Single"></ListBox>
-                        <Button Grid.Row="0" Grid.Column="1" Content="Up" />
-                        <Button Grid.Row="1" Grid.Column="1" Content="Down" />
-                    </Grid>
+                    <StackPanel>
+                        <GroupBox Header="Rift Priority">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"></RowDefinition>
+                                    <RowDefinition Height="Auto"></RowDefinition>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4*"></ColumnDefinition>
+                                    <ColumnDefinition Width="*"></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+                                <ListBox Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" ItemsSource="{Binding Path=Settings.RiftKeyPriority}" SelectionMode="Single" Name="RiftKeyPriorityListBox"></ListBox>
+                                <Button Grid.Row="0" Grid.Column="1" Height="25" Content="Up" Command="{Binding RiftKeyOrderUp}" CommandParameter="{Binding ElementName=RiftKeyPriorityListBox,Path=SelectedItem}" />
+                                <Button Grid.Row="1" Grid.Column="1" Height="25" Content="Down" Command="{Binding RiftKeyOrderDown}" CommandParameter="{Binding ElementName=RiftKeyPriorityListBox,Path=SelectedItem}" />
+                            </Grid>
+                        </GroupBox>
+                        <GroupBox Header="Greater Rift Key Level Order">
+                            <UniformGrid VerticalAlignment="Center" Margin="0 0 0 -15">
+                                <RadioButton GroupName="UseHighestKeystone" Content="Lowest First" IsChecked="{Binding Path=Settings.UseHighestKeystone, Converter={StaticResource BoolInverterConverter}}"></RadioButton>
+                                <RadioButton GroupName="UseHighestKeystone" Content="Highest First" IsChecked="{Binding Path=Settings.UseHighestKeystone}"></RadioButton>
+                            </UniformGrid>
+                        </GroupBox>
+                        <GroupBox Header="Greater Rift Upgrade Priority">
+                            <UniformGrid VerticalAlignment="Center" Margin="0 0 0 -15">
+                                <RadioButton GroupName="UpgradePreference" Content="Upgrade Gems" IsChecked="{Binding Path=Settings.UpgradeKeyStones, Converter={StaticResource BoolInverterConverter}}"></RadioButton>
+                                <RadioButton GroupName="UpgradePreference" Content="Upgrade Key Stones" IsChecked="{Binding Path=Settings.UpgradeKeyStones}"></RadioButton>
+                            </UniformGrid>
+                        </GroupBox>
+                        <GroupBox Header="Minimum % Chance for Gem Upgrade">
+                            <ComboBox SelectedValue="{Binding Path=Settings.MinimumGemChance, Converter={StaticResource PercentConverter}}" SelectedValuePath="Tag" >
+                                <ComboBoxItem Content="100%" Tag="100" />
+                                <ComboBoxItem Content="90%" Tag="90" />
+                                <ComboBoxItem Content="80%" Tag="80" />
+                                <ComboBoxItem Content="70%" Tag="70" />
+                                <ComboBoxItem Content="60%" Tag="60" />
+                                <ComboBoxItem Content="50%" Tag="50" />
+                                <ComboBoxItem Content="40%" Tag="40" />
+                                <ComboBoxItem Content="30%" Tag="30" />
+                                <ComboBoxItem Content="20%" Tag="20" />
+                                <ComboBoxItem Content="10%" Tag="10" />
+                            </ComboBox>
+                        </GroupBox>
+                        <GroupBox Header="Trial Rifts: Disable Combat At Level...">
+                            <ComboBox SelectedValue="{Binding Path=Settings.TrialRiftMaxLevel}" SelectedValuePath="Tag" >
+                                <ComboBoxItem Content="1" Tag="1" />
+                                <ComboBoxItem Content="2" Tag="2" />
+                                <ComboBoxItem Content="3" Tag="3" />
+                                <ComboBoxItem Content="4" Tag="4" />
+                                <ComboBoxItem Content="5" Tag="5" />
+                                <ComboBoxItem Content="6" Tag="6" />
+                                <ComboBoxItem Content="7" Tag="7" />
+                                <ComboBoxItem Content="8" Tag="8" />
+                                <ComboBoxItem Content="9" Tag="9" />
+                                <ComboBoxItem Content="10" Tag="10" />
+                                <ComboBoxItem Content="11" Tag="11" />
+                                <ComboBoxItem Content="12" Tag="12" />
+                                <ComboBoxItem Content="13" Tag="13" />
+                                <ComboBoxItem Content="14" Tag="14" />
+                                <ComboBoxItem Content="15" Tag="15" />
+                                <ComboBoxItem Content="20" Tag="20" />
+                                <ComboBoxItem Content="25" Tag="25" />
+                                <ComboBoxItem Content="30" Tag="30" />
+                                <ComboBoxItem Content="35" Tag="35" />
+                                <ComboBoxItem Content="40" Tag="40" />
+                                <ComboBoxItem Content="50" Tag="50" />
+                                <ComboBoxItem Content="75" Tag="75" />
+                                <!-- Highest Tier is 100? http://www.diablowiki.net/Greater_Rifts -->
+                                <ComboBoxItem Content="100" Tag="100" />
+                            </ComboBox>
+                        </GroupBox>
+                    </StackPanel>
+                    <StackPanel>
+                        <GroupBox Header="Gem Upgrade Priority">
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"></RowDefinition>
+                                    <RowDefinition Height="Auto"></RowDefinition>
+                                </Grid.RowDefinitions>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="4*"></ColumnDefinition>
+                                    <ColumnDefinition Width="*"></ColumnDefinition>
+                                </Grid.ColumnDefinitions>
+                                <ListBox ItemsSource="{Binding Path=Settings.GemPriority}" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" Name="GemPriorityListBox" />
+                                <Button Grid.Row="0" Grid.Column="1" Content="Up" Height="25" VerticalAlignment="Bottom" Command="{Binding GemOrderUp}" CommandParameter="{Binding ElementName=GemPriorityListBox,Path=SelectedItem}" />
+                                <Button Grid.Row="1" Grid.Column="1" Content="Down" Height="25" VerticalAlignment="Top" Command="{Binding GemOrderDown}" CommandParameter="{Binding ElementName=GemPriorityListBox,Path=SelectedItem}" />
+                            </Grid>
+                        </GroupBox>
+                    </StackPanel>
                 </UniformGrid>
-                <UniformGrid Columns="2">
-                    <TextBlock HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0 0 10 0">Greater Rift Upgrade Preference</TextBlock>
-                    <UniformGrid VerticalAlignment="Center">
-                        <RadioButton GroupName="UpgradePreference" Content="Upgrade Gems" IsChecked="{Binding Path=Settings.UpgradeKeyStones, Converter={StaticResource BoolInverterConverter}}"></RadioButton>
-                        <RadioButton GroupName="UpgradePreference" Content="Upgrade Key Stones" IsChecked="{Binding Path=Settings.UpgradeKeyStones}"></RadioButton>
-                    </UniformGrid>
-                </UniformGrid>
-                <UniformGrid Columns="2">
-                    <TextBlock HorizontalAlignment="Right" Margin="0 0 10 0">Minimum % Chance for Gem Upgrade</TextBlock>
-                    <ComboBox SelectedValue="{Binding Path=Settings.MinimumGemChance, Converter={StaticResource PercentConverter}}" >
-                        <ComboBoxItem>100</ComboBoxItem>
-                        <ComboBoxItem>90</ComboBoxItem>
-                        <ComboBoxItem>80</ComboBoxItem>
-                        <ComboBoxItem>70</ComboBoxItem>
-                        <ComboBoxItem>60</ComboBoxItem>
-                        <ComboBoxItem>50</ComboBoxItem>
-                        <ComboBoxItem>40</ComboBoxItem>
-                        <ComboBoxItem>30</ComboBoxItem>
-                        <ComboBoxItem>20</ComboBoxItem>
-                        <ComboBoxItem>10</ComboBoxItem>
-                    </ComboBox>
-                </UniformGrid>
-                <UniformGrid Columns="2">
-                    <TextBlock HorizontalAlignment="Right" Margin="0 0 10 0">Gem Upgrade Preference</TextBlock>
-                    <Grid>
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto"></RowDefinition>
-                            <RowDefinition Height="Auto"></RowDefinition>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="4*"></ColumnDefinition>
-                            <ColumnDefinition Width="*"></ColumnDefinition>
-                        </Grid.ColumnDefinitions>
-                        <ListBox ItemsSource="{Binding Path=Settings.GemPriority}" Grid.Row="0" Grid.Column="0" Grid.RowSpan="2" />
-                        <Button Grid.Row="0" Grid.Column="1" Content="Up" Height="25" VerticalAlignment="Bottom" Command="{Binding GemOrderUp}" />
-                        <Button Grid.Row="1" Grid.Column="1" Content="Down" Height="25" VerticalAlignment="Top" Command="{Binding GemOrderDown}" />
-                    </Grid>
-                </UniformGrid>
-            </StackPanel>
-        </TabItem>
-    </TabControl>
-
+            </TabItem>
+        </TabControl>
+    </DockPanel>
 </UserControl>

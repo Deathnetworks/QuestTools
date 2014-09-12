@@ -106,5 +106,11 @@ namespace QuestTools.ProfileTags.Movement
         {
 
         }
+
+        public override void ResetCachedDone()
+        {
+            _isDone = false;
+            base.ResetCachedDone();
+        }
     }
 }

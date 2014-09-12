@@ -11,23 +11,22 @@ using Zeta.XmlEngine;
 
 namespace QuestTools
 {
+    public enum RiftUpgradePriority
+    {
+        RiftKey,
+        Gem
+    }
+
+    public enum RiftKeyUsePriority
+    {
+        Normal,
+        Trial,
+        Greater
+    }
+
     [XmlElement("QuestToolsSettings")]
     class QuestToolsSettings : XmlSettings
     {
-        public enum RiftUpgradePriority
-        {
-            RiftKey,
-            Gem
-        }
-
-        public enum RiftKeyUsePriority
-        {
-            Normal,
-            Trial,
-            Greater
-        }
-
-        private static QuestToolsSettings _instance;
         private bool _debugEnabled;
         private bool _allowProfileReloading;
         private bool _allowProfileRestarts;
@@ -46,23 +45,33 @@ namespace QuestTools
             }
         }
 
+        internal List<RiftKeyUsePriority> GetDefaultRiftKeyPriority()
+        {
+            return new List<RiftKeyUsePriority>
+                {
+                    RiftKeyUsePriority.Trial,
+                    RiftKeyUsePriority.Greater,
+                    RiftKeyUsePriority.Normal
+                };
+        }
+
         public QuestToolsSettings() :
             base(Path.Combine(SettingsDirectory, BattleTagName, "QuestTools", "QuestToolsSettings.xml"))
         {
-            if (_riftKeyUsePriority == null)
-            {
-                _riftKeyUsePriority = new List<RiftKeyUsePriority>();
-                foreach (var use in Enum.GetValues(typeof(RiftKeyUsePriority)).Cast<RiftKeyUsePriority>())
-                {
-                    _riftKeyUsePriority.Add(use);
-                }
-            }
-            if (_gemPriority == null)
-            {
-                _gemPriority = DataDictionary.LegendaryGems.Select(g => g.Value).ToList();
-            }
         }
 
+        internal void SetDefaultGemPriority()
+        {
+            GemPriority = DataDictionary.LegendaryGems.Select(g => g.Value).ToList();
+        }
+
+        internal void SetDefaultRiftKeyPriority()
+        {
+            RiftKeyPriority = GetDefaultRiftKeyPriority();
+
+        }
+
+        private static QuestToolsSettings _instance;
         public static QuestToolsSettings Instance
         {
             get { return _instance ?? (_instance = new QuestToolsSettings()); }
@@ -79,6 +88,8 @@ namespace QuestTools
             }
             set
             {
+                if (_forceRouteMode == value)
+                    return;
                 _forceRouteMode = value;
                 OnPropertyChanged("ForceRouteMode");
             }
@@ -95,6 +106,8 @@ namespace QuestTools
             }
             set
             {
+                if (_routeMode == value)
+                    return;
                 _routeMode = value;
                 OnPropertyChanged("RouteMode");
             }
@@ -111,6 +124,8 @@ namespace QuestTools
             }
             set
             {
+                if (_debugEnabled == value)
+                    return;
                 _debugEnabled = value;
                 OnPropertyChanged("DebugEnabled");
             }
@@ -127,6 +142,8 @@ namespace QuestTools
             }
             set
             {
+                if (_allowProfileReloading == value)
+                    return;
                 _allowProfileReloading = value;
                 OnPropertyChanged("AllowProfileReloading");
             }
@@ -143,6 +160,8 @@ namespace QuestTools
             }
             set
             {
+                if (_allowProfileRestarts == value)
+                    return;
                 _allowProfileRestarts = value;
                 OnPropertyChanged("AllowProfileRestarts");
             }
@@ -160,6 +179,8 @@ namespace QuestTools
             }
             set
             {
+                if (_skipCutScenes == value)
+                    return;
                 _skipCutScenes = value;
                 OnPropertyChanged("SkipCutScenes");
             }
@@ -177,6 +198,8 @@ namespace QuestTools
             }
             set
             {
+                if (_riftKeyUsePriority == value)
+                    return;
                 _riftKeyUsePriority = value;
                 OnPropertyChanged("RiftKeyPriority");
             }
@@ -192,10 +215,13 @@ namespace QuestTools
             }
             set
             {
+                if (_gemPriority == value)
+                    return;
                 _gemPriority = value;
                 OnPropertyChanged("GemPriority");
             }
         }
+
         private float _minimumGemChance;
         [XmlElement("MinimumGemChance")]
         [DefaultValue(0.6f)]
@@ -203,12 +229,36 @@ namespace QuestTools
         {
             get
             {
+                if (_minimumGemChance == 0)
+                    _minimumGemChance = 0.1f;
                 return _minimumGemChance;
             }
             set
             {
+                if (_minimumGemChance == value)
+                    return;
                 _minimumGemChance = value;
                 OnPropertyChanged("MinimumGemChance");
+            }
+        }
+
+        private int _trialRiftMaxLevel;
+        [XmlElement("TrialRiftMaxLevel")]
+        [DefaultValue(40)]
+        public int TrialRiftMaxLevel
+        {
+            get
+            {
+                if (_trialRiftMaxLevel == 0)
+                    _trialRiftMaxLevel = 100;
+                return _trialRiftMaxLevel;
+            }
+            set
+            {
+                if (_trialRiftMaxLevel == value)
+                    return;
+                _trialRiftMaxLevel = value;
+                OnPropertyChanged("TrialRiftMaxLevel");
             }
         }
 
@@ -223,8 +273,28 @@ namespace QuestTools
             }
             set
             {
+                if (_upgradeKeyStones == value)
+                    return;
                 _upgradeKeyStones = value;
                 OnPropertyChanged("UpgradeKeyStones");
+            }
+        }
+
+        private bool _useHighestKeystone;
+        [XmlElement("UseHighestKeystone")]
+        [DefaultValue(true)]
+        public bool UseHighestKeystone
+        {
+            get
+            {
+                return _useHighestKeystone;
+            }
+            set
+            {
+                if (_useHighestKeystone == value)
+                    return;
+                _useHighestKeystone = value;
+                OnPropertyChanged("UseHighestKeystone");
             }
         }
     }

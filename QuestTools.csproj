@@ -94,6 +94,8 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ProfileTags\Complex\HasTrialRiftKeys.cs" />
+    <Compile Include="ProfileTags\QTOpenRiftWrapper.cs" />
     <Compile Include="UI\ConfigWindow.cs" />
     <Compile Include="UI\BoolInverterConverter.cs" />
     <Compile Include="Helpers\ChangeMonitor.cs" />
@@ -157,10 +159,11 @@
     <Compile Include="ProfileTags\RestartAct.cs" />
     <Compile Include="ProfileTags\ResumeUseTownPortalTag.cs" />
     <Compile Include="ProfileTags\Movement\SafeMoveTo.cs" />
-    <Compile Include="Settings.cs" />
-    <Compile Include="Helpers\TabUI.cs" />
+    <Compile Include="QuestToolsSettings.cs" />
+    <Compile Include="UI\RelayCommand.cs" />
+    <Compile Include="UI\TabUI.cs" />
     <Compile Include="Helpers\ZetaCacheHelper.cs" />
-    <Compile Include="SettingsModel.cs" />
+    <Compile Include="UI\SettingsModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Properties\" />
