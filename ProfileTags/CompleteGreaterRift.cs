@@ -107,13 +107,16 @@ namespace QuestTools.ProfileTags
                         Logger.LogError("Invalid Gem Name: {0}", gemName);
                         continue;
                     }
-
+                    
                     // Equipped Gems
                     if (selectedGemId == 0)
                     {
                         selectedGemPreference = gemName;
-                        gems = gems.Where(item => item.InventorySlot == (InventorySlot)20).ToList();
-                        break;
+                        if (gems.Any(IsGemEquipped))
+                        {
+                            gems = gems.Where(item => item.InventorySlot == (InventorySlot)20).ToList();
+                            break;
+                        }
                     }
 
                     // Lowest Rank
@@ -136,8 +139,12 @@ namespace QuestTools.ProfileTags
                     if (gems.Any(i => i.ActorSNO == selectedGemId))
                     {
                         selectedGemPreference = gemName;
-                        gems = gems.Where(i => i.ActorSNO == selectedGemId).Take(1).ToList();
-                        break;
+                        if (gems.Any(i => i.ActorSNO == selectedGemId))
+                        {
+                            gems = gems.Where(i => i.ActorSNO == selectedGemId).Take(1).ToList();
+                            break;
+                        }
+
                     }
 
                     // No gem found... skip!
