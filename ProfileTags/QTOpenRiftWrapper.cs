@@ -52,7 +52,7 @@ namespace QuestTools.ProfileTags
                 {
                     keyFound = true;
                     Logger.Log("Using Trial Rift Keystone to open the Rift Portal");
-                    StartTiered = false;
+                    StartTiered = true;
                     UseTrialStone = true;
                     break;
                 }
