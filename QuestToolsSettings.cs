@@ -297,5 +297,25 @@ namespace QuestTools
                 OnPropertyChanged("UseHighestKeystone");
             }
         }
+
+        private bool _enableTrialRiftMaxLevel;
+        [XmlElement("EnableTrialRiftMaxLevel")]
+        [DefaultValue(false)]
+        public bool EnableTrialRiftMaxLevel
+        {
+            get
+            {
+                return _enableTrialRiftMaxLevel;
+            }
+            set
+            {
+                if (_enableTrialRiftMaxLevel == value)
+                    return;
+                _enableTrialRiftMaxLevel = value;
+                OnPropertyChanged("EnableTrialRiftMaxLevel");
+            }
+        }
+
+        
     }
 }

@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
+using System.Windows.Controls;
+using System.Windows.Input;
 using Buddy.Coroutines;
+using Org.BouncyCastle.Ocsp;
 using Zeta.Bot;
 using Zeta.Bot.Coroutines;
 using Zeta.Bot.Logic;
@@ -24,16 +28,6 @@ namespace QuestTools.ProfileTags
         {
             get { return _isDone || !IsActiveQuestStep; }
         }
-
-        public enum UpgradeType
-        {
-            RiftKey,
-            Gem,
-        }
-
-        [XmlAttribute("upgrade")]
-        [DefaultValue(UpgradeType.RiftKey)]
-        public UpgradeType Upgrade { get; set; }
 
         protected override Composite CreateBehavior()
         {
@@ -58,7 +52,7 @@ namespace QuestTools.ProfileTags
         {
             if (!GameUI.IsElementVisible(VendorDialog))
             {
-                Logger.Log("Rift Complete Dialog is not visible");
+                Logger.Log("Rift Vendor Dialog is not visible");
                 _isDone = true;
                 return true;
             }
@@ -71,33 +65,147 @@ namespace QuestTools.ProfileTags
                 await Coroutine.Yield();
             }
 
-            if (Upgrade != UpgradeType.Gem && GameUI.IsElementVisible(UpgradeKeystoneButton) && UpgradeKeystoneButton.IsEnabled && ZetaDia.Me.AttemptUpgradeKeystone())
+            if (QuestToolsSettings.Instance.UpgradeKeyStones && await UpgradeKeyStoneTask())
+                return true;
+
+            if (VendorDialog.IsVisible)
+            {
+
+                float minimumGemChance = QuestToolsSettings.Instance.MinimumGemChance;
+
+                List<ACDItem> gems = ZetaDia.Actors.GetActorsOfType<ACDItem>()
+                    .Where(item => item.ItemType == ItemType.LegendaryGem && GetUpgradeChance(item) > minimumGemChance)
+                    .OrderByDescending(item => item.JewelRank).ToList();
+
+                int selectedGemId = int.MaxValue;
+                string selectedGemPreference = "";
+                foreach (string gemName in QuestToolsSettings.Instance.GemPriority)
+                {
+                    //{0,"Equipped Gems"},
+                    //{1,"Lowest Rank"},
+                    //{2,"Highest Rank"},
+                    //{405775,"Bane of the Powerful"},
+                    //{405781,"Bane of the Trapped"},
+                    //{405792,"Wreath of Lightning"},
+                    //{405793,"Gem of Efficacious Toxin"},
+                    //{405794,"Pain Enhancer"},
+                    //{405795,"Mirinae, Teardrop of the Starweaver"},
+                    //{405796,"Gogok of Swiftness"},
+                    //{405797,"Invigorating Gemstone"},
+                    //{405798,"Enforcer"},
+                    //{405800,"Moratorium"},
+                    //{405801,"Zei's Stone of Vengeance"},
+                    //{405802,"Simplicity's Strength"},
+                    //{405803,"Boon of the Hoarder"},
+                    //{405804,"Taeguk"},
+
+                    selectedGemId = DataDictionary.LegendaryGems.FirstOrDefault(kv => kv.Value == gemName).Key;
+
+                    // Map to known gem type or dynamic priority
+                    if (selectedGemId == int.MaxValue)
+                    {
+                        Logger.LogError("Invalid Gem Name: {0}", gemName);
+                        continue;
+                    }
+
+                    // Equipped Gems
+                    if (selectedGemId == 0)
+                    {
+                        selectedGemPreference = gemName;
+                        gems = gems.Where(item => item.InventorySlot == (InventorySlot)20).ToList();
+                        break;
+                    }
+
+                    // Lowest Rank
+                    if (selectedGemId == 1)
+                    {
+                        selectedGemPreference = gemName;
+                        gems = gems.OrderBy(item => item.JewelRank).ToList();
+                        break;
+                    }
+
+                    // Highest Rank
+                    if (selectedGemId == 2)
+                    {
+                        selectedGemPreference = gemName;
+                        gems = gems.OrderByDescending(item => item.JewelRank).ToList();
+                        break;
+                    }
+
+                    // Selected gem
+                    if (gems.Any(i => i.ActorSNO == selectedGemId))
+                    {
+                        selectedGemPreference = gemName;
+                        gems = gems.Where(i => i.ActorSNO == selectedGemId).Take(1).ToList();
+                        break;
+                    }
+
+                    // No gem found... skip!
+                }
+
+                if (!gems.Any())
+                {
+                    _isDone = true;
+                    return true;
+                }
+
+                if (selectedGemId < 10)
+                {
+                    Logger.Log("Using gem priority of {0}", selectedGemPreference);
+                }
+
+                var bestgem = gems.First();
+
+                Logger.Log("Upgrading Gem {0} ({1}) - {2:##.##}% {3} ", bestgem.Name, bestgem.JewelRank, GetUpgradeChance(bestgem) * 100, IsGemEquipped(bestgem) ? "Equipped" : string.Empty);
+                await CommonCoroutines.AttemptUpgradeGem(gems.FirstOrDefault());
+                await Coroutine.Sleep(250);
+                GameUI.SafeClickElement(VendorCloseButton);
+                await Coroutine.Yield();
+            }
+
+            return true;
+        }
+
+        // xz jv was here
+        public static Func<ACDItem, bool> IsGemEquipped = gem => (gem.InventorySlot == (InventorySlot)20);
+        public static Func<ACDItem, float> GetUpgradeChance = gem =>
+        {
+            var delta = ZetaDia.Actors.Me.InTieredLootRunLevel - gem.JewelRank;
+
+            if (delta >= 10) return 1f;
+
+            switch (delta)
+            {
+                case 9: return 0.9f;
+                case 8: return 0.8f;
+                case 7: return 0.7f;
+                case 6: return 0.6f;
+                case 5: return 0.6f;
+                case 4: return 0.6f;
+                case 3: return 0.6f;
+                case 2: return 0.6f;
+                case 1: return 0.6f;
+                case 0: return 0.6f;
+                case -1: return 0.3f;
+                case -2: return 0.15f;
+                case -3: return 0.08f;
+                case -4: return 0.04f;
+                case -5: return 0.02f;
+                default: return 0.01f;
+            }
+        };
+
+        private async Task<bool> UpgradeKeyStoneTask()
+        {
+            if (GameUI.IsElementVisible(UpgradeKeystoneButton) && UpgradeKeystoneButton.IsEnabled && ZetaDia.Me.AttemptUpgradeKeystone())
             {
                 Logger.Log("Keystone Upgraded");
                 GameUI.SafeClickElement(VendorCloseButton);
                 await Coroutine.Sleep(250);
                 await Coroutine.Yield();
+                return true;
             }
-            else if (VendorDialog.IsVisible)
-            {
-                var gems = ZetaDia.Actors.GetActorsOfType<ACDItem>()
-                    .OrderByDescending(item => item.GetAttribute<int>(ActorAttributeType.JewelRank))
-                    .Where(item => item.ItemType == ItemType.LegendaryGem && item.InventorySlot == (InventorySlot)20);
-                if (!gems.Any())
-                    gems = ZetaDia.Actors.GetActorsOfType<ACDItem>()
-                        .OrderByDescending(item => item.GetAttribute<int>(ActorAttributeType.JewelRank))
-                        .Where(item => item.ItemType == ItemType.LegendaryGem);
-                if (gems.Any())
-                {
-                    Logger.Log("Upgrading Gem");
-                    await CommonCoroutines.AttemptUpgradeGem(gems.FirstOrDefault());
-                    await Coroutine.Sleep(250);
-                    GameUI.SafeClickElement(VendorCloseButton);
-                    await Coroutine.Yield();
-                }
-            }
-
-            return true;
+            return false;
         }
 
         public override void ResetCachedDone()

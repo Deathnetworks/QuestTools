@@ -37,22 +37,29 @@ namespace QuestTools.ProfileTags
             if (keyPriorityList.Count != 3)
                 throw new ArgumentOutOfRangeException("RiftKeyPriority", "Expected 3 Rift keys, are settings are broken?");
 
+            bool keyFound = false;
             foreach (var keyType in keyPriorityList)
             {
                 if (keyType == RiftKeyUsePriority.Greater && HasGreaterRiftKeys)
                 {
+                    keyFound = true;
+                    Logger.Log("Using Greater Rift Keystone to open the Rift Portal");
                     StartTiered = true;
                     UseHighest = QuestToolsSettings.Instance.UseHighestKeystone;
                     break;
                 }
                 if (keyType == RiftKeyUsePriority.Trial && HasTrialRiftKeys)
                 {
+                    keyFound = true;
+                    Logger.Log("Using Trial Rift Keystone to open the Rift Portal");
                     StartTiered = false;
                     UseTrialStone = true;
                     break;
                 }
                 if (keyType == RiftKeyUsePriority.Normal && HasNormalRiftKeys)
                 {
+                    keyFound = true;
+                    Logger.Log("Using Normal Rift Keystone to open the Rift Portal");
                     StartTiered = false;
                     UseTrialStone = false;
                     break;
@@ -60,10 +67,12 @@ namespace QuestTools.ProfileTags
                 StartTiered = false;
             }
 
-            // No rift keys... :(
-            Logger.Log("No Rift Keys Found for QTRiftWrapper. Tag finished.");
-            _isDone = true;
-
+            if (!keyFound)
+            {
+                // No rift keys... :(
+                Logger.Log("No Rift Keys Found for QTRiftWrapper :( Tag finished.");
+                _isDone = true;
+            }
             base.OnStart();
         }
 

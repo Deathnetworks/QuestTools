@@ -13,7 +13,7 @@ namespace QuestTools
 {
     public class QuestTools
     {
-        public static Version PluginVersion = new Version(2, 1, 24);
+        public static Version PluginVersion = new Version(2, 1, 25);
 
         private static int _skipEventDuration = -1;
         private static readonly Stopwatch SkipEventTimer = new Stopwatch();
@@ -72,7 +72,7 @@ namespace QuestTools
                 }
                 LoadOnceTag.RecordLoadOnceProfile();
 
-                RiftTrial.Pulse();
+                RiftTrial.PulseRiftTrial();
                 CheckGamesPerHourStop();
                 SkipCutScene();
                 AdvanceConversation();
@@ -93,7 +93,7 @@ namespace QuestTools
             private static bool _finished;
             private static bool _isAborting;
 
-            public static void Pulse()
+            public static void PulseRiftTrial()
             {
                 int maxWave = QuestToolsSettings.Instance.TrialRiftMaxLevel;
 
@@ -102,7 +102,7 @@ namespace QuestTools
 
                 var quest = ZetaDia.ActInfo.ActiveQuests.FirstOrDefault(q => q.QuestSNO == 405695);
 
-                if (quest == null || ZetaDia.IsInTown || ZetaDia.WorldInfo.SNOId != 405684)
+                if (quest == null || ZetaDia.IsInTown || ZetaDia.WorldInfo.SNOId != 405684 || !QuestToolsSettings.Instance.EnableTrialRiftMaxLevel)
                 {
                     InProgress = false;
                     CurrentWave = 0;
