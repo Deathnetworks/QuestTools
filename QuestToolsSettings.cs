@@ -229,8 +229,6 @@ namespace QuestTools
         {
             get
             {
-                if (_minimumGemChance == 0)
-                    _minimumGemChance = 0.1f;
                 return _minimumGemChance;
             }
             set
@@ -264,7 +262,7 @@ namespace QuestTools
 
         private bool _upgradeKeyStones;
         [XmlElement("UpgradeKeyStones")]
-        [DefaultValue(true)]
+        [DefaultValue(false)]
         public bool UpgradeKeyStones
         {
             get
@@ -282,7 +280,7 @@ namespace QuestTools
 
         private bool _useHighestKeystone;
         [XmlElement("UseHighestKeystone")]
-        [DefaultValue(true)]
+        [DefaultValue(false)]
         public bool UseHighestKeystone
         {
             get
@@ -316,6 +314,6 @@ namespace QuestTools
             }
         }
 
-        
+
     }
 }

@@ -26,6 +26,9 @@ namespace QuestTools.ProfileTags
             get { return _done; }
         }
 
+        [XmlAttribute("force")]
+        public bool Force { get; set; }
+
         public Zeta.Game.Internals.Quest CurrentQuest { get { return ZetaDia.CurrentQuest; } }
 
         private static string _lastReloadLoopQuestStep = "";
@@ -65,7 +68,7 @@ namespace QuestTools.ProfileTags
         /// <returns></returns>
         private async Task<bool> MainCoroutine()
         {
-            if (!QuestToolsSettings.Instance.AllowProfileReloading)
+            if (!QuestToolsSettings.Instance.AllowProfileReloading && !Force)
             {
                 Logger.Log("Profile reloading disabled, skipping tag. questId=\"{0}\" stepId=\"{1}\"", ZetaDia.CurrentQuest.QuestSNO, ZetaDia.CurrentQuest.StepId);
                 _done = true;
@@ -113,20 +116,18 @@ namespace QuestTools.ProfileTags
         /// Reloads the ActX_Start.xml profile
         /// </summary>
         /// <returns></returns>
-        private RunStatus ForceRestartAct()
+        private void ForceRestartAct()
         {
             Regex questingProfileName = new Regex(@"Act \d by rrrix");
 
             if (!questingProfileName.IsMatch(ProfileManager.CurrentProfile.Name))
-                return RunStatus.Success;
+                return;
 
             string restartActProfile = String.Format("{0}_StartNew.xml", ZetaDia.CurrentAct);
             Logger.Log("[QuestTools] Max Profile reloads reached, restarting Act! Loading Profile {0} - {1}", restartActProfile, QuestInfo());
 
             string profilePath = Path.Combine(Path.GetDirectoryName(ProfileManager.CurrentProfile.Path), restartActProfile);
             ProfileManager.Load(profilePath);
-
-            return RunStatus.Success;
         }
 
         /// <summary>

@@ -117,7 +117,7 @@ namespace QuestTools.Navigation
         private static List<DungeonNode> VisitedNodes { get { return Nodes.Where(n => n.Visited).ToList(); } }
         private static List<DungeonNode> UnVisitedNodes { get { return Nodes.Where(n => !n.Visited).ToList(); } }
 
-        private static RouteMode _routeMode = RouteMode.Default;
+        private static RouteMode _routeMode = RouteMode.WeightedNearestMinimapVisited;
         internal static RouteMode RouteMode
         {
             get
@@ -187,7 +187,7 @@ namespace QuestTools.Navigation
 
         internal static Queue<DungeonNode> GetRoute()
         {
-            Logger.Log("Generating new route with Route Mode {0}", RouteMode);
+            //Logger.Debug("Generating new route with Route Mode {0}", RouteMode);
             Queue<DungeonNode> route = new Queue<DungeonNode>();
 
             switch (RouteMode)
@@ -295,7 +295,7 @@ namespace QuestTools.Navigation
                 route.Enqueue(node);
             }
 
-            Logger.Log("Generated new Weighted Nearest Unvisited Route with {0} nodes in {1}ms", route.Count, timer.ElapsedMilliseconds);
+            Logger.Debug("Generated new Weighted Nearest Unvisited Route with {0} nodes in {1}ms", route.Count, timer.ElapsedMilliseconds);
             return route;
         }
 

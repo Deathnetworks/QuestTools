@@ -326,7 +326,7 @@ namespace QuestTools.ProfileTags.Movement
                 if (_miniMapMarker != null)
                 {
                     MapMarkerNameHash = _miniMapMarker.NameHash;
-                    Logger.Log("Using Rift Style Minimap Marker: {0} dist: {1:0} isExit: {2}",
+                    Logger.Debug("Using Rift Style Minimap Marker: {0} dist: {1:0} isExit: {2}",
                         _miniMapMarker.NameHash,
                         _miniMapMarker.Position.Distance2D(ZetaDia.Me.Position),
                         _miniMapMarker.IsPortalExit);

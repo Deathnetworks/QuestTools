@@ -41,13 +41,6 @@ namespace QuestTools.ProfileTags
         public UIElement UpgradeButton { get { return UIElement.FromHash(0xD365EA84F587D2FE); } }
         public UIElement VendorCloseButton { get { return UIElement.FromHash(0xF98A8466DE237BD5); } }
 
-        // Upgrade Keystone: [1D898330] Mouseover: 0x4BDE2D63B5C36134, Name: Root.NormalLayer.vendor_dialog_mainPage.riftReward_dialog.LayoutRoot.rewardChoicePane.Container.advance_button
-        // Upgrade Gem: [1D897180] Mouseover: 0x826E5716E8D4DD05, Name: Root.NormalLayer.vendor_dialog_mainPage.riftReward_dialog.LayoutRoot.rewardChoicePane.Container.upgrade_button1
-        // Continue Button: [1D895450] Mouseover: 0x1A089FAFF3CB6576, Name: Root.NormalLayer.vendor_dialog_mainPage.riftReward_dialog.LayoutRoot.rewardChoicePane.Container.Continue
-        // C1 R1 [227F5FB0] Mouseover: 0x680DF143A98CB58E, Name: Root.NormalLayer.vendor_dialog_mainPage.riftReward_dialog.LayoutRoot.gemUpgradePane.items_list._content._stackpanel._tilerow0._item2
-        // C2 R1 [1C5AABB0] Mouseover: 0x680DF043A98CB3DB, Name: Root.NormalLayer.vendor_dialog_mainPage.riftReward_dialog.LayoutRoot.gemUpgradePane.items_list._content._stackpanel._tilerow0._item1
-        // C3 R1 [21CDCF70] Mouseover: 0x680DEF43A98CB228, Name: Root.NormalLayer.vendor_dialog_mainPage.riftReward_dialog.LayoutRoot.gemUpgradePane.items_list._content._stackpanel._tilerow0._item0        
-
         public async Task<bool> CompleteGreaterRiftRoutine()
         {
             if (!GameUI.IsElementVisible(VendorDialog))
@@ -60,7 +53,7 @@ namespace QuestTools.ProfileTags
             if (GameUI.IsElementVisible(ContinueButton) && ContinueButton.IsVisible && ContinueButton.IsEnabled)
             {
                 GameUI.SafeClickElement(ContinueButton, "Continue Button");
-                GameUI.SafeClickElement(VendorCloseButton);
+                GameUI.SafeClickElement(VendorCloseButton, "Vendor Window Close Button");
                 await Coroutine.Sleep(250);
                 await Coroutine.Yield();
             }
@@ -74,31 +67,14 @@ namespace QuestTools.ProfileTags
                 float minimumGemChance = QuestToolsSettings.Instance.MinimumGemChance;
 
                 List<ACDItem> gems = ZetaDia.Actors.GetActorsOfType<ACDItem>()
-                    .Where(item => item.ItemType == ItemType.LegendaryGem && GetUpgradeChance(item) > minimumGemChance)
-                    .OrderByDescending(item => item.JewelRank).ToList();
+                    .Where(item => item.ItemType == ItemType.LegendaryGem)
+                    .OrderByDescending(item => GetUpgradeChance(item) > minimumGemChance)
+                    .ThenByDescending(item => item.JewelRank).ToList();
 
                 int selectedGemId = int.MaxValue;
                 string selectedGemPreference = "";
                 foreach (string gemName in QuestToolsSettings.Instance.GemPriority)
                 {
-                    //{0,"Equipped Gems"},
-                    //{1,"Lowest Rank"},
-                    //{2,"Highest Rank"},
-                    //{405775,"Bane of the Powerful"},
-                    //{405781,"Bane of the Trapped"},
-                    //{405792,"Wreath of Lightning"},
-                    //{405793,"Gem of Efficacious Toxin"},
-                    //{405794,"Pain Enhancer"},
-                    //{405795,"Mirinae, Teardrop of the Starweaver"},
-                    //{405796,"Gogok of Swiftness"},
-                    //{405797,"Invigorating Gemstone"},
-                    //{405798,"Enforcer"},
-                    //{405800,"Moratorium"},
-                    //{405801,"Zei's Stone of Vengeance"},
-                    //{405802,"Simplicity's Strength"},
-                    //{405803,"Boon of the Hoarder"},
-                    //{405804,"Taeguk"},
-
                     selectedGemId = DataDictionary.LegendaryGems.FirstOrDefault(kv => kv.Value == gemName).Key;
 
                     // Map to known gem type or dynamic priority
@@ -107,7 +83,7 @@ namespace QuestTools.ProfileTags
                         Logger.LogError("Invalid Gem Name: {0}", gemName);
                         continue;
                     }
-                    
+
                     // Equipped Gems
                     if (selectedGemId == 0)
                     {
@@ -150,12 +126,6 @@ namespace QuestTools.ProfileTags
                     // No gem found... skip!
                 }
 
-                if (!gems.Any())
-                {
-                    _isDone = true;
-                    return true;
-                }
-
                 if (selectedGemId < 10)
                 {
                     Logger.Log("Using gem priority of {0}", selectedGemPreference);
@@ -163,11 +133,35 @@ namespace QuestTools.ProfileTags
 
                 var bestgem = gems.First();
 
-                Logger.Log("Upgrading Gem {0} ({1}) - {2:##.##}% {3} ", bestgem.Name, bestgem.JewelRank, GetUpgradeChance(bestgem) * 100, IsGemEquipped(bestgem) ? "Equipped" : string.Empty);
-                await CommonCoroutines.AttemptUpgradeGem(gems.FirstOrDefault());
-                await Coroutine.Sleep(250);
-                GameUI.SafeClickElement(VendorCloseButton);
-                await Coroutine.Yield();
+                if (await CommonCoroutines.AttemptUpgradeGem(gems.FirstOrDefault()))
+                {
+                    await Coroutine.Sleep(250);
+                    GameUI.SafeClickElement(VendorCloseButton, "Vendor Window Close Button");
+                    await Coroutine.Yield();
+                }
+                else
+                {
+                    /*
+                     * Demonbuddy MAY randomly fail to upgrade the selected gem. This is a workaround, in case we get stuck...
+                     */
+
+                    var randomGems = ZetaDia.Actors.GetActorsOfType<ACDItem>()
+                                        .Where(item => item.ItemType == ItemType.LegendaryGem)
+                                        .OrderByDescending(item => GetUpgradeChance(item) > minimumGemChance)
+                                        .ThenByDescending(item => item.JewelRank).ToList();
+                    Random random = new Random(DateTime.UtcNow.Millisecond);
+                    int i = random.Next(0, randomGems.Count - 1);
+                    var randomGem = gems[i];
+                    Logger.LogError("Gem Upgrade failed! Upgrading random Gem {0} ({1}) - {2:##.##}% {3} ", randomGem.Name, randomGem.JewelRank, GetUpgradeChance(randomGem) * 100, IsGemEquipped(randomGem) ? "Equipped" : string.Empty);
+                    if (await CommonCoroutines.AttemptUpgradeGem(randomGem))
+                    {
+                    }
+                    else
+                    {
+                        Logger.LogError("Random gem upgrade also failed. Something... seriously... wrong... ");
+                    }
+
+                }
             }
 
             return true;
@@ -207,7 +201,7 @@ namespace QuestTools.ProfileTags
             if (GameUI.IsElementVisible(UpgradeKeystoneButton) && UpgradeKeystoneButton.IsEnabled && ZetaDia.Me.AttemptUpgradeKeystone())
             {
                 Logger.Log("Keystone Upgraded");
-                GameUI.SafeClickElement(VendorCloseButton);
+                GameUI.SafeClickElement(VendorCloseButton, "Vendor Window Close Button");
                 await Coroutine.Sleep(250);
                 await Coroutine.Yield();
                 return true;

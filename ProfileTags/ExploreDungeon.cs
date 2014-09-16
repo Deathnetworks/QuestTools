@@ -1402,7 +1402,7 @@ namespace QuestTools.ProfileTags
             {
                 if (!node.Visited && node.NavigableCenter.Distance2DSqr(MyPosition) < (PathPrecision * PathPrecision))
                 {
-                    Logger.Log("Marking nearby node {0} as visited, distance {1:0}/{2:0}, IsVisited={3}",
+                    Logger.Debug("Marking nearby node {0} as visited, distance {1:0}/{2:0}, IsVisited={3}",
                         node.NavigableCenter, node.NavigableCenter.Distance2D(MyPosition), PathPrecision, node.Visited);
                     node.Visited = true;
                     update = true;
@@ -1545,7 +1545,7 @@ namespace QuestTools.ProfileTags
                 ClearDeathGateCheck();
 
                 var navTarget = CurrentNavTarget;
-                Logger.Log("New Nav Target={0} Dir={1} Dist={2:0}", StringUtils.GetSimplePosition(navTarget), MathUtil.GetHeadingToPoint(navTarget), navTarget.Distance2D(ZetaDia.Me.Position));
+                Logger.Debug("New Nav Target={0} Dir={1} Dist={2:0}", StringUtils.GetSimplePosition(navTarget), MathUtil.GetHeadingToPoint(navTarget), navTarget.Distance2D(ZetaDia.Me.Position));
                 _lastDestination = navTarget;
             }
 
@@ -1646,7 +1646,7 @@ namespace QuestTools.ProfileTags
         public bool IsInAdventureMode()
         {
             // Only valid for Adventure mode
-            if (ZetaDia.CurrentAct == Act.OpenWorld)
+            if (ZetaDia.WorldType == Act.OpenWorld)
                 return true;
 
             return false;
@@ -1665,7 +1665,7 @@ namespace QuestTools.ProfileTags
                 return false;
 
             // X1_LR_DungeonFinder
-            if (ZetaDia.CurrentAct == Act.OpenWorld && DataDictionary.RiftWorldIds.Contains(ZetaDia.CurrentWorldId) &&
+            if (ZetaDia.WorldType == Act.OpenWorld && DataDictionary.RiftWorldIds.Contains(ZetaDia.CurrentWorldId) &&
                 ZetaDia.ActInfo.AllQuests.Any(q => q.QuestSNO == 337492 && q.QuestStep == 10))
             {
                 Logger.Log("Rift Quest Complete!");
@@ -1699,11 +1699,11 @@ namespace QuestTools.ProfileTags
                 _lastCheckBountyDone = DateTime.UtcNow;
 
                 // Only valid for Adventure mode
-                if (ZetaDia.CurrentAct != Act.OpenWorld)
+                if (ZetaDia.WorldType != Act.OpenWorld)
                     return false;
 
                 // We're in a rift, not a bounty!
-                if (ZetaDia.CurrentAct == Act.OpenWorld && DataDictionary.RiftWorldIds.Contains(ZetaDia.CurrentWorldId))
+                if (ZetaDia.WorldType == Act.OpenWorld && DataDictionary.RiftWorldIds.Contains(ZetaDia.CurrentWorldId))
                     return false;
 
                 if (ZetaDia.IsInTown)

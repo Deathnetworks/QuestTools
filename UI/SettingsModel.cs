@@ -35,7 +35,11 @@ namespace QuestTools.UI
             var confirmed = MessageBox.Show("Are you sure you want to reset all settings?", "Settings Reset Confirmation",
                                              MessageBoxButton.YesNo, MessageBoxImage.Exclamation, MessageBoxResult.No);
             if (confirmed == MessageBoxResult.Yes)
+            {
                 Settings.SetDefaults();
+                Settings.SetDefaultGemPriority();
+                Settings.SetDefaultRiftKeyPriority();
+            }
         }
 
         public ICommand RiftKeyOrderUp { get; set; }
