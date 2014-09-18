@@ -1536,20 +1536,20 @@ namespace QuestTools.ProfileTags
         /// </summary>
         private void MoveToNextNode()
         {
+            var navTarget = CurrentNavTarget;
             RecordPosition();
 
-            if (_lastDestination != CurrentNavTarget)
+            if (_lastDestination != navTarget)
             {
                 Navigator.Clear();
                 UpdateSearchGridProvider();
                 ClearDeathGateCheck();
 
-                var navTarget = CurrentNavTarget;
                 Logger.Debug("New Nav Target={0} Dir={1} Dist={2:0}", StringUtils.GetSimplePosition(navTarget), MathUtil.GetHeadingToPoint(navTarget), navTarget.Distance2D(ZetaDia.Me.Position));
                 _lastDestination = navTarget;
             }
 
-            _lastMoveResult = Navigator.MoveTo(CurrentNavTarget);
+            _lastMoveResult = Navigator.MoveTo(CurrentNavTarget, string.Format("Dungeon Node {0}, Dir={1}", StringUtils.GetSimplePosition(navTarget), MathUtil.GetHeadingToPoint(navTarget)));
         }
 
         /// <summary>

@@ -68,7 +68,7 @@ namespace QuestTools.ProfileTags
 
                 List<ACDItem> gems = ZetaDia.Actors.GetActorsOfType<ACDItem>()
                     .Where(item => item.ItemType == ItemType.LegendaryGem)
-                    .OrderByDescending(item => GetUpgradeChance(item) > minimumGemChance)
+                    .OrderByDescending(item => GetUpgradeChance(item))
                     .ThenByDescending(item => item.JewelRank).ToList();
 
                 int selectedGemId = int.MaxValue;
@@ -147,8 +147,7 @@ namespace QuestTools.ProfileTags
 
                     var randomGems = ZetaDia.Actors.GetActorsOfType<ACDItem>()
                                         .Where(item => item.ItemType == ItemType.LegendaryGem)
-                                        .OrderByDescending(item => GetUpgradeChance(item) > minimumGemChance)
-                                        .ThenByDescending(item => item.JewelRank).ToList();
+                                        .OrderBy(item => item.JewelRank).ToList();
                     Random random = new Random(DateTime.UtcNow.Millisecond);
                     int i = random.Next(0, randomGems.Count - 1);
                     var randomGem = gems[i];

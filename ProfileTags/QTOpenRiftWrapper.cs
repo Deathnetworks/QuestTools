@@ -10,6 +10,8 @@ namespace QuestTools.ProfileTags
     [XmlElement("QTOpenRiftWrapper")]
     public class QTOpenRiftWrapper : OpenRiftTag
     {
+        const int riftPortalSno = 396751;
+
         private bool _isDone;
 
         public override bool IsDone
@@ -36,6 +38,13 @@ namespace QuestTools.ProfileTags
 
             if (keyPriorityList.Count != 3)
                 throw new ArgumentOutOfRangeException("RiftKeyPriority", "Expected 3 Rift keys, are settings are broken?");
+
+
+            if (ZetaDia.Actors.GetActorsOfType<DiaObject>(true).Any(i => i.IsValid && i.ActorSNO == riftPortalSno))
+            {
+                Logger.Log("Rift Portal already open!");
+                _isDone = true;
+            }
 
             bool keyFound = false;
             foreach (var keyType in keyPriorityList)
@@ -70,7 +79,7 @@ namespace QuestTools.ProfileTags
             if (!keyFound)
             {
                 // No rift keys... :(
-                Logger.Log("No Rift Keys Found for QTRiftWrapper :( Tag finished.");
+                Logger.Log("No Rift Keys Found for QTOpenRiftWrapper :( Tag finished.");
                 _isDone = true;
             }
             base.OnStart();

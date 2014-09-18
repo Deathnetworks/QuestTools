@@ -37,13 +37,24 @@ namespace QuestTools.UI
         /// </returns>
         public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
+            float pf;
+            double pd;
+
             if (value is float)
             {
-                return (float)Math.Round((float)value / 100,2);
+                return (float)Math.Round((float)value / 100, 2);
             }
             if (value is double)
             {
-                return Math.Round((double)value / 100,2);
+                return Math.Round((double)value / 100, 2);
+            }
+            if (float.TryParse(value.ToString(), out pf))
+            {
+                return (float)Math.Round(pf / 100, 2);
+            }
+            if (double.TryParse(value.ToString(), out pd))
+            {
+                return Math.Round(pd / 100, 2);
             }
             return 0f;
         }

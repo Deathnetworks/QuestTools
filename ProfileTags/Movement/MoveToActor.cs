@@ -312,7 +312,7 @@ namespace QuestTools.ProfileTags.Movement
         {
             get
             {
-                return (Actor is DiaGizmo && Actor.ActorInfo.GizmoType == GizmoType.ReturnPortal);
+                return Actor != null && Actor is DiaGizmo && Actor.ActorInfo != null && Actor.ActorInfo.GizmoType == GizmoType.ReturnPortal;
             }
         }
 
@@ -324,8 +324,12 @@ namespace QuestTools.ProfileTags.Movement
             get
             {
                 var actorList = ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
-                    .Where(i => i.IsValid && i.CommonData.IsValid && i.ActorSNO == ActorId)
+                    .Where(i => i.IsValid && i.CommonData != null && i.CommonData.IsValid && i.ActorSNO == ActorId)
                     .ToList();
+
+                if (!actorList.Any())
+                    return null;
+
                 try
                 {
                     DiaObject actor;
