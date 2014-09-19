@@ -324,7 +324,7 @@ namespace QuestTools.ProfileTags.Movement
             get
             {
                 var actorList = ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
-                    .Where(i => i.IsValid && i.CommonData != null && i.CommonData.IsValid && i.ActorSNO == ActorId)
+                    .Where(i => i.IsValid && i.ActorSNO == ActorId)
                     .ToList();
 
                 if (!actorList.Any())
@@ -338,21 +338,21 @@ namespace QuestTools.ProfileTags.Movement
                     {
                         actor = actorList
                             .Where(o => Position.Distance(Position) <= MaxSearchDistance)
-                            .OrderByDescending(o => (o as DiaUnit) == null || !(o as DiaUnit).IsQuestGiver)
+                            .OrderByDescending(o => (o as DiaUnit) == null || !(o.CommonData != null && (o as DiaUnit).IsQuestGiver))
                             .ThenBy(o => Position.Distance2DSqr(o.Position)).FirstOrDefault();
                     }
                     // Otherwise just OrderBy distance from Position (any actor found)
                     else if (Position != Vector3.Zero)
                     {
                         actor = actorList
-                            .OrderByDescending(o => (o as DiaUnit) == null || !(o as DiaUnit).IsQuestGiver)
+                            .OrderByDescending(o => (o as DiaUnit) == null || !(o.CommonData != null && (o as DiaUnit).IsQuestGiver))
                             .ThenBy(o => Position.Distance2DSqr(o.Position)).FirstOrDefault();
                     }
                     // If all else fails, get first matching Actor closest to Player
                     else
                     {
                         actor = actorList
-                            .OrderByDescending(o => (o as DiaUnit) == null || !(o as DiaUnit).IsQuestGiver)
+                            .OrderByDescending(o => (o as DiaUnit) == null || !(o.CommonData != null && (o as DiaUnit).IsQuestGiver))
                             .ThenBy(o => o.Distance).FirstOrDefault();
                     }
                     if (actor == null)
@@ -360,12 +360,12 @@ namespace QuestTools.ProfileTags.Movement
 
                     Position = actor.Position;
 
-                    if (actor is GizmoLootContainer && actor.CommonData.GetAttribute<int>(ActorAttributeType.ChestOpen) != 0)
+                    if (actor.CommonData != null && actor is GizmoLootContainer && actor.CommonData.GetAttribute<int>(ActorAttributeType.ChestOpen) != 0)
                     {
                         return null;
                     }
 
-                    if (actor is DiaUnit && (actor as DiaUnit).IsDead)
+                    if (actor.CommonData != null && actor is DiaUnit && (actor as DiaUnit).IsDead)
                     {
                         return null;
                     }
