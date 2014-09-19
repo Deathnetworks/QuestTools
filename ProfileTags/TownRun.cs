@@ -109,7 +109,7 @@ namespace QuestTools.ProfileTags
             }
             else
             {
-                Logger.Log("Skipping TrinityTownRun");
+                Logger.Log("Skipping TownRun");
                 _isDone = true;
             }
             return true;

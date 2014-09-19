@@ -1172,6 +1172,9 @@ namespace QuestTools.ProfileTags
         /// </summary>
         private void FindPrioritySceneTarget()
         {
+            if (PriorityScenes == null)
+                return;
+
             if (!PriorityScenes.Any())
                 return;
 
