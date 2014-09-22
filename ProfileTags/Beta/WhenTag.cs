@@ -40,7 +40,8 @@ namespace QuestTools.ProfileTags.Complex
             if (Immediate)            
                 return parsedConditions.All(expression => ConditionParser.Evaluate(expression));
 
-            Logger.Log("Async Initializing '{1}' with condition={0}", Condition, Name);
+            if (QuestTools.EnableDebugLogging)
+                Logger.Log("Async Initializing '{1}' with condition={0}", Condition, Name);
 
             // Prevent tags from using logger when initialized
             if(!QuestTools.EnableDebugLogging)
@@ -115,7 +116,8 @@ namespace QuestTools.ProfileTags.Complex
 
         public override void OnChildStart()
         {
-            Logger.Log("Child Behavior Initialized {0}", ProfileManager.CurrentProfileBehavior.GetType());
+            if (QuestTools.EnableDebugLogging)
+                Logger.Log("Child Behavior Initialized {0}", ProfileManager.CurrentProfileBehavior.GetType());
         }
 
         /// <summary>
@@ -126,7 +128,8 @@ namespace QuestTools.ProfileTags.Complex
             if (!QuestTools.EnableDebugLogging)
                 LoggingController.Enable();
 
-            Logger.Log("Successfully Initialized {0} with {1} Tags", Name, ChildBehaviorIds.Count);
+            if (QuestTools.EnableDebugLogging)
+                Logger.Log("Successfully Initialized '{0}' with {1} Tags", Name, ChildBehaviorIds.Count);
 
             if (Immediate)
                 return;

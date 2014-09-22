@@ -192,29 +192,29 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>rd /S /Q "C:\db\svn\$(ProjectName)\trunk\Sources\"
-rd /S /Q "C:\db\Plugins\$(ProjectName)\"
+    <PostBuildEvent>rd /S /Q "C:\db\svn\$(TargetName)\trunk\Sources\"
+rd /S /Q "C:\db\Plugins\$(TargetName)\"
 del /S "$(ProjectDir)*.bak"
 
-xcopy /E /Y "$(ProjectDir)*.cs" "C:\db\Plugins\$(ProjectName)\"
-xcopy /E /Y "$(ProjectDir)*.dis" "C:\db\Plugins\$(ProjectName)\"
-xcopy /E /Y "$(ProjectDir)*.xaml" "C:\db\Plugins\$(ProjectName)\"
-xcopy /E /Y "$(ProjectDir)*.xml" "C:\db\Plugins\$(ProjectName)\"
-xcopy /E /Y "$(ProjectDir)*.xsd" "C:\db\Plugins\$(ProjectName)\"
-xcopy /E /Y "$(ProjectDir)*.txt" "C:\db\Plugins\$(ProjectName)\"
+xcopy /E /Y "$(ProjectDir)*.cs" "C:\db\Plugins\$(TargetName)\"
+xcopy /E /Y "$(ProjectDir)*.dis" "C:\db\Plugins\$(TargetName)\"
+xcopy /E /Y "$(ProjectDir)*.xaml" "C:\db\Plugins\$(TargetName)\"
+xcopy /E /Y "$(ProjectDir)*.xml" "C:\db\Plugins\$(TargetName)\"
+xcopy /E /Y "$(ProjectDir)*.xsd" "C:\db\Plugins\$(TargetName)\"
+xcopy /E /Y "$(ProjectDir)*.txt" "C:\db\Plugins\$(TargetName)\"
 
-rd /S /Q "C:\db\Plugins\$(ProjectName)\obj\
-rd /S /Q "C:\db\Plugins\$(ProjectName)\bin\
+rd /S /Q "C:\db\Plugins\$(TargetName)\obj\
+rd /S /Q "C:\db\Plugins\$(TargetName)\bin\
 
-xcopy /E /Y "$(ProjectDir)*.cs" "C:\db\svn\$(ProjectName)\trunk\Sources\"
-xcopy /E /Y "$(ProjectDir)*.dis" "C:\db\svn\$(ProjectName)\trunk\Sources\"
-xcopy /E /Y "$(ProjectDir)*.xaml" "C:\db\svn\$(ProjectName)\trunk\Sources\"
-xcopy /E /Y "$(ProjectDir)*.xml" "C:\db\svn\$(ProjectName)\trunk\Sources\"
-xcopy /E /Y "$(ProjectDir)*.xsd" "C:\db\svn\$(ProjectName)\trunk\Sources\"
-xcopy /E /Y "$(ProjectDir)*.txt" "C:\db\svn\$(ProjectName)\trunk\Sources\"
+xcopy /E /Y "$(ProjectDir)*.cs" "C:\db\svn\$(TargetName)\trunk\Sources\"
+xcopy /E /Y "$(ProjectDir)*.dis" "C:\db\svn\$(TargetName)\trunk\Sources\"
+xcopy /E /Y "$(ProjectDir)*.xaml" "C:\db\svn\$(TargetName)\trunk\Sources\"
+xcopy /E /Y "$(ProjectDir)*.xml" "C:\db\svn\$(TargetName)\trunk\Sources\"
+xcopy /E /Y "$(ProjectDir)*.xsd" "C:\db\svn\$(TargetName)\trunk\Sources\"
+xcopy /E /Y "$(ProjectDir)*.txt" "C:\db\svn\$(TargetName)\trunk\Sources\"
 
-rd /S /Q "C:\db\svn\$(ProjectName)\trunk\Sources\bin\"
-rd /S /Q "C:\db\svn\$(ProjectName)\trunk\Sources\obj\"
+rd /S /Q "C:\db\svn\$(TargetName)\trunk\Sources\bin\"
+rd /S /Q "C:\db\svn\$(TargetName)\trunk\Sources\obj\"
 
 
 </PostBuildEvent>
