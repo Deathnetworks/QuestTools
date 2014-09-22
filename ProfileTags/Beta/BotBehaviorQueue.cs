@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Windows;
 using Org.BouncyCastle.Security;
 using QuestTools.ProfileTags.Complex;
 using System.Collections.Generic;
@@ -16,6 +17,7 @@ namespace QuestTools.Helpers
     static class BotBehaviorQueue
     {
         public delegate bool ShouldRunCondition(List<ProfileBehavior> profileBehaviors);
+
         public static HashSet<KeyValuePair<List<ProfileBehavior>, ShouldRunCondition>> ProfileBehaviorQueue = new HashSet<KeyValuePair<List<ProfileBehavior>, ShouldRunCondition>>(); 
         public static bool IsInitialized;
         public static bool HooksInserted;
@@ -28,6 +30,7 @@ namespace QuestTools.Helpers
         private static bool QueueIsInactive;
         private static DateTime _lastCheckedConditionsTime = DateTime.MinValue;
         private static int _conditionCount;
+        private static Dictionary<ShouldRunCondition, string> _conditionNames = new Dictionary<ShouldRunCondition, string>();
         
         private const int MinimumCheckInterval = 50;
 
@@ -137,14 +140,17 @@ namespace QuestTools.Helpers
         /// </summary>
         /// <param name="profileBehaviors">List of ProfileBehaviors that should be executed when condition is satisfied</param>
         /// <param name="condition">bool delegate is invoked every tick to check if the attached profileBehaviors should be run</param>
-        public static void Queue(IEnumerable<ProfileBehavior> profileBehaviors, ShouldRunCondition condition)
+        public static void Queue(IEnumerable<ProfileBehavior> profileBehaviors, ShouldRunCondition condition, string name = "")
         {
             if(!IsInitialized)
                 Initailize();
 
             var pair = new KeyValuePair<List<ProfileBehavior>, ShouldRunCondition>(profileBehaviors.ToList(),condition);
-
+            
             ProfileBehaviorQueue.Add(pair);
+
+            if (!string.IsNullOrEmpty(name))
+                _conditionNames.Add(condition,name);
         }
 
         /// <summary>
@@ -213,7 +219,10 @@ namespace QuestTools.Helpers
                 _nodesToExecute.Remove(_activeProfileBehavior);
 
                 if (_activeProfileBehavior is IAsyncProfileBehavior)
+                {
                     (_activeProfileBehavior as IAsyncProfileBehavior).ReadyToRun = true;
+                    _activeProfileBehavior.ResetCachedDone();
+                }
 
                 _activeBehavior = _activeProfileBehavior.Behavior;
 
@@ -303,7 +312,7 @@ namespace QuestTools.Helpers
 
             if (QuestTools.EnableDebugLogging && ProfileBehaviorQueue.Any() && _conditionCount != ProfileBehaviorQueue.Count)
             {
-                Logger.Log("{0} Conditions will be monitored...", ProfileBehaviorQueue.Count);
+                //Logger.Log("{0} Conditions will be monitored...", ProfileBehaviorQueue.Count);
                 _conditionCount = ProfileBehaviorQueue.Count;
             }
                 
@@ -316,7 +325,11 @@ namespace QuestTools.Helpers
                 if (condition != null && condition.Invoke(nodes))
                 {
                     if (QuestTools.EnableDebugLogging)
-                        Log("Condition Success! Running {0} Behaviors", nodes.Count);
+                    {
+                        string name;
+                        _conditionNames.TryGetValue(condition, out name);
+                        Log("{1} Success! Running {0} Behaviors", nodes.Count, (!string.IsNullOrEmpty(name)) ? name : "Unnamed");
+                    }
 
                     nodes.ForEach(_nodesToExecute.Add);
                 }
@@ -341,6 +354,7 @@ namespace QuestTools.Helpers
             QueueIsInactive = true;
             _activeProfileBehavior = null;
             _activeBehavior = null;
+            _conditionNames.Clear();
         }
 
     }

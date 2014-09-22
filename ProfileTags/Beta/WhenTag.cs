@@ -21,6 +21,9 @@ namespace QuestTools.ProfileTags.Complex
         [XmlAttribute("immediate")]
         public bool Immediate { get; set; }
 
+        [XmlAttribute("name")]
+        public string Name { get; set; }
+
         public Guid Id;
         private readonly List<int> _questIds = new List<int>();
         private List<Expression> parsedConditions = new List<Expression>();
@@ -37,7 +40,7 @@ namespace QuestTools.ProfileTags.Complex
             if (Immediate)            
                 return parsedConditions.All(expression => ConditionParser.Evaluate(expression));
 
-            Logger.Log("Async Initializing with condition={0}", Condition);
+            Logger.Log("Async Initializing '{1}' with condition={0}", Condition, Name);
 
             // Prevent tags from using logger when initialized
             if(!QuestTools.EnableDebugLogging)
@@ -123,7 +126,7 @@ namespace QuestTools.ProfileTags.Complex
             if (!QuestTools.EnableDebugLogging)
                 LoggingController.Enable();
 
-            Logger.Log("Successfully Initialized {0} Tags", ChildBehaviorIds.Count);
+            Logger.Log("Successfully Initialized {0} with {1} Tags", Name, ChildBehaviorIds.Count);
 
             if (Immediate)
                 return;
@@ -138,7 +141,7 @@ namespace QuestTools.ProfileTags.Complex
 
             // Queue all the children along with a condition callback that determines when they should be run
             BotBehaviorQueue.Queue(ChildProfileBehaviors, ret =>
-                parsedConditions.All(expression => ConditionParser.Evaluate(expression)));
+                parsedConditions.All(expression => ConditionParser.Evaluate(expression)), Name);
         }
     }
 }

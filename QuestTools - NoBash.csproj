@@ -98,7 +98,6 @@
     <Compile Include="ProfileTags\Beta\AsyncCommonBehaviors.cs" />
     <Compile Include="ProfileTags\Beta\AsyncProfileWrappers.cs" />
     <Compile Include="ProfileTags\Beta\BotBehaviorQueue.cs" />
-    <Compile Include="ProfileTags\Beta\Cache.cs" />
     <Compile Include="ProfileTags\Beta\ConditionParser.cs" />
     <Compile Include="ProfileTags\Beta\Conditions.cs" />
     <Compile Include="ProfileTags\Beta\ConvertExtensions.cs" />
