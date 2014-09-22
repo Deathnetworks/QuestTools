@@ -23,6 +23,7 @@ namespace QuestTools.Helpers
             GameEvents.OnGameChanged += GameEvents_OnGameChanged;
             GameEvents.OnGameJoined += GameEvents_OnGameJoined;
             GameEvents.OnWorldChanged += GameEvents_OnWorldChanged;
+            BotBehaviorQueue.WireUp();
         }
 
         internal static void UnWire()
@@ -32,6 +33,7 @@ namespace QuestTools.Helpers
             GameEvents.OnGameChanged -= GameEvents_OnGameChanged;
             GameEvents.OnGameJoined -= GameEvents_OnGameJoined;
             GameEvents.OnWorldChanged -= GameEvents_OnWorldChanged;
+            BotBehaviorQueue.UnWire();
         }
 
         private static void BotMain_OnStart(IBot bot)

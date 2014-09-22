@@ -1,0 +1,233 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{5EFA9E07-A2AB-4F29-939C-34BCA004E8FB}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>QuestTools</RootNamespace>
+    <AssemblyName>QuestTools</AssemblyName>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <PlatformTarget>x86</PlatformTarget>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\x86\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisLogFile>bin\Debug\QuestTools.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
+    <OutputPath>bin\x86\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>x86</PlatformTarget>
+    <CodeAnalysisLogFile>bin\Release\QuestTools.dll.CodeAnalysisLog.xml</CodeAnalysisLogFile>
+    <CodeAnalysisUseTypeNameInSuppression>true</CodeAnalysisUseTypeNameInSuppression>
+    <CodeAnalysisModuleSuppressionsFile>GlobalSuppressions.cs</CodeAnalysisModuleSuppressionsFile>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSetDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\\Rule Sets</CodeAnalysisRuleSetDirectories>
+    <CodeAnalysisIgnoreBuiltInRuleSets>false</CodeAnalysisIgnoreBuiltInRuleSets>
+    <CodeAnalysisRuleDirectories>;C:\Program Files (x86)\Microsoft Visual Studio 10.0\Team Tools\Static Analysis Tools\FxCop\\Rules</CodeAnalysisRuleDirectories>
+    <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Demonbuddy, Version=1.0.1560.323, Culture=neutral, PublicKeyToken=eff32ccf253d66d4, processorArchitecture=x86">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\Demonbuddy.exe</HintPath>
+    </Reference>
+    <Reference Include="GreyMagic">
+      <HintPath>..\..\GreyMagic.dll</HintPath>
+    </Reference>
+    <Reference Include="PresentationCore" />
+    <Reference Include="PresentationFramework" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xaml" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="WindowsBase" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ProfileTags\Beta\AsyncCastExtensions.cs" />
+    <Compile Include="ProfileTags\Beta\AsyncCommonBehaviors.cs" />
+    <Compile Include="ProfileTags\Beta\AsyncProfileWrappers.cs" />
+    <Compile Include="ProfileTags\Beta\BotBehaviorQueue.cs" />
+    <Compile Include="ProfileTags\Beta\Cache.cs" />
+    <Compile Include="ProfileTags\Beta\ConditionParser.cs" />
+    <Compile Include="ProfileTags\Beta\Conditions.cs" />
+    <Compile Include="ProfileTags\Beta\ConvertExtensions.cs" />
+    <Compile Include="ProfileTags\Beta\Expression.cs" />
+    <Compile Include="ProfileTags\Beta\IAsyncProfileBehavior.cs" />
+    <Compile Include="ProfileTags\Beta\LoggingController.cs" />
+    <Compile Include="ProfileTags\Beta\NewBaseComplexNodeTag.cs" />
+    <Compile Include="ProfileTags\Beta\Tokenizer.cs" />
+    <Compile Include="ProfileTags\Beta\WhenTag.cs" />
+    <Compile Include="ProfileTags\Complex\HasTrialRiftKeys.cs" />
+    <Compile Include="ProfileTags\QTOpenRiftWrapper.cs" />
+    <Compile Include="UI\ConfigWindow.cs" />
+    <Compile Include="UI\BoolInverterConverter.cs" />
+    <Compile Include="Helpers\ChangeMonitor.cs" />
+    <Compile Include="Helpers\DataDictionary.cs" />
+    <Compile Include="Helpers\BotEvents.cs" />
+    <Compile Include="Helpers\Death.cs" />
+    <Compile Include="Helpers\ItemManager.cs" />
+    <Compile Include="Helpers\ObservableDictionary.cs" />
+    <Compile Include="UI\PercentConverter.cs" />
+    <Compile Include="Navigation\GridProvider.cs" />
+    <Compile Include="Navigation\GridRoute.cs" />
+    <Compile Include="Helpers\MathUtil.cs" />
+    <Compile Include="Navigation\MiniMapMarker.cs" />
+    <Compile Include="Helpers\PositionCache.cs" />
+    <Compile Include="Helpers\StringUtils.cs" />
+    <Compile Include="Helpers\TrinityApi.cs" />
+    <Compile Include="Navigation\SceneSegmentation.cs" />
+    <Compile Include="Navigation\WeightedDungeonNode.cs" />
+    <Compile Include="Player.cs" />
+    <Compile Include="Plugin.cs" />
+    <Compile Include="ProfileTags\CompleteGreaterRift.cs" />
+    <Compile Include="ProfileTags\Complex\ActBountiesComplete.cs" />
+    <Compile Include="ProfileTags\Complex\BaseComplexNodeTag.cs" />
+    <Compile Include="ProfileTags\Complex\HasNoRiftKeysTag.cs" />
+    <Compile Include="ProfileTags\Complex\HasNormalRiftKeysTag.cs" />
+    <Compile Include="ProfileTags\Complex\IfRandom.cs" />
+    <Compile Include="ProfileTags\Complex\LoadOnce.cs" />
+    <Compile Include="ProfileTags\Depreciated\TrinityCombatIgnore.cs" />
+    <Compile Include="ProfileTags\Depreciated\TrinityIf.cs" />
+    <Compile Include="ProfileTags\Depreciated\TrinityIfSNOInRange.cs" />
+    <Compile Include="ProfileTags\Depreciated\TrinityInteract.cs" />
+    <Compile Include="ProfileTags\Depreciated\TrinityLoadProfile.cs" />
+    <Compile Include="ProfileTags\Depreciated\TrinityLog.cs" />
+    <Compile Include="ProfileTags\Depreciated\TrinityMoveToSNO.cs" />
+    <Compile Include="ProfileTags\GetItemFromStashTag.cs" />
+    <Compile Include="ProfileTags\Complex\HasGreaterRiftKeysTag.cs" />
+    <Compile Include="ProfileTags\Movement\MoveToScene.cs" />
+    <Compile Include="ProfileTags\Movement\MoveToObjective.cs" />
+    <Compile Include="ProfileTags\RandomRoll.cs" />
+    <Compile Include="ProfileTags\RandomWait.cs" />
+    <Compile Include="ProfileTags\ConfirmOK.cs" />
+    <Compile Include="Helpers\GameUI.cs" />
+    <Compile Include="Helpers\Logger.cs" />
+    <Compile Include="Navigation\QTNavigator.cs" />
+    <Compile Include="ProfileTags\Complex\HasQuestAndStep.cs" />
+    <Compile Include="ProfileTags\Complex\HaveBounty.cs" />
+    <Compile Include="ProfileTags\QuestToolsVariableTag.cs" />
+    <Compile Include="ProfileTags\ReloadProfile.cs" />
+    <Compile Include="ProfileTags\Movement\MoveToActor.cs" />
+    <Compile Include="ProfileTags\Movement\MoveToMapMarker.cs" />
+    <Compile Include="ProfileTags\Movement\OffsetMove.cs" />
+    <Compile Include="ProfileTags\Complex\UseOnce.cs" />
+    <Compile Include="ProfileTags\Complex\UseReset.cs" />
+    <Compile Include="ProfileTags\Complex\UseStop.cs" />
+    <Compile Include="ProfileTags\TownRun.cs" />
+    <Compile Include="ProfileTags\TownPortal.cs" />
+    <Compile Include="ProfileTags\SetQuesting.cs" />
+    <Compile Include="ProfileTags\MaxDeaths.cs" />
+    <Compile Include="ProfileTags\ExploreDungeon.cs" />
+    <Compile Include="QuestTools.cs" />
+    <Compile Include="ProfileTags\RestartAct.cs" />
+    <Compile Include="ProfileTags\ResumeUseTownPortalTag.cs" />
+    <Compile Include="ProfileTags\Movement\SafeMoveTo.cs" />
+    <Compile Include="QuestToolsSettings.cs" />
+    <Compile Include="UI\RelayCommand.cs" />
+    <Compile Include="UI\TabUI.cs" />
+    <Compile Include="Helpers\ZetaCacheHelper.cs" />
+    <Compile Include="UI\SettingsModel.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Page Include="UI\ConfigWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="build.sh" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>rd /S /Q "C:\db\svn\$(ProjectName)\trunk\Sources\"
+rd /S /Q "C:\db\Plugins\$(ProjectName)\"
+del /S "$(ProjectDir)*.bak"
+
+xcopy /E /Y "$(ProjectDir)*.cs" "C:\db\Plugins\$(ProjectName)\"
+xcopy /E /Y "$(ProjectDir)*.dis" "C:\db\Plugins\$(ProjectName)\"
+xcopy /E /Y "$(ProjectDir)*.xaml" "C:\db\Plugins\$(ProjectName)\"
+xcopy /E /Y "$(ProjectDir)*.xml" "C:\db\Plugins\$(ProjectName)\"
+xcopy /E /Y "$(ProjectDir)*.xsd" "C:\db\Plugins\$(ProjectName)\"
+xcopy /E /Y "$(ProjectDir)*.txt" "C:\db\Plugins\$(ProjectName)\"
+
+rd /S /Q "C:\db\Plugins\$(ProjectName)\obj\
+rd /S /Q "C:\db\Plugins\$(ProjectName)\bin\
+
+xcopy /E /Y "$(ProjectDir)*.cs" "C:\db\svn\$(ProjectName)\trunk\Sources\"
+xcopy /E /Y "$(ProjectDir)*.dis" "C:\db\svn\$(ProjectName)\trunk\Sources\"
+xcopy /E /Y "$(ProjectDir)*.xaml" "C:\db\svn\$(ProjectName)\trunk\Sources\"
+xcopy /E /Y "$(ProjectDir)*.xml" "C:\db\svn\$(ProjectName)\trunk\Sources\"
+xcopy /E /Y "$(ProjectDir)*.xsd" "C:\db\svn\$(ProjectName)\trunk\Sources\"
+xcopy /E /Y "$(ProjectDir)*.txt" "C:\db\svn\$(ProjectName)\trunk\Sources\"
+
+rd /S /Q "C:\db\svn\$(ProjectName)\trunk\Sources\bin\"
+rd /S /Q "C:\db\svn\$(ProjectName)\trunk\Sources\obj\"
+
+
+</PostBuildEvent>
+  </PropertyGroup>
+  <PropertyGroup>
+    <PreBuildEvent>rd /Q /S $(ProjectDir)Log\</PreBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
