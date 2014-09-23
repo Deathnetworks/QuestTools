@@ -55,6 +55,7 @@ namespace QuestTools.ProfileTags
                     Logger.Log("Using Greater Rift Keystone to open the Rift Portal");
                     StartTiered = true;
                     UseHighest = QuestToolsSettings.Instance.UseHighestKeystone;
+                    UseLowest = !UseHighest;
                     break;
                 }
                 if (keyType == RiftKeyUsePriority.Trial && HasTrialRiftKeys)
