@@ -34,7 +34,7 @@ namespace QuestTools.ProfileTags
                 return;
             }
 
-            var keyPriorityList = QuestToolsSettings.Instance.RiftKeyPriority.ToList();
+            var keyPriorityList = QuestToolsSettings.Instance.RiftKeyPriority;
 
             if (keyPriorityList.Count != 3)
                 throw new ArgumentOutOfRangeException("RiftKeyPriority", "Expected 3 Rift keys, are settings are broken?");

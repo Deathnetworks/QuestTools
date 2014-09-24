@@ -13,7 +13,7 @@ namespace QuestTools
 {
     public class QuestTools
     {
-        public static Version PluginVersion = new Version(2, 1, 39);
+        public static Version PluginVersion = new Version(2, 1, 40);
 
         private static int _skipEventDuration = -1;
         private static readonly Stopwatch SkipEventTimer = new Stopwatch();

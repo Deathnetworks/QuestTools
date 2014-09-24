@@ -74,7 +74,20 @@ namespace QuestTools
         private static QuestToolsSettings _instance;
         public static QuestToolsSettings Instance
         {
-            get { return _instance ?? (_instance = new QuestToolsSettings()); }
+            get
+            {
+                if (_instance == null)
+                {
+                    _instance = new QuestToolsSettings();
+
+                    if (_instance.RiftKeyPriority == null)
+                        _instance.SetDefaultRiftKeyPriority();
+
+                    if (_instance.GemPriority == null)
+                        _instance.SetDefaultGemPriority();
+                }
+                return _instance;
+            }
         }
 
         [XmlElement("ForceRouteMode")]

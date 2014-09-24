@@ -108,7 +108,6 @@
     <Compile Include="ProfileTags\Beta\Tokenizer.cs" />
     <Compile Include="ProfileTags\Beta\WhenTag.cs" />
     <Compile Include="ProfileTags\Complex\HasTrialRiftKeys.cs" />
-    <Compile Include="ProfileTags\Movement\Waypoint.cs" />
     <Compile Include="ProfileTags\QTOpenRiftWrapper.cs" />
     <Compile Include="UI\ConfigWindow.cs" />
     <Compile Include="UI\BoolInverterConverter.cs" />
