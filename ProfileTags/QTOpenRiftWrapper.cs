@@ -27,63 +27,70 @@ namespace QuestTools.ProfileTags
 
         public override void OnStart()
         {
-            if (!ZetaDia.IsInTown)
+            try
             {
-                _isDone = true;
-                Logger.Log("Cannot open rift outside of town");
-                return;
-            }
-
-            var keyPriorityList = QuestToolsSettings.Instance.RiftKeyPriority;
-
-            if (keyPriorityList.Count != 3)
-                throw new ArgumentOutOfRangeException("RiftKeyPriority", "Expected 3 Rift keys, are settings are broken?");
-
-
-            if (ZetaDia.Actors.GetActorsOfType<DiaObject>(true).Any(i => i.IsValid && i.ActorSNO == riftPortalSno))
-            {
-                Logger.Log("Rift Portal already open!");
-                _isDone = true;
-            }
-
-            bool keyFound = false;
-            foreach (var keyType in keyPriorityList)
-            {
-                if (keyType == RiftKeyUsePriority.Greater && HasGreaterRiftKeys)
+                if (!ZetaDia.IsInTown)
                 {
-                    keyFound = true;
-                    Logger.Log("Using Greater Rift Keystone to open the Rift Portal");
-                    StartTiered = true;
-                    UseHighest = QuestToolsSettings.Instance.UseHighestKeystone;
-                    UseLowest = !UseHighest;
-                    break;
+                    _isDone = true;
+                    Logger.Log("Cannot open rift outside of town");
+                    return;
                 }
-                if (keyType == RiftKeyUsePriority.Trial && HasTrialRiftKeys)
+
+                var keyPriorityList = QuestToolsSettings.Instance.RiftKeyPriority;
+
+                if (keyPriorityList.Count != 3)
+                    throw new ArgumentOutOfRangeException("RiftKeyPriority", "Expected 3 Rift keys, are settings are broken?");
+
+
+                if (ZetaDia.Actors.GetActorsOfType<DiaObject>(true).Any(i => i.IsValid && i.ActorSNO == riftPortalSno))
                 {
-                    keyFound = true;
-                    Logger.Log("Using Trial Rift Keystone to open the Rift Portal");
-                    StartTiered = true;
-                    UseTrialStone = true;
-                    break;
+                    Logger.Log("Rift Portal already open!");
+                    _isDone = true;
                 }
-                if (keyType == RiftKeyUsePriority.Normal && HasNormalRiftKeys)
+
+                bool keyFound = false;
+                foreach (var keyType in keyPriorityList)
                 {
-                    keyFound = true;
-                    Logger.Log("Using Normal Rift Keystone to open the Rift Portal");
+                    if (keyType == RiftKeyUsePriority.Greater && HasGreaterRiftKeys)
+                    {
+                        keyFound = true;
+                        Logger.Log("Using Greater Rift Keystone to open the Rift Portal");
+                        StartTiered = true;
+                        UseHighest = QuestToolsSettings.Instance.UseHighestKeystone;
+                        UseLowest = !UseHighest;
+                        break;
+                    }
+                    if (keyType == RiftKeyUsePriority.Trial && HasTrialRiftKeys)
+                    {
+                        keyFound = true;
+                        Logger.Log("Using Trial Rift Keystone to open the Rift Portal");
+                        StartTiered = true;
+                        UseTrialStone = true;
+                        break;
+                    }
+                    if (keyType == RiftKeyUsePriority.Normal && HasNormalRiftKeys)
+                    {
+                        keyFound = true;
+                        Logger.Log("Using Normal Rift Keystone to open the Rift Portal");
+                        StartTiered = false;
+                        UseTrialStone = false;
+                        break;
+                    }
                     StartTiered = false;
-                    UseTrialStone = false;
-                    break;
                 }
-                StartTiered = false;
-            }
 
-            if (!keyFound)
-            {
-                // No rift keys... :(
-                Logger.Log("No Rift Keys Found for QTOpenRiftWrapper :( Tag finished.");
-                _isDone = true;
+                if (!keyFound)
+                {
+                    // No rift keys... :(
+                    Logger.Log("No Rift Keys Found for QTOpenRiftWrapper :( Tag finished.");
+                    _isDone = true;
+                }
+                base.OnStart();
             }
-            base.OnStart();
+            catch (Exception ex)
+            {
+                Logger.LogError("Error in QTOpenRiftWrapper: " + ex);
+            }
         }
 
         public bool HasGreaterRiftKeys
