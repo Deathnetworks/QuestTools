@@ -262,7 +262,7 @@ namespace QuestTools.Helpers
 
                 if (IsQueueActive) return false;
 
-                if(_activeProfileBehavior!=null)
+                if(_activeProfileBehavior!=null && QuestTools.EnableDebugLogging)
                     Log("Finished Running Behaviors");
 
                 _activeProfileBehavior = null;
