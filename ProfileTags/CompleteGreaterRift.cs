@@ -24,6 +24,7 @@ namespace QuestTools.ProfileTags
     public class CompleteGreaterRift : ProfileBehavior
     {
         private bool _isDone;
+        private bool _isGemsOnly;
         public override bool IsDone
         {
             get { return _isDone || !IsActiveQuestStep; }
@@ -61,6 +62,29 @@ namespace QuestTools.ProfileTags
             if (QuestToolsSettings.Instance.UpgradeKeyStones && await UpgradeKeyStoneTask())
                 return true;
 
+            if (!await UpgradeGemsTask()) //Attempt to upgrade gems, if there are no gems within the minimum upgrade range -> Upgrade KeyStone
+            {
+                await UpgradeKeyStoneTask();
+            }
+
+            return true;
+        }
+
+        private async Task<bool> UpgradeKeyStoneTask()
+        {
+            if (GameUI.IsElementVisible(UpgradeKeystoneButton) && UpgradeKeystoneButton.IsEnabled && ZetaDia.Me.AttemptUpgradeKeystone())
+            {
+                Logger.Log("Keystone Upgraded");
+                GameUI.SafeClickElement(VendorCloseButton, "Vendor Window Close Button");
+                await Coroutine.Sleep(250);
+                await Coroutine.Yield();
+                return true;
+            }
+            return false;
+        }
+
+        private async Task<bool> UpgradeGemsTask()
+        {
             if (VendorDialog.IsVisible)
             {
 
@@ -68,8 +92,25 @@ namespace QuestTools.ProfileTags
 
                 List<ACDItem> gems = ZetaDia.Actors.GetActorsOfType<ACDItem>()
                     .Where(item => item.ItemType == ItemType.LegendaryGem)
+                    .Where(item => GetUpgradeChance(item) >= minimumGemChance && GetUpgradeChance(item) > 0.00f)
                     .OrderByDescending(item => GetUpgradeChance(item))
                     .ThenByDescending(item => item.JewelRank).ToList();
+
+                if (gems.Count == 0 && !_isGemsOnly) //No gems that can be upgraded - upgrade keystone
+                {
+                    return false;
+                }
+
+                if (gems.Count == 0 && _isGemsOnly)
+                {
+                    gems = ZetaDia.Actors.GetActorsOfType<ACDItem>()
+                    .Where(item => item.ItemType == ItemType.LegendaryGem)
+                    .Where(item => GetUpgradeChance(item) > 0.00f)
+                    .OrderByDescending(item => GetUpgradeChance(item))
+                    .ThenByDescending(item => item.JewelRank).ToList();
+                }
+
+                _isGemsOnly = true;
 
                 int selectedGemId = int.MaxValue;
                 string selectedGemPreference = "";
@@ -131,13 +172,14 @@ namespace QuestTools.ProfileTags
                     Logger.Log("Using gem priority of {0}", selectedGemPreference);
                 }
 
-                var bestgem = gems.First();
+                var bestgem = gems.FirstOrDefault();
 
-                if (await CommonCoroutines.AttemptUpgradeGem(gems.FirstOrDefault()))
+                if (bestgem != null && await CommonCoroutines.AttemptUpgradeGem(bestgem))
                 {
                     await Coroutine.Sleep(250);
                     GameUI.SafeClickElement(VendorCloseButton, "Vendor Window Close Button");
                     await Coroutine.Yield();
+                    return true;
                 }
                 else
                 {
@@ -159,11 +201,11 @@ namespace QuestTools.ProfileTags
                     {
                         Logger.LogError("Random gem upgrade also failed. Something... seriously... wrong... ");
                     }
-
+                    return true;
                 }
             }
 
-            return true;
+            return false;
         }
 
         // xz jv was here
@@ -173,6 +215,7 @@ namespace QuestTools.ProfileTags
             var delta = ZetaDia.Actors.Me.InTieredLootRunLevel - gem.JewelRank;
 
             if (delta >= 10) return 1f;
+            if (delta <= -15) return 0f; //Diablo3 disables upgrades for -15 levels difference
 
             switch (delta)
             {
@@ -195,18 +238,6 @@ namespace QuestTools.ProfileTags
             }
         };
 
-        private async Task<bool> UpgradeKeyStoneTask()
-        {
-            if (GameUI.IsElementVisible(UpgradeKeystoneButton) && UpgradeKeystoneButton.IsEnabled && ZetaDia.Me.AttemptUpgradeKeystone())
-            {
-                Logger.Log("Keystone Upgraded");
-                GameUI.SafeClickElement(VendorCloseButton, "Vendor Window Close Button");
-                await Coroutine.Sleep(250);
-                await Coroutine.Yield();
-                return true;
-            }
-            return false;
-        }
 
         public override void ResetCachedDone()
         {
