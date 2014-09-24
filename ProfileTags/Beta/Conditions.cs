@@ -170,6 +170,7 @@ namespace QuestTools.Helpers
             HasQuest,
             ActorExistsAt,
             MarkerExistsAt,
+            ActorIsAlive,
         }
 
         public static bool HasBackpackItem(Expression exp)
@@ -188,6 +189,19 @@ namespace QuestTools.Helpers
         {
             string param = exp.Params.ElementAtOrDefault(0);
             return param != null && Zeta.Bot.ConditionParser.HasQuest(param.ChangeType<int>());
+        }
+
+        public static bool ActorIsAlive(Expression exp)
+        {
+            string param = exp.Params.ElementAtOrDefault(0);
+            
+            if(param == null || string.IsNullOrEmpty(param))
+                return false;
+
+            var actorId = param.ChangeType<int>();
+
+            return ZetaDia.Actors.GetActorsOfType<DiaUnit>().Any(a => a.IsValid && a.ActorSNO == actorId && a.IsAlive);
+
         }
 
         public static bool ActorExistsAt(Expression exp)
