@@ -75,6 +75,7 @@ namespace QuestTools.ProfileTags
             SceneLeftOrActorFound,
             BountyComplete,
             RiftComplete,
+            RiftCompleteOrFullyExplored,
             PortalExitFound,
             ObjectiveFound,
             ObjectiveFoundOrBountyComplete,
@@ -940,6 +941,11 @@ namespace QuestTools.ProfileTags
             return miniMapMarker;
         }
 
+        private bool GetIsMapFullyExplored()
+        {
+            return IgnoreLastNodes > 0 && GetRouteUnvisitedNodeCount() <= IgnoreLastNodes && GetGridRouteVisitedNodeCount() >= MinVisitedNodes;
+        }
+
         /// <summary>
         /// Checks to see if the tag is finished as needed
         /// </summary>
@@ -961,6 +967,12 @@ namespace QuestTools.ProfileTags
                         new Action(ret => _isDone = true)
                     )
                 ),
+                new Decorator(ret => EndType == ExploreEndType.RiftCompleteOrFullyExplored && (GetIsRiftDone() || GetIsMapFullyExplored()),
+                    new Sequence(
+                        new Action(ret => Logger.Log("Rift is done. Tag Finished.")),
+                        new Action(ret => _isDone = true)
+                    )
+                ),
                 new Decorator(ret => EndType == ExploreEndType.PortalExitFound &&
                     PortalExitMarker() != null && PortalExitMarker().Position.Distance2D(MyPosition) <= MarkerDistance,
                     new Sequence(
@@ -974,7 +986,7 @@ namespace QuestTools.ProfileTags
                         new Action(ret => _isDone = true)
                     )
                 ),
-                new Decorator(ret => EndType == ExploreEndType.FullyExplored && IgnoreLastNodes > 0 && GetRouteUnvisitedNodeCount() <= IgnoreLastNodes && GetGridRouteVisitedNodeCount() >= MinVisitedNodes,
+                new Decorator(ret => EndType == ExploreEndType.FullyExplored && GetIsMapFullyExplored(),
                     new Sequence(
                         new Action(ret => Logger.Log("Fully explored area! Ignoring {0} nodes. Tag Finished.", IgnoreLastNodes)),
                         new Action(ret => _isDone = true)
