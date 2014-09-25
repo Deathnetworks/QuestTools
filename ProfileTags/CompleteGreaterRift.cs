@@ -80,8 +80,7 @@ namespace QuestTools.ProfileTags
                 await Coroutine.Yield();
                 return true;
             }
-            
-            _isGemsOnly = true;
+                        
             return false;
         }
 

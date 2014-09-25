@@ -148,17 +148,20 @@ namespace QuestTools
                 {
                     Logger.Log("Reached Wave {0} Disabling Combat", maxWave);
 
-                    while (Zeta.Common.Vector3.Distance(ZetaDia.Me.Position, _SafeTrialPosition) > 10f 
+                    if (Zeta.Common.Vector3.Distance(ZetaDia.Me.Position, _SafeTrialPosition) > 10f 
                         && ZetaDia.WorldInfo.SNOId == 405684 && !ZetaDia.IsInTown)
                     {
+
                         Vector3 _navTarget = _SafeTrialPosition;
                         _navTarget = MathEx.CalculatePointFrom(ZetaDia.Me.Position, _SafeTrialPosition, _SafeTrialPosition.Distance2D(ZetaDia.Me.Position) - 5);
                         _navigator.MoveTo(_SafeTrialPosition, "Safe Place to TownPortal in Rift");
-                        
-                        BrainBehavior.ForceTownrun();
+
+                        if (Zeta.Common.Vector3.Distance(ZetaDia.Me.Position, _SafeTrialPosition) < 10f)
+                            BrainBehavior.ForceTownrun();
                     }
-                                        
-                    _isAborting = true;
+                          
+                    if (ZetaDia.IsInTown)
+                        _isAborting = true;
                 }
 
 
