@@ -327,6 +327,22 @@ namespace QuestTools
             }
         }
 
-
+        private int _maxGreaterRiftKey;
+        [XmlElement("MaxGreaterRiftKey")]
+        [DefaultValue(100)]
+        public int MaxGreaterRiftKey
+        {
+            get
+            {
+                return _maxGreaterRiftKey;
+            }
+            set
+            {
+                if (_maxGreaterRiftKey == value)
+                    return;
+                _maxGreaterRiftKey = (int)value;
+                OnPropertyChanged("MaxGreaterRiftKey");
+            }
+        }
     }
 }

@@ -8,8 +8,10 @@
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="600" Foreground="{DynamicResource TextBrush}">
     <UserControl.Resources>
+        <ui:IntToStringConverter x:Key="intToStringConverter"/>
         <ui:PercentConverter x:Key="PercentConverter" />
         <ui:BoolInverterConverter x:Key="BoolInverterConverter" />
+
         <Style TargetType="TextBlock">
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="FontSize" Value="12"/>
@@ -100,12 +102,47 @@
                                 <ComboBoxItem Content="80%" Tag="80" />
                                 <ComboBoxItem Content="70%" Tag="70" />
                                 <ComboBoxItem Content="60%" Tag="60" />
-                                <ComboBoxItem Content="50%" Tag="50" />
-                                <ComboBoxItem Content="40%" Tag="40" />
                                 <ComboBoxItem Content="30%" Tag="30" />
-                                <ComboBoxItem Content="20%" Tag="20" />
-                                <ComboBoxItem Content="10%" Tag="10" />
+                                <ComboBoxItem Content="15%" Tag="15" />
+                                <ComboBoxItem Content="8%" Tag="8" />
+                                <ComboBoxItem Content="4%" Tag="4" />
+                                <ComboBoxItem Content="2%" Tag="2" />
+                                <ComboBoxItem Content="1%" Tag="1" />
                             </ComboBox>
+                        </GroupBox>
+                        <GroupBox Header="Max Greater Rift Level">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition/>
+                                    <ColumnDefinition Width="50"/>
+                                </Grid.ColumnDefinitions>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition />
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition />
+                                </Grid.RowDefinitions>
+                                <Slider Grid.Row="1"
+                    Value="{Binding Path=Settings.MaxGreaterRiftKey}"
+                    Interval="1"
+                    IsMoveToPointEnabled="True"
+                    IsSnapToTickEnabled="True"
+                    LargeChange="5"
+                    SmallChange="1"
+                    TickPlacement="None"
+                    ToolTip="Max Greater Rift to Challenge - This is ignored on 'Highest First'"
+                    Maximum="100"
+                    Minimum="1"
+                    HorizontalAlignment="Stretch" 
+                    VerticalAlignment="Center"
+                    Margin="0,0,2,0"
+                    Style="{x:Null}"
+                    x:Name="MySlider"/>
+                                <TextBox Grid.Column="1" Grid.Row="1"
+                        Text="{Binding Path=Settings.MaxGreaterRiftKey, Converter={StaticResource intToStringConverter}}"                     
+                        HorizontalAlignment="Stretch" 
+                        Margin="0,2,2,2" TextAlignment="Center" 
+                        IsReadOnly="True"/>
+                            </Grid>
                         </GroupBox>
                         <GroupBox Header="Trial Rifts: Disable Combat At Level...">
                             <StackPanel>

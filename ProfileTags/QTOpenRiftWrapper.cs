@@ -97,7 +97,12 @@ namespace QuestTools.ProfileTags
         {
             get
             {
-                return ZetaDia.Actors.GetActorsOfType<ACDItem>().Any(i => i.IsValid && i.ItemType == ItemType.KeystoneFragment && i.TieredLootRunKeyLevel > 0);
+                var greaterKey = ZetaDia.Actors.GetActorsOfType<ACDItem>().Any(
+                    i => i.IsValid && i.ItemType == ItemType.KeystoneFragment 
+                        && i.TieredLootRunKeyLevel > 0
+                        && i.TieredLootRunKeyLevel <= QuestToolsSettings.Instance.MaxGreaterRiftKey
+                    );
+                return greaterKey;
             }
         }
 
