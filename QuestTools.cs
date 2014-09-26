@@ -144,7 +144,7 @@ namespace QuestTools
                     _lastCheckBelowThreshold = quest.QuestMeter < 0.95f && quest.QuestMeter >= 0;
                 }
 
-                if (CurrentWave == maxWave && !_isAborting)
+                if (CurrentWave >= maxWave && !_isAborting)
                 {
                     Logger.Log("Reached Wave {0} Disabling Combat", maxWave);
 
