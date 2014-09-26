@@ -97,6 +97,8 @@ namespace QuestTools
             private static readonly Vector3 _SafeTrialPosition = new Vector3(180.9f, 168.2f, -11.4f);
             private static QTNavigator _navigator = new QTNavigator();
 
+
+
             public static void PulseRiftTrial()
             {
                 int maxWave = QuestToolsSettings.Instance.TrialRiftMaxLevel;
@@ -105,6 +107,9 @@ namespace QuestTools
                     return;
 
                 var quest = ZetaDia.ActInfo.ActiveQuests.FirstOrDefault(q => q.QuestSNO == 405695);
+
+                if (CurrentWave >= maxWave && !_isAborting && ZetaDia.IsInTown)
+                    _isAborting = true;
 
                 if (quest == null || ZetaDia.IsInTown || ZetaDia.WorldInfo.SNOId != 405684 || !QuestToolsSettings.Instance.EnableTrialRiftMaxLevel)
                 {
@@ -117,7 +122,8 @@ namespace QuestTools
                     if (_isAborting)
                     {
                         Logger.Log("Re-Enabling Combat");
-                        TrinityApi.SetProperty("CombatBase", "IsCombatAllowed", true);
+                        //TrinityApi.SetProperty("CombatBase", "IsCombatAllowed", true);
+                        _killRadius = -1f;
                         _isAborting = false;
                     }
 
@@ -148,25 +154,48 @@ namespace QuestTools
                 {
                     Logger.Log("Reached Wave {0} Disabling Combat", maxWave);
 
-                    if (Zeta.Common.Vector3.Distance(ZetaDia.Me.Position, _SafeTrialPosition) > 10f 
-                        && ZetaDia.WorldInfo.SNOId == 405684 && !ZetaDia.IsInTown)
+
+                    if (_killRadius > 5f)
+                        _killRadius = 5f;   
+
+                    while (Zeta.Common.Vector3.Distance(ZetaDia.Me.Position, _SafeTrialPosition) > 10f && 
+                        ZetaDia.WorldInfo.SNOId == 405684 && !ZetaDia.IsInTown)
                     {
-
-                        Vector3 _navTarget = _SafeTrialPosition;
-                        _navTarget = MathEx.CalculatePointFrom(ZetaDia.Me.Position, _SafeTrialPosition, _SafeTrialPosition.Distance2D(ZetaDia.Me.Position) - 5);
-                        _navigator.MoveTo(_SafeTrialPosition, "Safe Place to TownPortal in Rift");
-
                         if (Zeta.Common.Vector3.Distance(ZetaDia.Me.Position, _SafeTrialPosition) < 10f)
                             BrainBehavior.ForceTownrun();
+                        else
+                        {
+                            Vector3 _navTarget = _SafeTrialPosition;
+                            _navTarget = MathEx.CalculatePointFrom(ZetaDia.Me.Position, _SafeTrialPosition, _SafeTrialPosition.Distance2D(ZetaDia.Me.Position) - 5);
+                            _navigator.MoveTo(_SafeTrialPosition, "Safe Place to TownPortal in Rift");
+                        }                       
                     }
-                          
-                    if (ZetaDia.IsInTown)
-                        _isAborting = true;
                 }
 
 
             }
 
+            private static Nullable<float> _originalRadius = null;
+            private static float _killRadius
+            {
+                get
+                {
+                    return Zeta.Bot.Settings.CharacterSettings.Instance.KillRadius;
+                }
+                set
+                {
+                    if (_originalRadius == null)
+                        _originalRadius = Zeta.Bot.Settings.CharacterSettings.Instance.KillRadius;
+
+                    if (value == -1f)
+                    {
+                        Zeta.Bot.Settings.CharacterSettings.Instance.KillRadius = _originalRadius ?? 50f;
+                        _originalRadius = null;
+                    }
+                    else
+                        Zeta.Bot.Settings.CharacterSettings.Instance.KillRadius = value;
+                }
+            }
         }
 
         private static void CheckGamesPerHourStop()
