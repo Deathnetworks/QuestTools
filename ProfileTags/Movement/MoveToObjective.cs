@@ -173,6 +173,8 @@ namespace QuestTools.ProfileTags.Movement
                                                 new Action(ret => _isDone = true)
                                             )
                                         ),
+                                        new Decorator(ret => GameUI.PartyLeaderBossAccept.IsVisible || GameUI.PartyFollowerBossAccept.IsVisible,
+                                            new Action(ret=> Logger.Debug("Party Boss Button visible"))),
                                         new Decorator(ret => ZetaDia.Me.Movement.IsMoving,
                                             new Action(ret => CommonBehaviors.MoveStop())),
                                         new Sequence(

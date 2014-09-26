@@ -49,8 +49,8 @@ namespace QuestTools
         {
             return new List<RiftKeyUsePriority>
                 {
-                    RiftKeyUsePriority.Trial,
                     RiftKeyUsePriority.Greater,
+                    RiftKeyUsePriority.Trial,
                     RiftKeyUsePriority.Normal
                 };
         }
