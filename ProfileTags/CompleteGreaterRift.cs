@@ -62,9 +62,12 @@ namespace QuestTools.ProfileTags
             if (QuestToolsSettings.Instance.UpgradeKeyStones && await UpgradeKeyStoneTask())
                 return true;
 
-            if (!await UpgradeGemsTask()) //Attempt to upgrade gems, if there are no gems within the minimum upgrade range -> Upgrade KeyStone
+            if (!await UpgradeGemsTask(false)) //Attempt to upgrade gems, if there are no gems within the minimum upgrade range -> Upgrade KeyStone
             {
-                await UpgradeKeyStoneTask();
+                if (!await UpgradeKeyStoneTask())
+                {
+                    await UpgradeGemsTask(true);
+                }
             }
 
             return true;
@@ -83,12 +86,12 @@ namespace QuestTools.ProfileTags
             return false;
         }
 
-        private async Task<bool> UpgradeGemsTask()
+        private async Task<bool> UpgradeGemsTask(bool force)
         {
             if (VendorDialog.IsVisible)
             {
 
-                float minimumGemChance = QuestToolsSettings.Instance.MinimumGemChance;
+                float minimumGemChance = force ? 0f : QuestToolsSettings.Instance.MinimumGemChance;
 
                 List<ACDItem> gems = ZetaDia.Actors.GetActorsOfType<ACDItem>()
                     .Where(item => item.ItemType == ItemType.LegendaryGem)
