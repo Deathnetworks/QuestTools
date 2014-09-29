@@ -31,6 +31,7 @@ namespace QuestTools.Helpers
             CurrentLevelAreaId,
             HighestKeyCountId,
             LowestKeyCountId,
+            CurrentWorldId,
         }
 
         public static bool CurrentWave(Expression exp)
@@ -41,6 +42,11 @@ namespace QuestTools.Helpers
         public static bool CurrentLevelAreaId(Expression exp)
         {
             return ConditionParser.EvalInt(exp.Operator, ZetaDia.CurrentLevelAreaId, exp.Value.ChangeType<int>());
+        }
+
+        public static bool CurrentWorldId(Expression exp)
+        {
+            return ConditionParser.EvalInt(exp.Operator, ZetaDia.CurrentWorldId, exp.Value.ChangeType<int>());
         }
 
         public static bool HighestKeyCountId(Expression exp)

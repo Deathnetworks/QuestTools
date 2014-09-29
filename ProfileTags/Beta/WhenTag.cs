@@ -57,9 +57,8 @@ namespace QuestTools.ProfileTags.Complex
         /// </summary>
         private void ReplaceBehaviors()
         {
-            var nodes = GetNodes();
             var i = 0;
-            foreach (var node in nodes)
+            foreach (var node in GetNodes().ToList())
             {
                 ReplaceBehavior(i, node);
                 i++;
