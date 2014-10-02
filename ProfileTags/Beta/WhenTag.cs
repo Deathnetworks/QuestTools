@@ -110,6 +110,9 @@ namespace QuestTools.ProfileTags.Complex
 
             else if (type == typeof(ReloadProfileTag))
                 Body[index] = (behavior as ReloadProfileTag).ToAsync();
+
+            else if (type == typeof(ToggleTargetingTag))
+                Body[index] = (behavior as ToggleTargetingTag).ToAsync();
             
         }
 

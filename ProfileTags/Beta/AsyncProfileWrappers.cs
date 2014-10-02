@@ -495,4 +495,48 @@ namespace QuestTools.ProfileTags.Complex
             );
         }
     }
+
+    // ToggleTargetting is inconsistent with other tags in that does its thing in OnStart() method, 
+    // so we have to override OnStart() to stop that happening and then run it later by calling base.Onstart from CreateBehavior.
+    internal class AsyncToggleTargetingTag : ToggleTargetingTag, IAsyncProfileBehavior
+    {
+        private bool _isDone;
+        public override bool IsDone
+        {
+            get { return _isDone || base.IsDone || ForceDone; }
+        }
+
+        public Composite BaseBehavior()
+        {
+            return base.CreateBehavior();
+        }
+
+        public bool ReadyToRun { get; set; }
+        public bool ForceDone { get; set; }
+        public void Tick() { }
+
+        public override void ResetCachedDone()
+        {
+            _isDone = false;
+            base.ResetCachedDone();
+        }
+
+        public override void OnStart()
+        {
+        }
+
+        protected Composite BaseOnStartComposite()
+        {
+            return new Action(ret => base.OnStart());
+        }
+
+        protected override Composite CreateBehavior()
+        {
+            _isDone = true;
+            return AsyncCommonBehaviors.ExecuteReturnAlwaysSuccess(
+                ret => !_isDone && ReadyToRun,
+                ret => BaseOnStartComposite()
+            );
+        }
+    }
 }

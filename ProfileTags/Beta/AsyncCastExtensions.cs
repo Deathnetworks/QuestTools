@@ -179,6 +179,17 @@ namespace QuestTools.Helpers
             return asyncVersion;
         }
 
+        internal static AsyncToggleTargetingTag ToAsync(this ToggleTargetingTag tag)
+        {
+            var asyncVersion = new AsyncToggleTargetingTag();
+            tag.CopyTo(asyncVersion);
+            asyncVersion.Combat = tag.Combat;
+            asyncVersion.KillRadius = tag.KillRadius;
+            asyncVersion.Looting = tag.Looting;
+            asyncVersion.LootRadius = tag.LootRadius;
+            return asyncVersion;
+        }
+
     }
 }
 
