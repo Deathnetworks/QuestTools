@@ -1,11 +1,15 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
+using System.Windows.Documents;
 using QuestTools.Helpers;
 using QuestTools.ProfileTags;
 using QuestTools.ProfileTags.Complex;
 using Zeta.Bot;
 using Zeta.Bot.Logic;
+using Zeta.Bot.Profile;
 using Zeta.Game;
 using Zeta.Game.Internals;
 
@@ -112,8 +116,7 @@ namespace QuestTools
 
                     if (_isAborting)
                     {
-                        Logger.Log("Re-Enabling Combat");
-                        TrinityApi.SetProperty("CombatBase", "IsCombatAllowed", true);
+                        SetCombatAllowed(true);
                         _isAborting = false;
                     }
 
@@ -143,14 +146,44 @@ namespace QuestTools
                 if (CurrentWave == maxWave && !_isAborting)
                 {
                     Logger.Log("Reached Wave {0} Disabling Combat", maxWave);
-                    TrinityApi.SetProperty("CombatBase", "IsCombatAllowed", false);
 
-                    BrainBehavior.ForceTownrun("Abort Trial", true);
+                    SetCombatAllowed(false);
 
+                    var endTrialSequence = new List<ProfileBehavior>
+                    {
+                        new AsyncSafeMoveTo
+                        {
+                            PathPrecision = 5,
+                            PathPointLimit = 250,
+                            X = 393,
+                            Y = 237,
+                            Z = -11
+                        },
+                        new AsyncTownPortalTag(),
+                        new AsyncWaitTimerTag()
+                        {
+                            WaitTime = 15000
+                        }
+                    };
+
+                    BotBehaviorQueue.Queue(endTrialSequence);
+                                       
                     _isAborting = true;
+
                 }
 
 
+            }
+
+            private static void SetCombatAllowed(bool allowed)
+            {
+                var asm = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetName().Name.ToLower().StartsWith("trinity"));
+                Type t = asm.GetType("Trinity.Combat.Abilities.CombatBase");
+                var pi = t.GetProperty("IsCombatAllowed", BindingFlags.Public | BindingFlags.Static);
+                pi.SetValue(null, allowed, null);     
+
+                //if(TrinityApi.SetProperty("Trinity.Combat.Abilities.CombatBase", "IsCombatAllowed", allowed));
+                    Logger.Log("Turning Combat {0}", allowed ? "On" : "Off");
             }
 
         }

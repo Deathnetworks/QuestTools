@@ -227,7 +227,10 @@ namespace QuestTools.ProfileTags.Movement
                 var lastSeenPosition = ActorHistory.GetActorPosition(ActorId);
                 if (lastSeenPosition != Vector3.Zero)
                 {
-                    Warn("Can't find actor! using last known position");
+                    Warn("Can't find actor! using last known position {0} Distance={1}", 
+                        lastSeenPosition.ToString(), 
+                        lastSeenPosition.Distance(ZetaDia.Me.Position));
+
                     Position = lastSeenPosition;
                 }
                 else

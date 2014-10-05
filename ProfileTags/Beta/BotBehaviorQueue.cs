@@ -9,6 +9,7 @@ using Zeta.Bot.Logic;
 using Zeta.Bot.Profile;
 using Zeta.Common;
 using Zeta.Game;
+using Zeta.Game.Internals.Actors;
 using Zeta.TreeSharp;
 using Action = Zeta.TreeSharp.Action;
 
@@ -88,8 +89,32 @@ namespace QuestTools.Helpers
 
             _lastCheckedConditionsTime = DateTime.UtcNow;
 
+            var healingWells = ZetaDia.Actors.GetActorsOfType<DiaObject>(true).Where(o => o.ActorSNO == 138989);
+
+            var nearestHealingWell = healingWells.OrderBy(o => o.Distance).FirstOrDefault();
+            
+            //// some temporary code for testing randomly creating tags
+            //if (!hasTriggered && nearestHealingWell != null && nearestHealingWell.Distance <= 8f)
+            //{
+            //    Logger.Log("Adding Composite to Queue");
+            //    Queue(new AsyncSafeMoveTo
+            //    {
+            //        QuestId = 1,
+            //        StepId = 1,
+            //        PathPrecision = 5,
+            //        PathPointLimit = 250,
+            //        X=393,
+            //        Y=237,
+            //        Z=-11                    
+            //    }, 
+            //    ret => true);                
+            //    hasTriggered = true;
+            //}
+
             CheckConditions();
         }
+
+        private static bool hasTriggered;
 
         public static void UnWire()
         {
@@ -145,12 +170,31 @@ namespace QuestTools.Helpers
             if(!IsInitialized)
                 Initailize();
 
-            var pair = new KeyValuePair<List<ProfileBehavior>, ShouldRunCondition>(profileBehaviors.ToList(),condition);
+            var behaviorsList = profileBehaviors.ToList();
+
+            behaviorsList.ForEach(b =>
+            {
+                if (b.QuestId == 0)
+                    b.QuestId = 1;
+                if (b.StepId == 0)
+                    b.StepId = 1;
+            });
+
+            var pair = new KeyValuePair<List<ProfileBehavior>, ShouldRunCondition>(behaviorsList, condition);
             
             ProfileBehaviorQueue.Add(pair);
 
             if (!string.IsNullOrEmpty(name))
                 _conditionNames.Add(condition,name);
+        }
+
+        /// <summary>
+        /// Adds some ProfileBehaviors to the BotBehaviorQueue
+        /// </summary>
+        /// <param name="profileBehaviors">List of ProfileBehaviors that should be executed when condition is satisfied</param>
+        public static void Queue(IEnumerable<ProfileBehavior> profileBehaviors, string name = "")
+        {
+            Queue(profileBehaviors, ret => true, name);
         }
 
         /// <summary>
@@ -163,17 +207,34 @@ namespace QuestTools.Helpers
             Queue(new List<ProfileBehavior> { profileBehavior },condition);
         }
 
-        /// <summary>
-        /// Experimental
-        /// </summary>
-        public static void Queue(Composite behavior, ShouldRunCondition condition)
-        {
-            var profileBehavior = new AsyncEmptyProfileBehavior()
-            {
-                BehaviorDelegate = behavior
-            };
-            Queue(new List<ProfileBehavior> { profileBehavior }, condition);
-        }
+        ///// <summary>
+        ///// Adds a ProfileBehavior to the BotBehaviorQueue
+        ///// </summary>
+        ///// <param name="profileBehavior">List of ProfileBehaviors that should be executed when condition is satisfied</param>
+        //public static void Queue(ProfileBehavior profileBehavior, string name="")
+        //{
+        //    Queue(new List<ProfileBehavior> { profileBehavior }, ret => true, name);
+        //}
+
+        ///// <summary>
+        ///// Experimental
+        ///// </summary>
+        //public static void Queue(Composite behavior, ShouldRunCondition condition)
+        //{
+        //    var profileBehavior = new AsyncEmptyProfileBehavior()
+        //    {
+        //        BehaviorDelegate = behavior
+        //    };
+        //    Queue(new List<ProfileBehavior> { profileBehavior }, condition);
+        //}
+
+        ///// <summary>
+        ///// Experimental
+        ///// </summary>
+        //public static void Queue(Composite behavior)
+        //{
+        //    Queue(behavior, ret => true);
+        //}
 
         /// <summary>
         /// Parent Composite that gets injected to BotBehavior hook
@@ -188,12 +249,6 @@ namespace QuestTools.Helpers
             );
         }
 
-        private static Composite ReturnSuccess()
-        {
-            return new Action(ret => RunStatus.Success);
-        }
-
-       
         private static Composite DefaultAction()
         {
             return new Action(ret =>
@@ -215,17 +270,25 @@ namespace QuestTools.Helpers
                 //Logger.Log("NodeToExecute Count={0}",_nodesToExecute.Count);
 
                 _activeProfileBehavior = _nodesToExecute.Take(1).First();
-                
+
                 _nodesToExecute.Remove(_activeProfileBehavior);
 
                 if (_activeProfileBehavior is IAsyncProfileBehavior)
                 {
                     (_activeProfileBehavior as IAsyncProfileBehavior).ReadyToRun = true;
-                    _activeProfileBehavior.ResetCachedDone();
+                    
+                    // Properly populate the .Behavior field of a ProfileBehavior
+                    if (_activeProfileBehavior.Behavior == null)
+                        (_activeProfileBehavior as IAsyncProfileBehavior).AsyncUpdateBehavior();
+                    
+
+                    // Reset everything back through to the base
+                    _activeProfileBehavior.ResetCachedDone();                                       
+                   
                 }
 
                 _activeBehavior = _activeProfileBehavior.Behavior;
-
+                
                 if (QuestTools.EnableDebugLogging)
                     LogBehavior(_activeProfileBehavior);
 
@@ -291,13 +354,13 @@ namespace QuestTools.Helpers
 
         private static void LogBehavior(ProfileBehavior profileBehavior)
         {
-            if (_activeProfileBehavior != null)
+            if (profileBehavior != null)
             {
                 Logger.Log("Tag {0} IsDone={1} IsDoneCache={2} LastStatus={3}",
                     profileBehavior.GetType(),
                     profileBehavior.IsDone,
                     profileBehavior.IsDoneCache,
-                    profileBehavior.Behavior.LastStatus
+                    profileBehavior.Behavior!=null ? profileBehavior.Behavior.LastStatus.ToString() : "null"
                     );
             }            
         }
