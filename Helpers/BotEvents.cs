@@ -55,6 +55,7 @@ namespace QuestTools.Helpers
         {
             UseOnceTag.UseOnceIDs.Clear();
             UseOnceTag.UseOnceCounter.Clear();
+            ActorHistory.Clear();
         }
         private static void GameEvents_OnGameJoined(object sender, EventArgs e)
         {
@@ -64,6 +65,7 @@ namespace QuestTools.Helpers
             Death.DeathCount = 0;
             Death.LastDeathTime = DateTime.MinValue;
             LoadOnceTag.UsedProfiles.Clear();
+            ActorHistory.Clear();
         }
         private static void GameEvents_OnPlayerDied(object sender, EventArgs e)
         {

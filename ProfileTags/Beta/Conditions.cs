@@ -1,6 +1,7 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using QuestTools.Helpers;
 using Zeta.Game;
@@ -32,6 +33,8 @@ namespace QuestTools.Helpers
             HighestKeyCountId,
             LowestKeyCountId,
             CurrentWorldId,
+            CurrentSceneId,
+            CurrentSceneName
         }
 
         public static bool CurrentWave(Expression exp)
@@ -47,6 +50,16 @@ namespace QuestTools.Helpers
         public static bool CurrentWorldId(Expression exp)
         {
             return ConditionParser.EvalInt(exp.Operator, ZetaDia.CurrentWorldId, exp.Value.ChangeType<int>());
+        }
+
+        public static bool CurrentSceneId(Expression exp)
+        {
+            return ConditionParser.EvalString(exp.Operator, ZetaDia.Me.SceneId.ToString(CultureInfo.InvariantCulture), exp.Value);
+        }
+
+        public static bool CurrentSceneName(Expression exp)
+        {
+            return ConditionParser.EvalString(exp.Operator, ZetaDia.Me.CurrentScene.Name, exp.Value);
         }
 
         public static bool HighestKeyCountId(Expression exp)
@@ -177,6 +190,7 @@ namespace QuestTools.Helpers
             ActorExistsAt,
             MarkerExistsAt,
             ActorIsAlive,
+            ActorFound,
         }
 
         public static bool HasBackpackItem(Expression exp)
@@ -206,8 +220,21 @@ namespace QuestTools.Helpers
 
             var actorId = param.ChangeType<int>();
 
-            return ZetaDia.Actors.GetActorsOfType<DiaUnit>().Any(a => a.IsValid && a.ActorSNO == actorId && a.IsAlive);
+            var actor = ZetaDia.Actors.GetActorsOfType<DiaUnit>().FirstOrDefault(a => a.IsValid && a.ActorSNO == actorId && a.IsAlive);
 
+            // Its possible that by the time other tags run this actor will have disappeared from actors collection
+            // to make sure we dont lose track of it, it needs to be recorded in the history.
+            ActorHistory.UpdateActor(actor);
+
+            return actor != null;
+        }
+
+        public static bool ActorFound(Expression exp)
+        {
+            if (!exp.Params.Any())
+                return false;
+
+            return ActorHistory.HasBeenSeen(exp.Params.ElementAtOrDefault(0).ChangeType<int>()) || ActorIsAlive(exp);
         }
 
         public static bool ActorExistsAt(Expression exp)
@@ -224,7 +251,7 @@ namespace QuestTools.Helpers
 
             var x = (xToken == "me.position.x") ? ZetaDia.Me.Position.X : xToken.ChangeType<float>();
             var y = (yToken == "me.position.y") ? ZetaDia.Me.Position.Y : yToken.ChangeType<float>();
-            var z = (zToken == "me.position.z") ? ZetaDia.Me.Position.Z : zToken.ChangeType<float>();
+            var z = (zToken == "me.position.z") ? ZetaDia.Me.Position.Z : zToken.ChangeType<float>();            
 
             return Zeta.Bot.ConditionParser.ActorExistsAt(id, x, y, z, range);
         }

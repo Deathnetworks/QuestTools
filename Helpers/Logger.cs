@@ -47,6 +47,43 @@ namespace QuestTools
             Logging.Info(msg);
         }
 
+        /// <summary>
+        /// Log Warning
+        /// </summary>
+        /// <param name="message"></param>
+        /// <param name="args"></param>
+        public static void Warn(string message, params object[] args)
+        {
+            StackFrame frame = new StackFrame(1);
+            var method = frame.GetMethod();
+            var type = method.DeclaringType;
+
+            string msg = "[QuestTools][" + type.Name + "] " + string.Format(message, args);
+
+            if (_lastLogMessage == msg)
+                return;
+
+            _lastLogMessage = msg;
+            Logging.Warn(msg);
+        }
+        /// <summary>
+        /// Log Warning
+        /// </summary>
+        /// <param name="message"></param>
+        public static void Warn(string message)
+        {
+            StackFrame frame = new StackFrame(1);
+            var method = frame.GetMethod();
+            var type = method.DeclaringType;
+
+            string msg = string.Format("[{0}] " + message, type.Name);
+
+            if (_lastLogMessage == msg)
+                return;
+
+            _lastLogMessage = msg;
+            Logging.Warn(msg);
+        }
 
         public static void LogError(string message)
         {

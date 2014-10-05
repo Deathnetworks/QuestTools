@@ -57,7 +57,7 @@ namespace QuestTools
                     return;
 
                 ChangeMonitor.CheckForChanges();
-
+                ActorHistory.UpdateActors();
                 PositionCache.RecordPosition();
 
                 // Mark Dungeon Explorer nodes as Visited if combat pulls us into it
