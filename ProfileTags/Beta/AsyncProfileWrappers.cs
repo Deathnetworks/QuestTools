@@ -399,6 +399,39 @@ namespace QuestTools.ProfileTags.Complex
         }
     }
 
+    internal class AsyncTownPortalTag : TownPortalTag, IAsyncProfileBehavior
+    {
+        private bool _isDone;
+        public override bool IsDone
+        {
+            get { return _isDone || base.IsDone || ForceDone; }
+        }
+
+        public Composite BaseBehavior()
+        {
+            return base.CreateBehavior();
+        }
+
+        public bool ReadyToRun { get; set; }
+        public bool ForceDone { get; set; }
+        public void Tick() { }
+
+        public override void ResetCachedDone()
+        {
+            _isDone = false;
+            base.ResetCachedDone();
+        }
+
+        protected override Composite CreateBehavior()
+        {
+            _isDone = true;
+            return AsyncCommonBehaviors.ExecuteReturnFailureOrBehaviorResult(
+                ret => !_isDone && ReadyToRun,
+                ret => base.CreateBehavior()
+            );
+        }
+    }
+
     /// <summary>
     /// WaitTag doesn't reset properly, which is probably why it never has worked 
     /// after the first loop in WHILE tag. So we'll have to replace the functionality.

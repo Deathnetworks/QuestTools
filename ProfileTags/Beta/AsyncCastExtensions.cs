@@ -190,6 +190,14 @@ namespace QuestTools.Helpers
             return asyncVersion;
         }
 
+        internal static AsyncTownPortalTag ToAsync(this TownPortalTag tag)
+        {
+            var asyncVersion = new AsyncTownPortalTag();
+            tag.CopyTo(asyncVersion);
+            asyncVersion.WaitTime = tag.WaitTime;
+            return asyncVersion;
+        }
+
     }
 }
 

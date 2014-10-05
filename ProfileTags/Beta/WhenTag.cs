@@ -24,7 +24,6 @@ namespace QuestTools.ProfileTags.Complex
         [XmlAttribute("name")]
         public string Name { get; set; }
 
-        public Guid Id;
         private readonly List<int> _questIds = new List<int>();
         private List<Expression> parsedConditions = new List<Expression>();
 
@@ -113,6 +112,9 @@ namespace QuestTools.ProfileTags.Complex
 
             else if (type == typeof(ToggleTargetingTag))
                 Body[index] = (behavior as ToggleTargetingTag).ToAsync();
+
+            else if (type == typeof(TownPortalTag))
+                Body[index] = (behavior as TownPortalTag).ToAsync();
             
         }
 
