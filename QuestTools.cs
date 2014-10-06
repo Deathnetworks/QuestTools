@@ -1,15 +1,17 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
+using System.Windows.Documents;
 using QuestTools.Helpers;
 using QuestTools.ProfileTags;
 using QuestTools.ProfileTags.Complex;
 using Zeta.Bot;
 using Zeta.Bot.Logic;
+using Zeta.Bot.Profile;
 using Zeta.Game;
 using Zeta.Game.Internals;
-using QuestTools.Navigation;
-using Zeta.Common;
 
 namespace QuestTools
 {
@@ -59,7 +61,7 @@ namespace QuestTools
                     return;
 
                 ChangeMonitor.CheckForChanges();
-
+                ActorHistory.UpdateActors();
                 PositionCache.RecordPosition();
 
                 // Mark Dungeon Explorer nodes as Visited if combat pulls us into it
@@ -94,10 +96,6 @@ namespace QuestTools
             private static bool _lastCheckBelowThreshold;
             private static bool _finished;
             private static bool _isAborting;
-            private static readonly Vector3 _SafeTrialPosition = new Vector3(180.9f, 168.2f, -11.4f);
-            private static QTNavigator _navigator = new QTNavigator();
-
-
 
             public static void PulseRiftTrial()
             {
@@ -107,9 +105,6 @@ namespace QuestTools
                     return;
 
                 var quest = ZetaDia.ActInfo.ActiveQuests.FirstOrDefault(q => q.QuestSNO == 405695);
-
-                if (CurrentWave >= maxWave && !_isAborting && ZetaDia.IsInTown)
-                    _isAborting = true;
 
                 if (quest == null || ZetaDia.IsInTown || ZetaDia.WorldInfo.SNOId != 405684 || !QuestToolsSettings.Instance.EnableTrialRiftMaxLevel)
                 {
@@ -121,9 +116,7 @@ namespace QuestTools
 
                     if (_isAborting)
                     {
-                        Logger.Log("Re-Enabling Combat");
-                        //TrinityApi.SetProperty("CombatBase", "IsCombatAllowed", true);
-                        _killRadius = -1f;
+                        SetCombatAllowed(true);
                         _isAborting = false;
                     }
 
@@ -150,52 +143,50 @@ namespace QuestTools
                     _lastCheckBelowThreshold = quest.QuestMeter < 0.95f && quest.QuestMeter >= 0;
                 }
 
+                if (CurrentWave == maxWave && !_isAborting)
                 if (CurrentWave >= maxWave && !_isAborting)
                 {
                     Logger.Log("Reached Wave {0} Disabling Combat", maxWave);
 
+                    SetCombatAllowed(false);
 
-                    if (_killRadius > 5f)
-                        _killRadius = 5f;   
-
-                    while (Zeta.Common.Vector3.Distance(ZetaDia.Me.Position, _SafeTrialPosition) > 10f && 
-                        ZetaDia.WorldInfo.SNOId == 405684 && !ZetaDia.IsInTown)
+                    var endTrialSequence = new List<ProfileBehavior>
                     {
-                        if (Zeta.Common.Vector3.Distance(ZetaDia.Me.Position, _SafeTrialPosition) < 10f)
-                            BrainBehavior.ForceTownrun();
-                        else
+                        new AsyncSafeMoveTo
                         {
-                            Vector3 _navTarget = _SafeTrialPosition;
-                            _navTarget = MathEx.CalculatePointFrom(ZetaDia.Me.Position, _SafeTrialPosition, _SafeTrialPosition.Distance2D(ZetaDia.Me.Position) - 5);
-                            _navigator.MoveTo(_SafeTrialPosition, "Safe Place to TownPortal in Rift");
-                        }                       
-                    }
+                            PathPrecision = 5,
+                            PathPointLimit = 250,
+                            X = 393,
+                            Y = 237,
+                            Z = -11
+                        },
+                        new AsyncTownPortalTag(),
+                        new AsyncWaitTimerTag()
+                        {
+                            WaitTime = 15000
+                        }
+                    };
+
+                    BotBehaviorQueue.Queue(endTrialSequence);
+                                       
+                    _isAborting = true;
+
                 }
 
 
             }
 
-            private static Nullable<float> _originalRadius = null;
-            private static float _killRadius
+            private static void SetCombatAllowed(bool allowed)
             {
-                get
-                {
-                    return Zeta.Bot.Settings.CharacterSettings.Instance.KillRadius;
-                }
-                set
-                {
-                    if (_originalRadius == null)
-                        _originalRadius = Zeta.Bot.Settings.CharacterSettings.Instance.KillRadius;
+                var asm = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(x => x.GetName().Name.ToLower().StartsWith("trinity"));
+                Type t = asm.GetType("Trinity.Combat.Abilities.CombatBase");
+                var pi = t.GetProperty("IsCombatAllowed", BindingFlags.Public | BindingFlags.Static);
+                pi.SetValue(null, allowed, null);     
 
-                    if (value == -1f)
-                    {
-                        Zeta.Bot.Settings.CharacterSettings.Instance.KillRadius = _originalRadius ?? 50f;
-                        _originalRadius = null;
-                    }
-                    else
-                        Zeta.Bot.Settings.CharacterSettings.Instance.KillRadius = value;
-                }
+                //if(TrinityApi.SetProperty("Trinity.Combat.Abilities.CombatBase", "IsCombatAllowed", allowed));
+                    Logger.Log("Turning Combat {0}", allowed ? "On" : "Off");
             }
+
         }
 
         private static void CheckGamesPerHourStop()

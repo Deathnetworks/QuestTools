@@ -224,8 +224,20 @@ namespace QuestTools.ProfileTags.Movement
 
             if (Actor == null && Position == Vector3.Zero && !WorldHasChanged())
             {
-                EndDebug("ERROR: Could not find an actor or position to move to, finished! {0}", Status());
-                return true;
+                var lastSeenPosition = ActorHistory.GetActorPosition(ActorId);
+                if (lastSeenPosition != Vector3.Zero)
+                {
+                    Warn("Can't find actor! using last known position {0} Distance={1}", 
+                        lastSeenPosition.ToString(), 
+                        lastSeenPosition.Distance(ZetaDia.Me.Position));
+
+                    Position = lastSeenPosition;
+                }
+                else
+                {
+                    EndDebug("ERROR: Could not find an actor or position to move to, finished! {0}", Status());
+                    return true;                    
+                }
             }
             if (IsPortal && WorldHasChanged())
             {
@@ -677,6 +689,12 @@ namespace QuestTools.ProfileTags.Movement
         private void End(string message)
         {
             End(message, 0);
+        }
+        
+        private void Warn(string message, params object[] args)
+        {
+            if(QuestTools.EnableDebugLogging)
+                Logger.Warn(message, args);
         }
 
         public override void ResetCachedDone()

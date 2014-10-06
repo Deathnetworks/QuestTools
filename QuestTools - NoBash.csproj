@@ -94,6 +94,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Helpers\ActorHistory.cs" />
     <Compile Include="ProfileTags\Beta\AsyncCastExtensions.cs" />
     <Compile Include="ProfileTags\Beta\AsyncCommonBehaviors.cs" />
     <Compile Include="ProfileTags\Beta\AsyncProfileWrappers.cs" />

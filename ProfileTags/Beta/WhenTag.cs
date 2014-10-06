@@ -24,7 +24,6 @@ namespace QuestTools.ProfileTags.Complex
         [XmlAttribute("name")]
         public string Name { get; set; }
 
-        public Guid Id;
         private readonly List<int> _questIds = new List<int>();
         private List<Expression> parsedConditions = new List<Expression>();
 
@@ -57,9 +56,8 @@ namespace QuestTools.ProfileTags.Complex
         /// </summary>
         private void ReplaceBehaviors()
         {
-            var nodes = GetNodes();
             var i = 0;
-            foreach (var node in nodes)
+            foreach (var node in GetNodes().ToList())
             {
                 ReplaceBehavior(i, node);
                 i++;
@@ -111,6 +109,12 @@ namespace QuestTools.ProfileTags.Complex
 
             else if (type == typeof(ReloadProfileTag))
                 Body[index] = (behavior as ReloadProfileTag).ToAsync();
+
+            else if (type == typeof(ToggleTargetingTag))
+                Body[index] = (behavior as ToggleTargetingTag).ToAsync();
+
+            else if (type == typeof(TownPortalTag))
+                Body[index] = (behavior as TownPortalTag).ToAsync();
             
         }
 

@@ -21,8 +21,9 @@ namespace QuestTools.Helpers
                 MethodInfo methodInfo = type.GetMethod(expression.MethodName);
                 return (bool)methodInfo.Invoke(null, new object[] { expression });
             }
-            catch (ArgumentException)
+            catch (Exception ex)
             {
+                Logger.Debug("ConditionParser Exception: ", ex);
             }
             return false;
         };
@@ -56,9 +57,9 @@ namespace QuestTools.Helpers
             switch (operation)
             {
                 case OperatorType.Equal:
-                    return a.ToLowerInvariant() == b.ToLowerInvariant();
+                    return Equals(a.ToLowerInvariant(), b.ToLowerInvariant());
                 case OperatorType.NotEqual:
-                    return a.ToLowerInvariant() != b.ToLowerInvariant();
+                    return !Equals(a.ToLowerInvariant(), b.ToLowerInvariant());
             }
             return false;
         }
