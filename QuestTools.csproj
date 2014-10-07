@@ -106,6 +106,7 @@
     <Compile Include="ProfileTags\Beta\IAsyncProfileBehavior.cs" />
     <Compile Include="ProfileTags\Beta\LoggingController.cs" />
     <Compile Include="ProfileTags\Beta\NewBaseComplexNodeTag.cs" />
+    <Compile Include="ProfileTags\Beta\ProfileSettingTag.cs" />
     <Compile Include="ProfileTags\Beta\Tokenizer.cs" />
     <Compile Include="ProfileTags\Beta\WhenTag.cs" />
     <Compile Include="ProfileTags\Complex\HasTrialRiftKeys.cs" />

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.Windows.Annotations;
 using QuestTools.Helpers;
 using System;
 using System.Collections.Generic;
@@ -36,9 +37,9 @@ namespace QuestTools.ProfileTags.Complex
             parsedConditions = ConditionParser.Parse(Condition);
 
             // in immediate mode just act like an empty container and leave children alone.
-            if (Immediate)            
-                return parsedConditions.All(expression => ConditionParser.Evaluate(expression));
-
+            if (Immediate)
+                return ConditionParser.Evaluate(parsedConditions);
+                
             if (QuestTools.EnableDebugLogging)
                 Logger.Log("Async Initializing '{1}' with condition={0}", Condition, Name);
 
@@ -72,7 +73,7 @@ namespace QuestTools.ProfileTags.Complex
         /// </summary>
         private void ReplaceBehavior(int index, ProfileBehavior behavior)
         {
-            var type = behavior.GetType();
+            var type = behavior.GetType();            
 
             if (type == typeof(LoadProfileTag))
                 Body[index] = (behavior as LoadProfileTag).ToAsync();
@@ -115,6 +116,9 @@ namespace QuestTools.ProfileTags.Complex
 
             else if (type == typeof(TownPortalTag))
                 Body[index] = (behavior as TownPortalTag).ToAsync();
+
+            else if (type == typeof(ProfileSettingTag))
+                Body[index] = (behavior as ProfileSettingTag).ToAsync();
             
         }
 
@@ -147,8 +151,7 @@ namespace QuestTools.ProfileTags.Complex
             });
 
             // Queue all the children along with a condition callback that determines when they should be run
-            BotBehaviorQueue.Queue(ChildProfileBehaviors, ret =>
-                parsedConditions.All(expression => ConditionParser.Evaluate(expression)), Name);
+            BotBehaviorQueue.Queue(ChildProfileBehaviors, ret => ConditionParser.Evaluate(parsedConditions), Name);
         }
     }
 }

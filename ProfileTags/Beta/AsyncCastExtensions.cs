@@ -94,6 +94,9 @@ namespace QuestTools.Helpers
             if (type == typeof(TownPortalTag))
                 return (behavior as TownPortalTag).ToAsync().RunAsync();
 
+            if (type == typeof(ProfileSettingTag))
+                return (behavior as ProfileSettingTag).ToAsync().RunAsync();
+
 
             Logger.Warn("You attempted to run a tag ({0}) that can't be converted to IAsyncProfileBehavior ", behavior.GetType());
 
@@ -287,6 +290,15 @@ namespace QuestTools.Helpers
             var asyncVersion = new AsyncTownPortalTag();
             tag.CopyTo(asyncVersion);
             asyncVersion.WaitTime = tag.WaitTime;
+            return asyncVersion;
+        }
+
+        internal static AsyncProfileSettingTag ToAsync(this ProfileSettingTag tag)
+        {
+            var asyncVersion = new AsyncProfileSettingTag();
+            tag.CopyTo(asyncVersion);
+            asyncVersion.Name = tag.Name;
+            asyncVersion.Value = tag.Value;
             return asyncVersion;
         }
 

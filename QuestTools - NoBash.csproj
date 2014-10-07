@@ -110,6 +110,7 @@
     <Compile Include="ProfileTags\Beta\WhenTag.cs" />
     <Compile Include="ProfileTags\Complex\HasTrialRiftKeys.cs" />
     <Compile Include="ProfileTags\QTOpenRiftWrapper.cs" />
+    <Compile Include="ProfileTags\Beta\ProfileSettingTag.cs" />
     <Compile Include="UI\ConfigWindow.cs" />
     <Compile Include="UI\BoolInverterConverter.cs" />
     <Compile Include="Helpers\ChangeMonitor.cs" />
