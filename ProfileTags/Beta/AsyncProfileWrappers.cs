@@ -74,7 +74,7 @@ namespace QuestTools.ProfileTags.Complex
     //    }
     //}
 
-    internal class AsyncLeaveGameTag : LeaveGameTag, IAsyncProfileBehavior
+    public class AsyncLeaveGameTag : LeaveGameTag, IAsyncProfileBehavior
     {
         private bool _isDone;
         public override bool IsDone
@@ -116,7 +116,7 @@ namespace QuestTools.ProfileTags.Complex
         }               
     }
 
-    internal class AsyncLoadProfileTag : LoadProfileTag, IAsyncProfileBehavior
+    public class AsyncLoadProfileTag : LoadProfileTag, IAsyncProfileBehavior
     {
         private bool _isDone;
         public override bool IsDone
@@ -165,7 +165,7 @@ namespace QuestTools.ProfileTags.Complex
         }
     }
 
-    internal class AsyncLogMessageTag : LogMessageTag, IAsyncProfileBehavior
+    public class AsyncLogMessageTag : LogMessageTag, IAsyncProfileBehavior
     {
         private bool _isDone;
         public override bool IsDone
@@ -208,7 +208,7 @@ namespace QuestTools.ProfileTags.Complex
         }
     }
 
-    internal class AsyncUseWaypointTag : UseWaypointTag, IAsyncProfileBehavior
+    public class AsyncUseWaypointTag : UseWaypointTag, IAsyncProfileBehavior
     {
         private bool _isDone;
         public override bool IsDone
@@ -251,7 +251,7 @@ namespace QuestTools.ProfileTags.Complex
         }
     }
 
-    internal class AsyncOffsetMoveTag : OffsetMoveTag, IAsyncProfileBehavior
+    public class AsyncOffsetMoveTag : OffsetMoveTag, IAsyncProfileBehavior
     {
         private bool _isDone;
         public override bool IsDone
@@ -294,7 +294,7 @@ namespace QuestTools.ProfileTags.Complex
         }
     }
 
-    internal class AsyncMoveToActorTag : MoveToActor, IAsyncProfileBehavior
+    public class AsyncMoveToActorTag : MoveToActor, IAsyncProfileBehavior
     {
         private bool _isDone;
         public override bool IsDone
@@ -337,7 +337,7 @@ namespace QuestTools.ProfileTags.Complex
         }
     }
 
-    internal class AsyncMoveToMapMarkerTag : MoveToMapMarker, IAsyncProfileBehavior
+    public class AsyncMoveToMapMarkerTag : MoveToMapMarker, IAsyncProfileBehavior
     {
         private bool _isDone;
         public override bool IsDone
@@ -380,7 +380,7 @@ namespace QuestTools.ProfileTags.Complex
         }
     }
 
-    internal class AsyncUseStopTag : UseStopTag, IAsyncProfileBehavior
+    public class AsyncUseStopTag : UseStopTag, IAsyncProfileBehavior
     {
         private bool _isDone;
         public override bool IsDone
@@ -423,7 +423,7 @@ namespace QuestTools.ProfileTags.Complex
         }
     }
 
-    internal class AsyncSafeMoveTo : SafeMoveToTag, IAsyncProfileBehavior
+    public class AsyncSafeMoveTo : SafeMoveToTag, IAsyncProfileBehavior
     {
         private bool _isDone;
         public override bool IsDone
@@ -466,7 +466,7 @@ namespace QuestTools.ProfileTags.Complex
         }
     }
 
-    internal class AsyncExploreDungeonTag : ExploreDungeonTag, IAsyncProfileBehavior
+    public class AsyncExploreDungeonTag : ExploreDungeonTag, IAsyncProfileBehavior
     {
         private bool _isDone;
         public override bool IsDone
@@ -509,7 +509,7 @@ namespace QuestTools.ProfileTags.Complex
         }
     }
 
-    internal class AsyncTownPortalTag : TownPortalTag, IAsyncProfileBehavior
+    public class AsyncTownPortalTag : TownPortalTag, IAsyncProfileBehavior
     {
         private bool _isDone;
         public override bool IsDone
@@ -556,7 +556,7 @@ namespace QuestTools.ProfileTags.Complex
     /// WaitTag doesn't reset properly, which is probably why it never has worked 
     /// after the first loop in WHILE tag. So we'll have to replace the functionality.
     /// </summary>
-    internal class AsyncWaitTimerTag : WaitTimerTag, IAsyncProfileBehavior
+    public class AsyncWaitTimerTag : WaitTimerTag, IAsyncProfileBehavior
     {
         private bool _isDone;
         public override bool IsDone
@@ -626,7 +626,7 @@ namespace QuestTools.ProfileTags.Complex
         }
     }
 
-    internal class AsyncReloadProfileTag : ReloadProfileTag, IAsyncProfileBehavior
+    public class AsyncReloadProfileTag : ReloadProfileTag, IAsyncProfileBehavior
     {
         private bool _isDone;
         public override bool IsDone
@@ -671,7 +671,7 @@ namespace QuestTools.ProfileTags.Complex
 
     // ToggleTargetting is inconsistent with other tags in that does its thing in OnStart() method, 
     // so we have to override OnStart() to stop that happening and then run it later by calling base.Onstart from CreateBehavior.
-    internal class AsyncToggleTargetingTag : ToggleTargetingTag, IAsyncProfileBehavior
+    public class AsyncToggleTargetingTag : ToggleTargetingTag, IAsyncProfileBehavior
     {
         private bool _isDone;
         public override bool IsDone

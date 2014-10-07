@@ -19,7 +19,7 @@ using Zeta.XmlEngine;
 namespace QuestTools.ProfileTags.Movement
 {
     [XmlElement("MoveToActor")]
-    class MoveToActor : ProfileBehavior
+    public class MoveToActor : ProfileBehavior
     {
         public MoveToActor() { }
 
