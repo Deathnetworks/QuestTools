@@ -91,6 +91,7 @@ namespace QuestTools.Helpers
         private static void GameEvents_OnWorldChanged(object sender, EventArgs e)
         {
             PositionCache.Cache = new HashSet<Vector3>();
+            ActorHistory.Clear();
         }
     }
 }
