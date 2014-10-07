@@ -15,7 +15,7 @@ using Action = Zeta.TreeSharp.Action;
 
 namespace QuestTools.Helpers
 {
-    static class BotBehaviorQueue
+    public static class BotBehaviorQueue
     {
         public delegate bool ShouldRunCondition(List<ProfileBehavior> profileBehaviors);
 
@@ -198,13 +198,21 @@ namespace QuestTools.Helpers
         }
 
         /// <summary>
+        /// Adds some ProfileBehaviors to the BotBehaviorQueue
+        /// </summary>
+        public static void Queue(ProfileBehavior behavior, string name = "")
+        {
+            Queue(new List<ProfileBehavior> { behavior } , ret => true, name);
+        }
+
+        /// <summary>
         /// Adds a ProfileBehavior to the BotBehaviorQueue
         /// </summary>
         /// <param name="profileBehavior">List of ProfileBehaviors that should be executed when condition is satisfied</param>
         /// <param name="condition">bool delegate is invoked every tick to check if the attached profileBehaviors should be run</param>
         public static void Queue(ProfileBehavior profileBehavior, ShouldRunCondition condition)
         {
-            Queue(new List<ProfileBehavior> { profileBehavior },condition);
+            Queue(new List<ProfileBehavior> { profileBehavior }, condition);
         }
 
         ///// <summary>

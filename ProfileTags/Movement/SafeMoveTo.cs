@@ -22,7 +22,7 @@ namespace QuestTools.ProfileTags.Movement
     /// </summary>
     [XmlElement("TrinityMoveTo")]
     [XmlElement("SafeMoveTo")]
-    internal class SafeMoveToTag : ProfileBehavior
+    public class SafeMoveToTag : ProfileBehavior
     {
         public SafeMoveToTag() { }
 

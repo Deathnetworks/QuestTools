@@ -1,14 +1,103 @@
-﻿using System.Runtime.Remoting;
+﻿using System.Diagnostics.Eventing.Reader;
+using System.Runtime.Remoting;
+using System.Runtime.Remoting.Contexts;
+using System.Windows.Documents;
+using System.Windows.Navigation;
 using QuestTools.ProfileTags;
 using QuestTools.ProfileTags.Complex;
 using QuestTools.ProfileTags.Movement;
 using Zeta.Bot.Profile;
 using Zeta.Bot.Profile.Common;
+using Zeta.TreeSharp;
 
 namespace QuestTools.Helpers
 {
     public static class AsyncCastExtensions
     {
+
+        /// <summary>
+        /// Prepare for tree execution
+        /// </summary>
+        /// <param name="behavior"></param>
+        /// <returns></returns>
+        public static Composite Run(this IAsyncProfileBehavior behavior)
+        {
+            if (!(behavior is ProfileBehavior)) 
+                return new Action(ret => RunStatus.Failure);
+
+            behavior.AsyncUpdateBehavior();
+
+            if ((behavior as ProfileBehavior).QuestId == 0)
+                (behavior as ProfileBehavior).QuestId = 1;
+
+            if ((behavior as ProfileBehavior).StepId == 0)
+                (behavior as ProfileBehavior).StepId = 1;
+            
+            (behavior as ProfileBehavior).ResetCachedDone();
+
+            behavior.ReadyToRun = true;
+
+            return (behavior as ProfileBehavior).Behavior;
+        }
+
+        /// <summary>
+        /// Convert Async wrapper version for tag and prepare it for tree execution.
+        /// </summary>
+        /// <param name="behavior"></param>
+        /// <returns></returns>
+        public static Composite Run(this ProfileBehavior behavior)
+        {
+            var type = behavior.GetType();
+
+            if (type == typeof(LogMessageTag))
+                return ((behavior as LogMessageTag).ToAsync() as IAsyncProfileBehavior).Run();
+
+            if (type == typeof(LeaveGameTag))
+                return ((behavior as LeaveGameTag).ToAsync() as IAsyncProfileBehavior).Run();
+
+            if (type == typeof(LogMessageTag))
+                return ((behavior as LogMessageTag).ToAsync() as IAsyncProfileBehavior).Run();
+
+            if (type == typeof(WaitTimerTag))
+                return ((behavior as WaitTimerTag).ToAsync() as IAsyncProfileBehavior).Run();
+
+            if (type == typeof(UseStopTag))
+                return ((behavior as UseStopTag).ToAsync() as IAsyncProfileBehavior).Run();
+
+            if (type == typeof(SafeMoveToTag))
+                return ((behavior as SafeMoveToTag).ToAsync() as IAsyncProfileBehavior).Run();
+
+            if (type == typeof(MoveToActor))
+                return ((behavior as MoveToActor).ToAsync() as IAsyncProfileBehavior).Run();
+
+            if (type == typeof(MoveToMapMarker))
+                return ((behavior as MoveToMapMarker).ToAsync() as IAsyncProfileBehavior).Run();
+
+            if (type == typeof(OffsetMoveTag))
+                return ((behavior as OffsetMoveTag).ToAsync() as IAsyncProfileBehavior).Run();
+
+            if (type == typeof(UseWaypointTag))
+                return ((behavior as UseWaypointTag).ToAsync() as IAsyncProfileBehavior).Run();
+
+            if (type == typeof(ExploreDungeonTag))
+                return ((behavior as ExploreDungeonTag).ToAsync() as IAsyncProfileBehavior).Run();
+
+            if (type == typeof(ReloadProfileTag))
+                return ((behavior as ReloadProfileTag).ToAsync() as IAsyncProfileBehavior).Run();
+
+            if (type == typeof(ToggleTargetingTag))
+                return ((behavior as ToggleTargetingTag).ToAsync() as IAsyncProfileBehavior).Run();
+
+            if (type == typeof(TownPortalTag))
+                return ((behavior as TownPortalTag).ToAsync() as IAsyncProfileBehavior).Run();
+
+
+            Logger.Warn("You attempted to run a tag ({0}) that can't be converted to IAsyncProfileBehavior ", behavior.GetType());
+
+            return new Action(ret => RunStatus.Failure);
+           
+        }
+
         public static void CopyTo(this ProfileBehavior a, ProfileBehavior b)
         {
             b.QuestId = a.QuestId;
