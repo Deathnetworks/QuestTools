@@ -31,7 +31,7 @@ namespace QuestTools.Helpers
                     return null;
 
                 // non-nullable types, which are not supported by Convert.ChangeType(), // unwrap the types to determine the underlying time
-                if (convertToType.IsGenericType && convertToType.GetGenericTypeDefinition() == typeof(Nullable<>))
+                if (convertToType.IsGenericType && convertToType.GetGenericTypeDefinition() == typeof (Nullable<>))
                     convertToType = Nullable.GetUnderlyingType(convertToType);
 
                 // deal with conversion to enum types when input is a string
@@ -47,6 +47,16 @@ namespace QuestTools.Helpers
             }
             catch (InvalidCastException)
             {
+            }
+            catch (OverflowException) 
+            {
+                // Enum value is outside the range of the underlying type of enumType.
+            }
+            catch (ArgumentException) 
+            {
+                //enumType is not an Enum. 
+                //-or- value is either an empty string ("") or only contains white space. 
+                //-or- value is a name, but not one of the named constants defined for the enumeration.
             }
 
             return GetDefaultValue(convertToType);

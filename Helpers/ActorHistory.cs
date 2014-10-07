@@ -25,6 +25,7 @@ namespace QuestTools.Helpers
         {
             public int WorldId;
             public Vector3 Position;
+            public Dictionary<SNOAnim, int> AnimationCount = new Dictionary<SNOAnim, int>();
             public DateTime LastSeen;
         }
 
@@ -46,6 +47,21 @@ namespace QuestTools.Helpers
             return Actors.TryGetValue(actorId, out cActor) && cActor.WorldId == ZetaDia.CurrentWorldId ? cActor.Position : Vector3.Zero;
         }
 
+        public static int GetActorAnimationCount(int actorId, string animationName)
+        {
+            CachedActor cActor;
+            if (Actors.TryGetValue(actorId, out cActor))
+            {
+                var anim = animationName.ChangeType<SNOAnim>();
+                int animCount;
+                if (anim != SNOAnim.Invalid && cActor.AnimationCount.TryGetValue(anim, out animCount))
+                {
+                    return animCount;
+                }
+            }
+            return 0;
+        }
+
         public static TimeSpan GetTimeSinceSeen(int actorId)
         {
             CachedActor cActor;
@@ -54,7 +70,7 @@ namespace QuestTools.Helpers
 
         public static void UpdateActors()
         {
-            if (DateTime.UtcNow.Subtract(_lastChangeCheckTime).TotalMilliseconds < 1000)
+            if (DateTime.UtcNow.Subtract(_lastChangeCheckTime).TotalMilliseconds < 500)
                 return;
 
             _lastChangeCheckTime = DateTime.UtcNow;
@@ -70,24 +86,48 @@ namespace QuestTools.Helpers
         public static void UpdateActor(DiaObject actor)
         {
             if (actor == null || !actor.IsValid)            
-                return;            
+                return;
 
-            var updatedActor = new CachedActor
-            {
-                Position = actor.Position,
-                WorldId = ZetaDia.CurrentWorldId,
-                LastSeen = DateTime.UtcNow
-            };
+            var shouldTrackAnimations = actor.CommonData != null && actor.CommonData.IsValid && actor is DiaUnit && actor.CommonData.CurrentAnimation != SNOAnim.Invalid;
+            //var shouldTrackAnimations = actor.CommonData != null && actor.CommonData.IsValid && actor is DiaUnit && (actor as DiaUnit).IsHostile && actor.CommonData.CurrentAnimation != SNOAnim.Invalid;
 
-            if (Actors.ContainsKey(actor.ActorSNO))
+            CachedActor cachedActor;
+
+            if (Actors.TryGetValue(actor.ActorSNO, out cachedActor))
             {
                 //Logger.Log("Updating Existing Actor {0} ({0})", actor.Name, actor.ActorSNO);
-                Actors[actor.ActorSNO] = updatedActor;
+                cachedActor.Position = actor.Position;
+                cachedActor.WorldId = ZetaDia.CurrentWorldId;
+                cachedActor.LastSeen = DateTime.UtcNow;
+
+                if (shouldTrackAnimations)
+                {
+                    int seenAnimCount;
+                    if (cachedActor.AnimationCount.TryGetValue(actor.CommonData.CurrentAnimation, out seenAnimCount))
+                    {
+                        //Logger.Log("Actor={0} {1} Animation Count={2}", actor.Name, actor.CommonData.CurrentAnimation, seenAnimCount + 1);
+                        cachedActor.AnimationCount[actor.CommonData.CurrentAnimation] = seenAnimCount + 1;
+                    }
+                    else
+                    {
+                        cachedActor.AnimationCount.Add(actor.CommonData.CurrentAnimation, 1);
+                    }                        
+                }
+
             }
             else
             {
-                //Logger.Log("Recording New Actor {0} ({0})", actor.Name, actor.ActorSNO);
-                Actors.Add(actor.ActorSNO, updatedActor);
+                var newActor = new CachedActor
+                {
+                    Position = actor.Position,
+                    WorldId = ZetaDia.CurrentWorldId,
+                    LastSeen = DateTime.UtcNow
+                };
+
+                if (shouldTrackAnimations)
+                    newActor.AnimationCount.Add(actor.CommonData.CurrentAnimation,1);
+
+                Actors.Add(actor.ActorSNO, newActor);
             }
 
             if (Actors.Count > 200)

@@ -127,6 +127,7 @@ namespace QuestTools.Helpers
             GetBackpackItemCount,
             GetStashedItemCount,
             GetStackCount,
+            ActorAnimationCount
         }
 
         public static bool ItemCount(Expression exp)
@@ -172,6 +173,22 @@ namespace QuestTools.Helpers
             var powerId = exp.Params.ElementAtOrDefault(0).ChangeType<int>();
 
             return ConditionParser.EvalInt(exp.Operator, Zeta.Bot.ConditionParser.GetStackCount(powerId), exp.Value.ChangeType<int>());
+        }
+
+
+        public static bool ActorAnimationCount(Expression exp)
+        {
+            if (exp.Params.Count != 2 && exp.Params.ElementAtOrDefault(0) == null || exp.Params.ElementAtOrDefault(1) == null)
+                return false;
+
+            var actorId = exp.Params.ElementAtOrDefault(0).ChangeType<int>();
+            var animationName = exp.Params.ElementAtOrDefault(1);
+
+            var animationCount = ActorHistory.GetActorAnimationCount(actorId, animationName);
+
+            Logger.Log("ActorId={0} Animation={1} Count={2}", actorId, animationName, animationCount);
+
+           return ConditionParser.EvalInt(exp.Operator, animationCount, exp.Value.ChangeType<int>());
         }
 
         #endregion
