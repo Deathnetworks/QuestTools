@@ -7,6 +7,7 @@ using System.Linq;
 using Zeta.Bot;
 using Zeta.Bot.Logic;
 using Zeta.Bot.Profile;
+using Zeta.Bot.Profile.Common;
 using Zeta.Common;
 using Zeta.Game;
 using Zeta.Game.Internals.Actors;
@@ -89,28 +90,6 @@ namespace QuestTools.Helpers
 
             _lastCheckedConditionsTime = DateTime.UtcNow;
 
-            var healingWells = ZetaDia.Actors.GetActorsOfType<DiaObject>(true).Where(o => o.ActorSNO == 138989);
-
-            var nearestHealingWell = healingWells.OrderBy(o => o.Distance).FirstOrDefault();
-            
-            //// some temporary code for testing randomly creating tags
-            //if (!hasTriggered && nearestHealingWell != null && nearestHealingWell.Distance <= 8f)
-            //{
-            //    Logger.Log("Adding Composite to Queue");
-            //    Queue(new AsyncSafeMoveTo
-            //    {
-            //        QuestId = 1,
-            //        StepId = 1,
-            //        PathPrecision = 5,
-            //        PathPointLimit = 250,
-            //        X=393,
-            //        Y=237,
-            //        Z=-11                    
-            //    }, 
-            //    ret => true);                
-            //    hasTriggered = true;
-            //}
-
             CheckConditions();
         }
 
@@ -181,7 +160,7 @@ namespace QuestTools.Helpers
             });
 
             var pair = new KeyValuePair<List<ProfileBehavior>, ShouldRunCondition>(behaviorsList, condition);
-            
+
             ProfileBehaviorQueue.Add(pair);
 
             if (!string.IsNullOrEmpty(name))
@@ -246,7 +225,6 @@ namespace QuestTools.Helpers
 
         /// <summary>
         /// Parent Composite that gets injected to BotBehavior hook
-        /// Todo: Clean this up.
         /// </summary>
         private static Decorator BotBehaviorMasterHookComposite()
         {
@@ -259,11 +237,7 @@ namespace QuestTools.Helpers
 
         private static Composite DefaultAction()
         {
-            return new Action(ret =>
-            {
-                //Logger.Log("DefaultAction");
-                return RunStatus.Failure;
-            });
+            return new Action(ret => RunStatus.Failure);
         }
 
         /// <summary>

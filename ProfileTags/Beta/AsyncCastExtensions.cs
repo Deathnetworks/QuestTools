@@ -20,7 +20,7 @@ namespace QuestTools.Helpers
         /// </summary>
         /// <param name="behavior"></param>
         /// <returns></returns>
-        public static Composite Run(this IAsyncProfileBehavior behavior)
+        private static Composite RunAsync(this IAsyncProfileBehavior behavior)
         {
             if (!(behavior is ProfileBehavior)) 
                 return new Action(ret => RunStatus.Failure);
@@ -49,47 +49,50 @@ namespace QuestTools.Helpers
         {
             var type = behavior.GetType();
 
+            if (behavior is IAsyncProfileBehavior)
+                return (behavior as IAsyncProfileBehavior).RunAsync();
+
             if (type == typeof(LogMessageTag))
-                return ((behavior as LogMessageTag).ToAsync() as IAsyncProfileBehavior).Run();
+                return (behavior as LogMessageTag).ToAsync().RunAsync();
 
             if (type == typeof(LeaveGameTag))
-                return ((behavior as LeaveGameTag).ToAsync() as IAsyncProfileBehavior).Run();
+                return (behavior as LeaveGameTag).ToAsync().RunAsync();
 
             if (type == typeof(LogMessageTag))
-                return ((behavior as LogMessageTag).ToAsync() as IAsyncProfileBehavior).Run();
+                return (behavior as LogMessageTag).ToAsync().RunAsync();
 
             if (type == typeof(WaitTimerTag))
-                return ((behavior as WaitTimerTag).ToAsync() as IAsyncProfileBehavior).Run();
+                return (behavior as WaitTimerTag).ToAsync().RunAsync();
 
             if (type == typeof(UseStopTag))
-                return ((behavior as UseStopTag).ToAsync() as IAsyncProfileBehavior).Run();
+                return (behavior as UseStopTag).ToAsync().RunAsync();
 
             if (type == typeof(SafeMoveToTag))
-                return ((behavior as SafeMoveToTag).ToAsync() as IAsyncProfileBehavior).Run();
+                return (behavior as SafeMoveToTag).ToAsync().RunAsync();
 
             if (type == typeof(MoveToActor))
-                return ((behavior as MoveToActor).ToAsync() as IAsyncProfileBehavior).Run();
+                return (behavior as MoveToActor).ToAsync().RunAsync();
 
             if (type == typeof(MoveToMapMarker))
-                return ((behavior as MoveToMapMarker).ToAsync() as IAsyncProfileBehavior).Run();
+                return (behavior as MoveToMapMarker).ToAsync().RunAsync();
 
             if (type == typeof(OffsetMoveTag))
-                return ((behavior as OffsetMoveTag).ToAsync() as IAsyncProfileBehavior).Run();
+                return (behavior as OffsetMoveTag).ToAsync().RunAsync();
 
             if (type == typeof(UseWaypointTag))
-                return ((behavior as UseWaypointTag).ToAsync() as IAsyncProfileBehavior).Run();
+                return (behavior as UseWaypointTag).ToAsync().RunAsync();
 
             if (type == typeof(ExploreDungeonTag))
-                return ((behavior as ExploreDungeonTag).ToAsync() as IAsyncProfileBehavior).Run();
+                return (behavior as ExploreDungeonTag).ToAsync().RunAsync();
 
             if (type == typeof(ReloadProfileTag))
-                return ((behavior as ReloadProfileTag).ToAsync() as IAsyncProfileBehavior).Run();
+                return (behavior as ReloadProfileTag).ToAsync().RunAsync();;
 
             if (type == typeof(ToggleTargetingTag))
-                return ((behavior as ToggleTargetingTag).ToAsync() as IAsyncProfileBehavior).Run();
+                return (behavior as ToggleTargetingTag).ToAsync().RunAsync();
 
             if (type == typeof(TownPortalTag))
-                return ((behavior as TownPortalTag).ToAsync() as IAsyncProfileBehavior).Run();
+                return (behavior as TownPortalTag).ToAsync().RunAsync();
 
 
             Logger.Warn("You attempted to run a tag ({0}) that can't be converted to IAsyncProfileBehavior ", behavior.GetType());
