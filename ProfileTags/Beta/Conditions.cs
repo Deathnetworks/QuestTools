@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using QuestTools.Helpers;
+using QuestTools.ProfileTags;
 using Zeta.Game;
 using Zeta.Game.Internals.Actors;
 
@@ -34,7 +35,7 @@ namespace QuestTools.Helpers
             LowestKeyCountId,
             CurrentWorldId,
             CurrentSceneId,
-            CurrentSceneName
+            CurrentSceneName,
         }
 
         public static bool CurrentWave(Expression exp)
@@ -127,6 +128,8 @@ namespace QuestTools.Helpers
             GetBackpackItemCount,
             GetStashedItemCount,
             GetStackCount,
+            ActorAnimationCount,
+            ProfileSetting
         }
 
         public static bool ItemCount(Expression exp)
@@ -174,6 +177,47 @@ namespace QuestTools.Helpers
             return ConditionParser.EvalInt(exp.Operator, Zeta.Bot.ConditionParser.GetStackCount(powerId), exp.Value.ChangeType<int>());
         }
 
+
+        public static bool ActorAnimationCount(Expression exp)
+        {
+            if (exp.Params.Count != 2 && exp.Params.ElementAtOrDefault(0) == null || exp.Params.ElementAtOrDefault(1) == null)
+                return false;
+
+            var actorId = exp.Params.ElementAtOrDefault(0).ChangeType<int>();
+            var animationName = exp.Params.ElementAtOrDefault(1);
+
+            var animationCount = ActorHistory.GetActorAnimationCount(actorId, animationName);
+
+            Logger.Log("ActorId={0} Animation={1} Count={2}", actorId, animationName, animationCount);
+
+            var result = ConditionParser.EvalInt(exp.Operator, animationCount, exp.Value.ChangeType<int>());
+
+            if (result)
+            {
+                ActorHistory.UnitsWithAnimationTracking.Remove(actorId);
+            }
+
+            return result;
+        }
+
+        public static bool ProfileSetting(Expression exp)
+        {
+            if (exp.Params.Count != 1 && exp.Params.ElementAtOrDefault(0) == null && !string.IsNullOrEmpty(exp.Value))
+                return false;
+
+            var settingName = exp.Params.ElementAt(0);
+
+            string value;
+
+            if (ProfileSettingTag.ProfileSettings.TryGetValue(settingName, out value))
+            {
+                //Logger.Log("Setting Condition={0} {1} {2} CurrentValue={3}", settingName, exp.Operator, exp.Value, value);
+                return ConditionParser.EvalString(exp.Operator, exp.Value, value);
+            }            
+
+            return false;
+        }
+
         #endregion
 
         #region Bool Method Conditions
@@ -188,9 +232,10 @@ namespace QuestTools.Helpers
             HasStashedItem,
             HasQuest,
             ActorExistsAt,
+            ActorExistsNearMe,
             MarkerExistsAt,
             ActorIsAlive,
-            ActorFound,
+            ActorFound                  
         }
 
         public static bool HasBackpackItem(Expression exp)
@@ -249,11 +294,22 @@ namespace QuestTools.Helpers
             var yToken = exp.Params.ElementAtOrDefault(2).ToLowerInvariant();
             var zToken = exp.Params.ElementAtOrDefault(3).ToLowerInvariant();
 
-            var x = (xToken == "me.position.x") ? ZetaDia.Me.Position.X : xToken.ChangeType<float>();
-            var y = (yToken == "me.position.y") ? ZetaDia.Me.Position.Y : yToken.ChangeType<float>();
-            var z = (zToken == "me.position.z") ? ZetaDia.Me.Position.Z : zToken.ChangeType<float>();            
+            var x = xToken.Contains("me.position.x") ? ZetaDia.Me.Position.X : xToken.ChangeType<float>();
+            var y = yToken.Contains("me.position.y") ? ZetaDia.Me.Position.Y : yToken.ChangeType<float>();
+            var z = zToken.Contains("me.position.z") ? ZetaDia.Me.Position.Z : zToken.ChangeType<float>();            
 
             return Zeta.Bot.ConditionParser.ActorExistsAt(id, x, y, z, range);
+        }
+
+        public static bool ActorExistsNearMe(Expression exp)
+        {
+            if (exp.Params.Count != 2 || exp.Params.ElementAtOrDefault(0) == null || exp.Params.ElementAtOrDefault(1) == null)
+                return false;
+
+            var range = exp.Params.ElementAtOrDefault(1).ChangeType<float>();
+            var id = exp.Params.ElementAtOrDefault(0).ChangeType<int>();
+
+            return Zeta.Bot.ConditionParser.ActorExistsAt(id, ZetaDia.Me.Position.X, ZetaDia.Me.Position.Y, ZetaDia.Me.Position.Z, range);
         }
 
         public static bool MarkerExistsAt(Expression exp)

@@ -95,6 +95,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Helpers\ActorHistory.cs" />
+    <Compile Include="Helpers\FileManager.cs" />
+    <Compile Include="Helpers\ProfileHistory.cs" />
     <Compile Include="ProfileTags\Beta\AsyncCastExtensions.cs" />
     <Compile Include="ProfileTags\Beta\AsyncCommonBehaviors.cs" />
     <Compile Include="ProfileTags\Beta\AsyncProfileWrappers.cs" />
@@ -104,8 +106,16 @@
     <Compile Include="ProfileTags\Beta\ConvertExtensions.cs" />
     <Compile Include="ProfileTags\Beta\Expression.cs" />
     <Compile Include="ProfileTags\Beta\IAsyncProfileBehavior.cs" />
+    <Compile Include="ProfileTags\Beta\LoadLastProfileTag.cs" />
     <Compile Include="ProfileTags\Beta\LoggingController.cs" />
     <Compile Include="ProfileTags\Beta\NewBaseComplexNodeTag.cs" />
+    <Compile Include="ProfileTags\Beta\ProfileSettingTag.cs" />
+    <Compile Include="ProfileTags\Beta\ShuffleTag.cs" />
+    <Compile Include="ProfileTags\Beta\TimeTracker\StartTimerTag.cs" />
+    <Compile Include="ProfileTags\Beta\TimeTracker\StopAllTimersTag.cs" />
+    <Compile Include="ProfileTags\Beta\TimeTracker\StopTimerTag.cs" />
+    <Compile Include="ProfileTags\Beta\TimeTracker\TimeTracker.cs" />
+    <Compile Include="ProfileTags\Beta\TimeTracker\Timing.cs" />
     <Compile Include="ProfileTags\Beta\Tokenizer.cs" />
     <Compile Include="ProfileTags\Beta\WhenTag.cs" />
     <Compile Include="ProfileTags\Complex\HasTrialRiftKeys.cs" />

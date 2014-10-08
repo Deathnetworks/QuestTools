@@ -4,6 +4,7 @@ using System.Runtime.Remoting.Contexts;
 using System.Windows.Documents;
 using System.Windows.Navigation;
 using QuestTools.ProfileTags;
+using QuestTools.ProfileTags.Beta;
 using QuestTools.ProfileTags.Complex;
 using QuestTools.ProfileTags.Movement;
 using Zeta.Bot.Profile;
@@ -93,6 +94,21 @@ namespace QuestTools.Helpers
 
             if (type == typeof(TownPortalTag))
                 return (behavior as TownPortalTag).ToAsync().RunAsync();
+
+            if (type == typeof(ProfileSettingTag))
+                return (behavior as ProfileSettingTag).ToAsync().RunAsync();
+
+            if (type == typeof(StartTimerTag))
+                return (behavior as StartTimerTag).ToAsync().RunAsync();
+
+            if (type == typeof(StopTimerTag))
+                return (behavior as StopTimerTag).ToAsync().RunAsync();
+
+            if (type == typeof(StopAllTimersTag))
+                return (behavior as StopAllTimersTag).ToAsync().RunAsync();
+
+            if (type == typeof(LoadLastProfileTag))
+                return (behavior as StopAllTimersTag).ToAsync().RunAsync();
 
 
             Logger.Warn("You attempted to run a tag ({0}) that can't be converted to IAsyncProfileBehavior ", behavior.GetType());
@@ -287,6 +303,48 @@ namespace QuestTools.Helpers
             var asyncVersion = new AsyncTownPortalTag();
             tag.CopyTo(asyncVersion);
             asyncVersion.WaitTime = tag.WaitTime;
+            return asyncVersion;
+        }
+
+        internal static AsyncProfileSettingTag ToAsync(this ProfileSettingTag tag)
+        {
+            var asyncVersion = new AsyncProfileSettingTag();
+            tag.CopyTo(asyncVersion);
+            asyncVersion.Name = tag.Name;
+            asyncVersion.Value = tag.Value;
+            return asyncVersion;
+        }
+
+        internal static AsyncStartTimerTag ToAsync(this StartTimerTag tag)
+        {
+            var asyncVersion = new AsyncStartTimerTag();
+            tag.CopyTo(asyncVersion);
+            asyncVersion.Group = tag.Group;
+            asyncVersion.Name = tag.Name;
+            return asyncVersion;
+        }
+
+        internal static AsyncStopTimerTag ToAsync(this StopTimerTag tag)
+        {
+            var asyncVersion = new AsyncStopTimerTag();
+            tag.CopyTo(asyncVersion);
+            asyncVersion.Group = tag.Group;
+            asyncVersion.Name = tag.Name;
+            return asyncVersion;
+        }
+
+        internal static AsyncStopAllTimersTag ToAsync(this StopAllTimersTag tag)
+        {
+            var asyncVersion = new AsyncStopAllTimersTag();
+            tag.CopyTo(asyncVersion);
+            return asyncVersion;
+        }
+
+        internal static AsyncLoadLastProfileTag ToAsync(this LoadLastProfileTag tag)
+        {
+            var asyncVersion = new AsyncLoadLastProfileTag();
+            asyncVersion.FallbackFile = tag.FallbackFile;
+            tag.CopyTo(asyncVersion);
             return asyncVersion;
         }
 
