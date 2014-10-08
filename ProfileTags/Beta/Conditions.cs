@@ -190,7 +190,14 @@ namespace QuestTools.Helpers
 
             Logger.Log("ActorId={0} Animation={1} Count={2}", actorId, animationName, animationCount);
 
-           return ConditionParser.EvalInt(exp.Operator, animationCount, exp.Value.ChangeType<int>());
+            var result = ConditionParser.EvalInt(exp.Operator, animationCount, exp.Value.ChangeType<int>());
+
+            if (result)
+            {
+                ActorHistory.UnitsWithAnimationTracking.Remove(actorId);
+            }
+
+            return result;
         }
 
         public static bool ProfileSetting(Expression exp)
