@@ -84,9 +84,16 @@ namespace QuestTools.Helpers
             if (!ZetaDia.IsInGame || !ZetaDia.Me.IsValid || ZetaDia.IsLoadingWorld)
                 return;
 
-            (from o in ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
-             where (o.ActorType == ActorType.Gizmo || o is DiaUnit) && !(o is DiaPlayer)
-             select o).ToList().ForEach(UpdateActor);   
+            try
+            {
+                (from o in ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
+                 where (o.ActorType == ActorType.Gizmo || o is DiaUnit) && !(o is DiaPlayer)
+                 select o).ToList().ForEach(UpdateActor);   
+            }
+            catch (Exception)
+            {
+            }
+
         }
 
         public static void UpdateActor(DiaObject actor)

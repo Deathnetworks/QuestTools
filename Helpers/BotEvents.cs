@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using QuestTools.ProfileTags;
 using QuestTools.ProfileTags.Complex;
 using Zeta.Bot;
+using Zeta.Bot.Profile;
 using Zeta.Common;
 using Zeta.Game;
 
@@ -23,6 +25,7 @@ namespace QuestTools.Helpers
             GameEvents.OnGameChanged += GameEvents_OnGameChanged;
             GameEvents.OnGameJoined += GameEvents_OnGameJoined;
             GameEvents.OnWorldChanged += GameEvents_OnWorldChanged;
+            ProfileManager.OnProfileLoaded += ProfileManager_OnProfileLoaded;
             BotBehaviorQueue.WireUp();
         }
 
@@ -33,6 +36,7 @@ namespace QuestTools.Helpers
             GameEvents.OnGameChanged -= GameEvents_OnGameChanged;
             GameEvents.OnGameJoined -= GameEvents_OnGameJoined;
             GameEvents.OnWorldChanged -= GameEvents_OnWorldChanged;
+            ProfileManager.OnProfileLoaded -= ProfileManager_OnProfileLoaded;
             BotBehaviorQueue.UnWire();
         }
 
@@ -57,6 +61,7 @@ namespace QuestTools.Helpers
             UseOnceTag.UseOnceCounter.Clear();
             ActorHistory.Clear();
         }
+
         private static void GameEvents_OnGameJoined(object sender, EventArgs e)
         {
             LastJoinedGame = DateTime.UtcNow;
@@ -67,6 +72,7 @@ namespace QuestTools.Helpers
             LoadOnceTag.UsedProfiles.Clear();
             ActorHistory.Clear();
         }
+
         private static void GameEvents_OnPlayerDied(object sender, EventArgs e)
         {
             Death.DeathCount++;
@@ -88,10 +94,17 @@ namespace QuestTools.Helpers
             // This is bad, we shouldn't do this :(
             Thread.Sleep(12000);
         }
+
         private static void GameEvents_OnWorldChanged(object sender, EventArgs e)
         {
             PositionCache.Cache = new HashSet<Vector3>();
             ActorHistory.Clear();
         }
+
+        private static void ProfileManager_OnProfileLoaded(object sender, EventArgs e)
+        {
+            ProfileHistory.Add(ProfileManager.CurrentProfile);
+        }
     }
+
 }

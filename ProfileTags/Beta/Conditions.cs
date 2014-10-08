@@ -232,9 +232,10 @@ namespace QuestTools.Helpers
             HasStashedItem,
             HasQuest,
             ActorExistsAt,
+            ActorExistsNearMe,
             MarkerExistsAt,
             ActorIsAlive,
-            ActorFound            
+            ActorFound                  
         }
 
         public static bool HasBackpackItem(Expression exp)
@@ -298,6 +299,17 @@ namespace QuestTools.Helpers
             var z = zToken.Contains("me.position.z") ? ZetaDia.Me.Position.Z : zToken.ChangeType<float>();            
 
             return Zeta.Bot.ConditionParser.ActorExistsAt(id, x, y, z, range);
+        }
+
+        public static bool ActorExistsNearMe(Expression exp)
+        {
+            if (exp.Params.Count != 2 || exp.Params.ElementAtOrDefault(0) == null || exp.Params.ElementAtOrDefault(1) == null)
+                return false;
+
+            var range = exp.Params.ElementAtOrDefault(1).ChangeType<float>();
+            var id = exp.Params.ElementAtOrDefault(0).ChangeType<int>();
+
+            return Zeta.Bot.ConditionParser.ActorExistsAt(id, ZetaDia.Me.Position.X, ZetaDia.Me.Position.Y, ZetaDia.Me.Position.Z, range);
         }
 
         public static bool MarkerExistsAt(Expression exp)

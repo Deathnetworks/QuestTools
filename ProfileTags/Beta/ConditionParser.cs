@@ -33,29 +33,37 @@ namespace QuestTools.Helpers
         /// </summary>
         internal static bool Evaluate (List<Expression> expressions)
         {
-            var result = true;
+            var result = false;
+            var first = true;
 
             foreach (var exp in expressions)
             {
-                if (exp.Join == OperatorType.And && result)
+                if (exp.Join == OperatorType.And && (result || first))
                 {
                     // prior expressions are true AND this => eval.
                     result = EvaluateExpression(exp);
                 }
-                else if (exp.Join == OperatorType.Or && result)
+                else if (exp.Join == OperatorType.Or && (result || first))
                 {
                     // prior expressions are true OR this => we're done.
                     return true;
                 }
-                else if (exp.Join == OperatorType.Or && !result)
+                else if (exp.Join == OperatorType.Or && (!result))
                 {
                     // prior expressions are false OR this => eval
                     result = EvaluateExpression(exp);
                 }
+                else if (exp.Join == OperatorType.Not && (result || first))
+                {
+                    // prior expressions are true AND NOT this
+                    result = !EvaluateExpression(exp);
+                }
                 else
                 {
                     result = false;
-                }                 
+                }
+
+                first = false;
             }
 
             return result;           
@@ -213,17 +221,6 @@ namespace QuestTools.Helpers
                         expression.Params = parameters;
 
                         break;
-                }
-
-                if (Tokenizer.IsEnumValue<Conditions.VariableConditionType>(token))
-                {
-                }
-                else if (Tokenizer.IsEnumValue<Conditions.MethodConditionType>(token) || Tokenizer.IsEnumValue<Conditions.BoolMethodConditionType>(token))
-                {
-                }
-                else
-                {
-                    return;
                 }
 
                 expression.Join = Tokenizer.GetLogicalOperatorType(behindOne);

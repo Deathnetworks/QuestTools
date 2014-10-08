@@ -144,6 +144,8 @@ namespace QuestTools.Helpers
                         return OperatorType.And;
                     case "or":
                         return OperatorType.Or;
+                    case "not":
+                        return OperatorType.Not;
                 }
             }
             return OperatorType.And;
