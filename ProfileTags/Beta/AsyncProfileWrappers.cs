@@ -466,6 +466,179 @@ namespace QuestTools.ProfileTags.Complex
         }
     }
 
+    public class AsyncStopTimerTag : StopTimerTag, IAsyncProfileBehavior
+    {
+        private bool _isDone;
+        public override bool IsDone
+        {
+            get { return _isDone || base.IsDone || ForceDone; }
+        }
+
+        public Composite AsyncGetBehavior()
+        {
+            return CreateBehavior();
+        }
+
+        public Composite AsyncGetBaseBehavior()
+        {
+            return base.CreateBehavior();
+        }
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public bool ReadyToRun { get; set; }
+        public bool ForceDone { get; set; }
+        public void Tick() { }
+
+        public override void ResetCachedDone()
+        {
+            _isDone = false;
+            base.ResetCachedDone();
+        }
+
+        protected override Composite CreateBehavior()
+        {
+            _isDone = true;
+            return AsyncCommonBehaviors.ExecuteReturnAlwaysSuccess(
+                ret => !_isDone && ReadyToRun,
+                ret => base.CreateBehavior()
+            );
+        }
+    }
+
+    public class AsyncStartTimerTag : StartTimerTag, IAsyncProfileBehavior
+    {
+        private bool _isDone;
+        public override bool IsDone
+        {
+            get { return _isDone || base.IsDone || ForceDone; }
+        }
+
+        public Composite AsyncGetBehavior()
+        {
+            return CreateBehavior();
+        }
+
+        public Composite AsyncGetBaseBehavior()
+        {
+            return base.CreateBehavior();
+        }
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public bool ReadyToRun { get; set; }
+        public bool ForceDone { get; set; }
+        public void Tick() { }
+
+        public override void ResetCachedDone()
+        {
+            _isDone = false;
+            base.ResetCachedDone();
+        }
+
+        protected override Composite CreateBehavior()
+        {
+            _isDone = true;
+            return AsyncCommonBehaviors.ExecuteReturnAlwaysSuccess(
+                ret => !_isDone && ReadyToRun,
+                ret => base.CreateBehavior()
+            );
+        }
+    }
+
+    public class AsyncLoadLastProfileTag : LoadLastProfileTag, IAsyncProfileBehavior
+    {
+        private bool _isDone;
+        public override bool IsDone
+        {
+            get { return _isDone || base.IsDone || ForceDone; }
+        }
+
+        public Composite AsyncGetBehavior()
+        {
+            return CreateBehavior();
+        }
+
+        public Composite AsyncGetBaseBehavior()
+        {
+            return base.CreateBehavior();
+        }
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public bool ReadyToRun { get; set; }
+        public bool ForceDone { get; set; }
+        public void Tick() { }
+
+        public override void ResetCachedDone()
+        {
+            _isDone = false;
+            base.ResetCachedDone();
+        }
+
+        protected override Composite CreateBehavior()
+        {
+            _isDone = true;
+            return AsyncCommonBehaviors.ExecuteReturnAlwaysSuccess(
+                ret => !_isDone && ReadyToRun,
+                ret => base.CreateBehavior()
+            );
+        }
+    }
+
+    public class AsyncStopAllTimersTag : StopAllTimersTag, IAsyncProfileBehavior
+    {
+        private bool _isDone;
+        public override bool IsDone
+        {
+            get { return _isDone || base.IsDone || ForceDone; }
+        }
+
+        public Composite AsyncGetBehavior()
+        {
+            return CreateBehavior();
+        }
+
+        public Composite AsyncGetBaseBehavior()
+        {
+            return base.CreateBehavior();
+        }
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public bool ReadyToRun { get; set; }
+        public bool ForceDone { get; set; }
+        public void Tick() { }
+
+        public override void ResetCachedDone()
+        {
+            _isDone = false;
+            base.ResetCachedDone();
+        }
+
+        protected override Composite CreateBehavior()
+        {
+            _isDone = true;
+            return AsyncCommonBehaviors.ExecuteReturnAlwaysSuccess(
+                ret => !_isDone && ReadyToRun,
+                ret => base.CreateBehavior()
+            );
+        }
+    }
+
+
     public class AsyncSafeMoveTo : SafeMoveToTag, IAsyncProfileBehavior
     {
         private bool _isDone;

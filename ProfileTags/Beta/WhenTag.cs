@@ -4,6 +4,7 @@ using QuestTools.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using QuestTools.ProfileTags.Beta;
 using QuestTools.ProfileTags.Movement;
 using Zeta.Bot;
 using Zeta.Bot.Profile;
@@ -119,6 +120,18 @@ namespace QuestTools.ProfileTags.Complex
 
             else if (type == typeof(ProfileSettingTag))
                 Body[index] = (behavior as ProfileSettingTag).ToAsync();
+
+            else if (type == typeof(StartTimerTag))
+                Body[index] = (behavior as StartTimerTag).ToAsync();
+
+            else if (type == typeof(StopTimerTag))
+                Body[index] = (behavior as StopTimerTag).ToAsync();
+
+            else if (type == typeof(StopAllTimersTag))
+                Body[index] = (behavior as StopAllTimersTag).ToAsync();
+
+            else if (type == typeof(LoadLastProfileTag))
+                Body[index] = (behavior as LoadLastProfileTag).ToAsync();
             
         }
 

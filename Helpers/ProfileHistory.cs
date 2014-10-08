@@ -34,17 +34,17 @@ namespace QuestTools.Helpers
 
                 if (LoadedProfiles.Count > 1)
                 {
-                    for (var i = LoadedProfiles.Count-1; i == 0; i--)
+                    for (int i = (LoadedProfiles.Count-1); i-- > 0; )
                     {
                         var profile = LoadedProfiles.ElementAt(i);
 
                         if (profile.Value.Path != ProfileManager.CurrentProfile.Path)
                         {
-                            Logger.Log("Processing History Index={0} Name={1} SecondsSinceLoad={2}", i, profile.Value.Name, DateTime.UtcNow.Subtract(profile.Key).TotalSeconds);
+                            Logger.Debug("Processing History Index={0} Name={1} SecondsSinceLoad={2}", i, profile.Value.Name, DateTime.UtcNow.Subtract(profile.Key).TotalSeconds);
                             _lastProfile = profile.Value;
                             break;
-                        }                            
-                    }                    
+                        } 
+                    }                  
                 }
 
                 return _lastProfile;
