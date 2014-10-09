@@ -62,6 +62,10 @@
                             <TextBlock Text="Allow Profile Restarts" Margin="0,0,10,0" HorizontalAlignment="Right"  VerticalAlignment="Center"/>
                             <CheckBox IsChecked="{Binding Path=Settings.AllowProfileRestarts}"  Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
                         </WrapPanel>
+                        <WrapPanel HorizontalAlignment="Right">
+                            <TextBlock Text="Enable Beta Features" Margin="0,0,10,0" HorizontalAlignment="Right"  VerticalAlignment="Center"/>
+                            <CheckBox IsChecked="{Binding Settings.EnableBetaFeatures}"  Margin="0" HorizontalAlignment="Left" VerticalAlignment="Center"/>
+                        </WrapPanel>
                     </StackPanel>
                 </StackPanel>
             </TabItem>
@@ -107,6 +111,7 @@
                                 <ComboBoxItem Content="8%" Tag="8" />
                                 <ComboBoxItem Content="4%" Tag="4" />
                                 <ComboBoxItem Content="2%" Tag="2" />
+                                <ComboBoxItem Content="1%" Tag="1" />
                                 <ComboBoxItem Content="1%" Tag="1" />
                             </ComboBox>
                         </GroupBox>

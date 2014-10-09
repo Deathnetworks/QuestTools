@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Windows.Forms.VisualStyles;
 using QuestTools.Helpers;
 using Zeta.Bot;
 using Zeta.Bot.Profile;
 using Zeta.Bot.Profile.Common;
 using Zeta.Bot.Profile.Composites;
+using Zeta.Common;
 using Zeta.TreeSharp;
 
 namespace QuestTools.ProfileTags
@@ -28,37 +30,16 @@ namespace QuestTools.ProfileTags
             }
         }
 
-        public List<ProfileBehavior> ChildProfileBehaviors = new List<ProfileBehavior>();
-        public HashSet<Composite> ChildBehaviors = new HashSet<Composite>();
-        public HashSet<Guid> ChildBehaviorIds = new HashSet<Guid>();
-        
         public override bool IsDone
         {
             get
             {
-                if (ProfileManager.CurrentProfileBehavior != null && ProfileManager.CurrentProfileBehavior.Behavior != null)
-                {
-                    var myprofileBehaviorType = ProfileManager.CurrentProfileBehavior.GetType();
-
-                    // Skip First Tag (which is actually the previous tag)
-                    if (ComplexDoneCheck.HasValue && myprofileBehaviorType != typeof(NewBaseComplexNodeTag))
-                    {                        
-                        // Skip multiple ticks of a tag we've seen before
-                        if (!ChildBehaviorIds.Contains(ProfileManager.CurrentProfileBehavior.Behavior.Guid))
-                        {                            
-                            ChildBehaviors.Add(ProfileManager.CurrentProfileBehavior.Behavior);
-                            ChildProfileBehaviors.Add(ProfileManager.CurrentProfileBehavior);
-                            ChildBehaviorIds.Add(ProfileManager.CurrentProfileBehavior.Behavior.Guid);
-                            OnChildStart();                             
-                        }
-                    }
-                }
-
-                // Make sure we've not already completed this tag
                 if (_AlreadyCompleted.GetValueOrDefault(false))
-                {
-                    return true;
-                }
+                    return true; 
+
+                if (Body.Contains(ProfileManager.CurrentProfileBehavior))
+                    OnChildStart();
+
                 if (!ComplexDoneCheck.HasValue)
                 {
                     ComplexDoneCheck = new bool?(GetConditionExec());

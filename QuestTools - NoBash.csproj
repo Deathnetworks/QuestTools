@@ -78,6 +78,10 @@
     <Reference Include="GreyMagic">
       <HintPath>..\..\GreyMagic.dll</HintPath>
     </Reference>
+    <Reference Include="IronPython, Version=2.7.0.40, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\IronPython.dll</HintPath>
+    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
@@ -109,6 +113,7 @@
     <Compile Include="ProfileTags\Beta\IAsyncProfileBehavior.cs" />
     <Compile Include="ProfileTags\Beta\LoggingController.cs" />
     <Compile Include="ProfileTags\Beta\NewBaseComplexNodeTag.cs" />
+    <Compile Include="ProfileTags\Beta\ProfileUtils.cs" />
     <Compile Include="ProfileTags\Beta\ShuffleTag.cs" />
     <Compile Include="ProfileTags\Beta\TimeTracker\StartTimerTag.cs" />
     <Compile Include="ProfileTags\Beta\TimeTracker\StopAllTimersTag.cs" />

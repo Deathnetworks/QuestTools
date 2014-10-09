@@ -45,12 +45,6 @@ namespace QuestTools.ProfileTags.Beta
             }
         }
 
-
-        public void Print()
-        {
-            Print(string.Empty);
-        }
-
         /// <summary>
         /// Convert a number of seconds into a friendly time format for display
         /// </summary>
@@ -101,7 +95,7 @@ namespace QuestTools.ProfileTags.Beta
         /// <summary>
         /// Write the current state of this timer instance to the console
         /// </summary>
-        public void Print(string message)
+        public void Print(string message = "")
         {
 
             //var format = message + "Timer '{0}' Group:{11} {3} ({1}) took {10} seconds to complete (Max={5}, Min={6}, Avg={7} from {9} timings)";
@@ -130,7 +124,7 @@ namespace QuestTools.ProfileTags.Beta
 
         public void PrintSimple(string message = "")
         {
-            Logger.Warn(message + " {0} ({1}) took {2})", Name, Group, FormatTime(MinTimeSeconds));
+            Logger.Warn(message + " {0} ({1}) took {2}", Name, Group, FormatTime(MinTimeSeconds));
         }
 
     }

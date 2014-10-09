@@ -1,11 +1,20 @@
-﻿using QuestTools.ProfileTags.Beta;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using QuestTools.Helpers;
+using QuestTools.ProfileTags.Beta;
 using QuestTools.ProfileTags.Movement;
 using System.Diagnostics;
 using Zeta.Bot;
 using Zeta.Bot.Profile;
 using Zeta.Bot.Profile.Common;
+using Zeta.Bot.Profile.Composites;
+using Zeta.Common;
 using Zeta.TreeSharp;
+using Zeta.XmlEngine;
 using Action = Zeta.TreeSharp.Action;
+using ConditionParser = QuestTools.Helpers.ConditionParser;
+
 
 namespace QuestTools.ProfileTags.Complex
 {
@@ -937,5 +946,167 @@ namespace QuestTools.ProfileTags.Complex
                 ret => BaseOnStartComposite()
             );
         }
+    }
+
+    [XmlElement("AsyncIf")]
+    public class AsyncIfTag : IfTag, IAsyncProfileBehavior
+    {
+        public override bool IsDone
+        {
+            get
+            {
+                if (!_initialized)
+                    Initialize();
+
+                return !_readyToRun || IsChildrenDone || !GetConditionExec() || ForceDone;                
+            }
+        }
+
+        private bool IsChildrenDone 
+        {
+            get { return Body.All(p => p.IsDone);  }
+        }
+
+        private bool _initialized;
+        private void Initialize()
+        {
+            _parsedConditions = ConditionParser.Parse(Condition);
+            _initialized = true;
+        }
+
+        private List<Expression> _parsedConditions = new List<Expression>();
+
+        public new bool GetConditionExec()
+        {
+            return ConditionParser.Evaluate(_parsedConditions);
+        }
+
+        public Composite AsyncGetBehavior()
+        {
+            return CreateBehavior();
+        }
+
+        public List<ProfileBehavior> Children
+        {
+            get { return GetNodes().ToList(); }
+        }
+
+        public Composite AsyncGetBaseBehavior()
+        {
+            return base.CreateBehavior();
+        }
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public override void ResetCachedDone()
+        {
+            foreach (var behavior in Body)
+            {
+                behavior.ResetCachedDone();
+            }            
+        }
+
+        private bool _readyToRun;
+        public bool ReadyToRun
+        {
+            get { return _readyToRun; }
+            set
+            {
+                _readyToRun = value; 
+                Body.ForEach(b =>
+                {
+                    if(b is IAsyncProfileBehavior)
+                        (b as IAsyncProfileBehavior).ReadyToRun = value;
+                });            
+            }
+        }
+
+        public bool ForceDone { get; set; }
+        public void Tick() {}
+
+    }
+
+    [XmlElement("AsyncWhile")]
+    public class AsyncWhileTag : WhileTag, IAsyncProfileBehavior
+    {
+        public override bool IsDone
+        {
+            get
+            {
+                if (!_initialized)
+                    Initialize();
+
+                return !_readyToRun || IsChildrenDone || !GetConditionExec() || ForceDone;
+            }
+        }
+
+        private bool IsChildrenDone
+        {
+            get { return Body.All(p => p.IsDone); }
+        }
+
+        private bool _initialized;
+        private void Initialize()
+        {
+            _parsedConditions = ConditionParser.Parse(Condition);
+            _initialized = true;
+        }
+
+        private List<Expression> _parsedConditions = new List<Expression>();
+
+        public new bool GetConditionExec()
+        {
+            return ConditionParser.Evaluate(_parsedConditions);
+        }
+
+        public Composite AsyncGetBehavior()
+        {
+            return CreateBehavior();
+        }
+
+        public List<ProfileBehavior> Children
+        {
+            get { return GetNodes().ToList(); }
+        }
+
+        public Composite AsyncGetBaseBehavior()
+        {
+            return base.CreateBehavior();
+        }
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public override void ResetCachedDone()
+        {
+            foreach (var behavior in Body)
+            {
+                behavior.ResetCachedDone();
+            }
+        }
+
+        private bool _readyToRun;
+        public bool ReadyToRun
+        {
+            get { return _readyToRun; }
+            set
+            {
+                _readyToRun = value;
+                Body.ForEach(b =>
+                {
+                    if (b is IAsyncProfileBehavior)
+                        (b as IAsyncProfileBehavior).ReadyToRun = value;
+                });
+            }
+        }
+
+        public bool ForceDone { get; set; }
+        public void Tick() { }
+
     }
 }

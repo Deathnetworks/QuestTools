@@ -30,6 +30,7 @@ namespace QuestTools
         private bool _debugEnabled;
         private bool _allowProfileReloading;
         private bool _allowProfileRestarts;
+        private bool _enableBetaFeatures;
         private bool _skipCutScenes;
         private bool _forceRouteMode;
         private RouteMode _routeMode;
@@ -180,6 +181,23 @@ namespace QuestTools
             }
         }
 
+        [XmlElement("EnableBetaFeatures")]
+        [DefaultValue(false)]
+        [Setting]
+        public bool EnableBetaFeatures
+        {
+            get
+            {
+                return _enableBetaFeatures;
+            }
+            set
+            {
+                if (_enableBetaFeatures == value)
+                    return;
+                _enableBetaFeatures = value;
+                OnPropertyChanged("EnableBetaFeatures");
+            }
+        }
 
         [XmlElement("SkipCutScenes")]
         [DefaultValue(true)]
