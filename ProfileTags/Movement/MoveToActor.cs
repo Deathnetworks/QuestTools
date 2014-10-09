@@ -224,23 +224,26 @@ namespace QuestTools.ProfileTags.Movement
 
             if (Actor == null && Position == Vector3.Zero && !WorldHasChanged())
             {
-                if (QuestToolsSettings.Instance.EnableBetaFeatures)
+                if (!QuestToolsSettings.Instance.EnableBetaFeatures)
                 {
-                    var lastSeenPosition = ActorHistory.GetActorPosition(ActorId);
-                    if (lastSeenPosition != Vector3.Zero)
-                    {
-                        Warn("Can't find actor! using last known position {0} Distance={1}",
-                            lastSeenPosition.ToString(),
-                            lastSeenPosition.Distance(ZetaDia.Me.Position));
+                    EndDebug("ERROR: Could not find an actor or position to move to, finished! {0}", Status());
+                    return true;    
+                }
 
-                        Position = lastSeenPosition;
-                    }                    
+                var lastSeenPosition = ActorHistory.GetActorPosition(ActorId);
+                if (lastSeenPosition != Vector3.Zero)
+                {
+                    Warn("Can't find actor! using last known position {0} Distance={1}",
+                        lastSeenPosition.ToString(),
+                        lastSeenPosition.Distance(ZetaDia.Me.Position));
+
+                    Position = lastSeenPosition;
                 }
                 else
                 {
                     EndDebug("ERROR: Could not find an actor or position to move to, finished! {0}", Status());
-                    return true;                    
-                }
+                    return true;
+                }                          
             }
             if (IsPortal && WorldHasChanged())
             {
