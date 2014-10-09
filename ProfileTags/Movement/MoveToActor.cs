@@ -224,14 +224,17 @@ namespace QuestTools.ProfileTags.Movement
 
             if (Actor == null && Position == Vector3.Zero && !WorldHasChanged())
             {
-                var lastSeenPosition = ActorHistory.GetActorPosition(ActorId);
-                if (lastSeenPosition != Vector3.Zero)
+                if (QuestToolsSettings.Instance.EnableBetaFeatures)
                 {
-                    Warn("Can't find actor! using last known position {0} Distance={1}", 
-                        lastSeenPosition.ToString(), 
-                        lastSeenPosition.Distance(ZetaDia.Me.Position));
+                    var lastSeenPosition = ActorHistory.GetActorPosition(ActorId);
+                    if (lastSeenPosition != Vector3.Zero)
+                    {
+                        Warn("Can't find actor! using last known position {0} Distance={1}",
+                            lastSeenPosition.ToString(),
+                            lastSeenPosition.Distance(ZetaDia.Me.Position));
 
-                    Position = lastSeenPosition;
+                        Position = lastSeenPosition;
+                    }                    
                 }
                 else
                 {
