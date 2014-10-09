@@ -100,7 +100,7 @@ namespace QuestTools.ProfileTags
                 var greaterKey = ZetaDia.Actors.GetActorsOfType<ACDItem>().Any(
                     i => i.IsValid && i.ItemType == ItemType.KeystoneFragment 
                         && i.TieredLootRunKeyLevel > 0
-                        && i.TieredLootRunKeyLevel <= QuestToolsSettings.Instance.MaxGreaterRiftKey
+                        && (QuestToolsSettings.Instance.UseHighestKeystone || i.TieredLootRunKeyLevel <= QuestToolsSettings.Instance.MaxGreaterRiftKey)
                     );
                 return greaterKey;
             }

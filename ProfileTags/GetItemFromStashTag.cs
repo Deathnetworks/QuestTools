@@ -84,7 +84,8 @@ namespace QuestTools.ProfileTags
                 return i => (
                     i.GameBalanceId == GameBalanceId ||
                     i.ActorSNO == ActorId ||
-                    (GreaterRiftKey && i.GetAttribute<int>(ActorAttributeType.TieredLootRunKeyLevel) > -1)
+                    (GreaterRiftKey && (i.GetAttribute<int>(ActorAttributeType.TieredLootRunKeyLevel) > -1 &&
+                    (QuestToolsSettings.Instance.UseHighestKeystone || i.GetAttribute<int>(ActorAttributeType.TieredLootRunKeyLevel) <= QuestToolsSettings.Instance.MaxGreaterRiftKey)))
                     );
             }
         }
