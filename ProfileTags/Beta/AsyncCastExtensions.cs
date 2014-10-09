@@ -9,6 +9,7 @@ using QuestTools.ProfileTags.Complex;
 using QuestTools.ProfileTags.Movement;
 using Zeta.Bot.Profile;
 using Zeta.Bot.Profile.Common;
+using Zeta.Bot.Profile.Composites;
 using Zeta.TreeSharp;
 
 namespace QuestTools.Helpers
@@ -344,6 +345,16 @@ namespace QuestTools.Helpers
         {
             var asyncVersion = new AsyncLoadLastProfileTag();
             asyncVersion.FallbackFile = tag.FallbackFile;
+            tag.CopyTo(asyncVersion);
+            return asyncVersion;
+        }
+
+        internal static AsyncIfTag ToAsync(this IfTag tag)
+        {
+            var asyncVersion = new AsyncIfTag();
+            asyncVersion.Body = tag.Body;
+            asyncVersion.Condition = tag.Condition;
+            asyncVersion.Conditional = tag.Conditional;
             tag.CopyTo(asyncVersion);
             return asyncVersion;
         }

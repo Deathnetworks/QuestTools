@@ -3,9 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using QuestTools.ProfileTags;
+using QuestTools.ProfileTags.Beta;
 using QuestTools.ProfileTags.Complex;
 using Zeta.Bot;
 using Zeta.Bot.Profile;
+using Zeta.Bot.Profile.Composites;
 using Zeta.Common;
 using Zeta.Game;
 
@@ -104,6 +106,9 @@ namespace QuestTools.Helpers
         private static void ProfileManager_OnProfileLoaded(object sender, EventArgs e)
         {
             ProfileHistory.Add(ProfileManager.CurrentProfile);
+
+            if(QuestToolsSettings.Instance.EnableBetaFeatures)
+                ProfileUtils.ReplaceDefaultTags();
         }
     }
 
