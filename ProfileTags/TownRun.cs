@@ -34,6 +34,7 @@ namespace QuestTools.ProfileTags
         /// The minimum durability we must have in order to NOT do a townrun
         /// </summary>
         [XmlAttribute("minDurabilityPercent")]
+        [XmlAttribute("minDurability")]
         public int MinDurability { get; set; }
 
         /// <summary>

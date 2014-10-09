@@ -105,6 +105,7 @@
                                 <ComboBoxItem Content="30%" Tag="30" />
                                 <ComboBoxItem Content="20%" Tag="20" />
                                 <ComboBoxItem Content="10%" Tag="10" />
+                                <ComboBoxItem Content="1%" Tag="1" />
                             </ComboBox>
                         </GroupBox>
                         <GroupBox Header="Trial Rifts: Disable Combat At Level...">
