@@ -10,11 +10,14 @@ namespace QuestTools.Helpers
     public class Expression
     {
         public OperatorType Join;
+        public bool Negated;
         public string MethodName;
         public OperatorType Operator;
         public List<string> Params;
         public Conditions.ConditionType Type;
         public string Value;
+
+        public List<Expression> Children = new List<Expression>();
 
         /// <summary>
         /// Reconstructed expression as a string without join (AND/OR)
@@ -30,7 +33,7 @@ namespace QuestTools.Helpers
 
                 s.Append(MethodName);
 
-                if (Params.Any())
+                if (Params != null && Params.Any())
                 {
                     s.Append("(");
 
@@ -45,7 +48,13 @@ namespace QuestTools.Helpers
                     s.Append(")");
                 }
 
-                _original = s.ToString().ToLowerInvariant();
+                if (!string.IsNullOrEmpty(Value) && Operator != OperatorType.Unknown && 
+                    (Type == Conditions.ConditionType.Method || Type == Conditions.ConditionType.Variable))
+                {
+                    s.Append(" " + Tokenizer.GetOperatorSymbol(Operator) + " " + Value);
+                }                    
+
+                _original = s.ToString();
 
                 return _original;        
             }

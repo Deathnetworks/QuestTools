@@ -11,7 +11,7 @@ namespace QuestTools
     public class Plugin : IPlugin
     {
         private const string NAME = "QuestTools";
-        private const string AUTHOR = "rrrix";
+        private const string AUTHOR = "xzjv, rrrix";
         private const string DESCRIPTION = "Advanced Demonbuddy Profile Support";
 
         public Version Version { get { return QuestTools.PluginVersion; } }

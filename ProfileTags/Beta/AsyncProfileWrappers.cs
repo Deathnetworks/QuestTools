@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using QuestTools.Helpers;
 using QuestTools.ProfileTags.Beta;
@@ -19,69 +20,63 @@ using ConditionParser = QuestTools.Helpers.ConditionParser;
 namespace QuestTools.ProfileTags.Complex
 {
 
-    //public class AsyncEmptyProfileBehavior : ProfileBehavior, IAsyncProfileBehavior
-    //{
-    //    private bool _isDone;
-    //    public override bool IsDone
-    //    {
-    //        get { return _isDone || ForceDone; }
-    //    }
+    public class AsyncCompositeTag : ProfileBehavior, IAsyncProfileBehavior
+    {
+        private bool _isDone;
+        public override bool IsDone
+        {
+            get
+            {
+                var delegateIsDone = IsDoneDelegate != null && IsDoneDelegate.Invoke(null);
+                return _isDone || ForceDone || delegateIsDone;
+            }
+        }
 
-    //    public Composite AsyncGetBehavior()
-    //    {
-    //        return CreateBehavior();
-    //    }
+        public AsyncCommonBehaviors.IsDoneCondition IsDoneDelegate;
 
-    //    public Composite AsyncGetBaseBehavior()
-    //    {
-    //        return base.CreateBehavior();
-    //    }
+        public Composite AsyncGetBehavior()
+        {
+            return CreateBehavior();
+        }
 
-    //    public void AsyncUpdateBehavior()
-    //    {
-    //        UpdateBehavior();
-    //    }
+        public Composite AsyncGetBaseBehavior()
+        {
+            return base.CreateBehavior();
+        }
 
-    //    public AsyncEmptyProfileBehavior()
-    //    {
-    //        BehaviorDelegate = DefaultBehavior;
-    //    }
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
 
-    //    public AsyncEmptyProfileBehavior(Composite behavior)
-    //    {
-    //        BehaviorDelegate = behavior;
-    //    }
+        //public void AsyncEmptyProfileBehavior()
+        //{
+        //    BehaviorDelegate = DefaultBehavior;
+        //}
 
-    //    private Composite DefaultBehavior 
-    //    { 
-    //        get 
-    //        {
-    //            return new Action(ret =>
-    //            {
-    //                if (!ReadyToRun) _isDone = true;
-    //                return RunStatus.Success;
-    //            });
-    //        } 
-    //    }
+        //public AsyncEmptyProfileBehavior(Composite behavior)
+        //{
+        //    BehaviorDelegate = behavior;
+        //}
 
-    //    public bool ReadyToRun { get; set; }
-    //    public bool ForceDone { get; set; }
+        public bool ReadyToRun { get; set; }
+        public bool ForceDone { get; set; }
 
-    //    public Composite BehaviorDelegate { get; set; }
+        public Composite BehaviorDelegate { get; set; }
 
-    //    public void Tick() { }
+        public void Tick() { }
 
-    //    public override void ResetCachedDone()
-    //    {
-    //        _isDone = false;
-    //        base.ResetCachedDone();
-    //    }
+        public override void ResetCachedDone()
+        {
+            _isDone = false;
+            base.ResetCachedDone();
+        }
 
-    //    protected override Composite CreateBehavior()
-    //    {
-    //        return BehaviorDelegate;
-    //    }
-    //}
+        protected override Composite CreateBehavior()
+        {
+            return BehaviorDelegate;
+        }
+    }
 
     public class AsyncLeaveGameTag : LeaveGameTag, IAsyncProfileBehavior
     {
@@ -978,7 +973,24 @@ namespace QuestTools.ProfileTags.Complex
 
         public new bool GetConditionExec()
         {
-            return ConditionParser.Evaluate(_parsedConditions);
+            var result = false;
+            if (!QuestToolsSettings.Instance.EnableBetaFeatures)
+            {
+                try
+                {                    
+                    base.GetConditionExec();
+                }
+                catch (Exception ex)
+                {
+                    // Avoid DB freeze when it doesn't recognize something in a condition
+                    Logger.LogError("Invalid condition: {1}", Condition, ex.Message);
+                }                
+            }
+            else
+            {
+                result = ConditionParser.Evaluate(_parsedConditions);
+            }
+            return result; 
         }
 
         public Composite AsyncGetBehavior()
@@ -989,7 +1001,8 @@ namespace QuestTools.ProfileTags.Complex
         public List<ProfileBehavior> Children
         {
             get { return GetNodes().ToList(); }
-        }
+            set { Body = value; }
+        }        
 
         public Composite AsyncGetBaseBehavior()
         {
@@ -1030,7 +1043,7 @@ namespace QuestTools.ProfileTags.Complex
     }
 
     [XmlElement("AsyncWhile")]
-    public class AsyncWhileTag : WhileTag, IAsyncProfileBehavior
+    public class AsyncWhile : WhileTag, IAsyncProfileBehavior
     {
         public override bool IsDone
         {
@@ -1059,7 +1072,24 @@ namespace QuestTools.ProfileTags.Complex
 
         public new bool GetConditionExec()
         {
-            return ConditionParser.Evaluate(_parsedConditions);
+            var result = false;
+            if (!QuestToolsSettings.Instance.EnableBetaFeatures)
+            {
+                try
+                {
+                    base.GetConditionExec();
+                }
+                catch (Exception ex)
+                {
+                    // Avoid DB freeze when it doesn't recognize something in a condition
+                    Logger.LogError("Invalid condition: {1}", Condition, ex.Message);
+                }
+            }
+            else
+            {
+                result = ConditionParser.Evaluate(_parsedConditions);
+            }
+            return result;
         }
 
         public Composite AsyncGetBehavior()
@@ -1070,6 +1100,7 @@ namespace QuestTools.ProfileTags.Complex
         public List<ProfileBehavior> Children
         {
             get { return GetNodes().ToList(); }
+            set { Body = value; }
         }
 
         public Composite AsyncGetBaseBehavior()

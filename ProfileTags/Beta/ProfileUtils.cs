@@ -142,7 +142,7 @@ namespace QuestTools.ProfileTags.Beta
                 var newType = nodes[i].GetType();
 
                 if (QuestTools.EnableDebugLogging)
-                    Logger.Debug("".PadLeft(depth * 5) + "{0}> {1}", depth, newType != type ?
+                    Logger.Verbose("".PadLeft(depth * 5) + "{0}> {1}", depth, newType != type ?
                     string.Format("replaced {0} with {1}", type, newType) :
                     string.Format("ignored {0}", newType)
                     );

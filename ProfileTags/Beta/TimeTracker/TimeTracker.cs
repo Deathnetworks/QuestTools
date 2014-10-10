@@ -85,6 +85,8 @@ namespace QuestTools.ProfileTags.Beta
             });
 
             Save();
+            
+            Timings.Clear();
         }
 
         /// <summary>
