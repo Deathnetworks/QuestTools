@@ -4,10 +4,13 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using QuestTools.ProfileTags;
 using QuestTools.ProfileTags.Complex;
 using Zeta.Bot.Profile;
 using Zeta.Game;
 using Zeta.Game.Internals;
+using Zeta.TreeSharp;
+using Action = Zeta.TreeSharp.Action;
 
 namespace QuestTools.Helpers
 {
@@ -74,22 +77,26 @@ namespace QuestTools.Helpers
                 SetCombatAllowed(false);
 
                 var endTrialSequence = new List<ProfileBehavior>
+                {
+                    new AsyncSafeMoveTo
                     {
-                        new AsyncSafeMoveTo
+                        PathPrecision = 5,
+                        PathPointLimit = 250,
+                        X = 393,
+                        Y = 237,
+                        Z = -11
+                    },
+                    new AsyncTownPortalTag(),
+                    new AsyncCompositeTag()
+                    {
+                        IsDoneDelegate = ret => Zeta.Bot.ConditionParser.IsActiveQuestAndStep(405695,9),
+                        BehaviorDelegate = new Action(ret =>
                         {
-                            PathPrecision = 5,
-                            PathPointLimit = 250,
-                            X = 393,
-                            Y = 237,
-                            Z = -11
-                        },
-                        new AsyncTownPortalTag(),
-                        new AsyncWaitTimerTag()
-                        {
-                            WaitTime = 15000
-                        }
-                    };
-
+                            Logger.Log("Waiting for Trial to Finish...");
+                            return RunStatus.Success;
+                        })
+                    }
+                };
                 BotBehaviorQueue.Queue(endTrialSequence);
 
                 _isAborting = true;
