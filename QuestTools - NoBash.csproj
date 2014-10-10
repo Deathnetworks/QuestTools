@@ -78,10 +78,6 @@
     <Reference Include="GreyMagic">
       <HintPath>..\..\GreyMagic.dll</HintPath>
     </Reference>
-    <Reference Include="IronPython, Version=2.7.0.40, Culture=neutral, PublicKeyToken=7f709c5b713576e1, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\IronPython.dll</HintPath>
-    </Reference>
     <Reference Include="PresentationCore" />
     <Reference Include="PresentationFramework" />
     <Reference Include="System" />
@@ -101,6 +97,7 @@
     <Compile Include="Helpers\ActorHistory.cs" />
     <Compile Include="Helpers\FileManager.cs" />
     <Compile Include="Helpers\ProfileHistory.cs" />
+    <Compile Include="Helpers\RiftTrial.cs" />
     <Compile Include="ProfileTags\Beta\AsyncCastExtensions.cs" />
     <Compile Include="ProfileTags\Beta\AsyncCommonBehaviors.cs" />
     <Compile Include="ProfileTags\Beta\AsyncProfileWrappers.cs" />

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
 using QuestTools.Helpers;
 using QuestTools.ProfileTags.Beta;
@@ -978,7 +979,24 @@ namespace QuestTools.ProfileTags.Complex
 
         public new bool GetConditionExec()
         {
-            return ConditionParser.Evaluate(_parsedConditions);
+            var result = false;
+            if (!QuestToolsSettings.Instance.EnableBetaFeatures)
+            {
+                try
+                {                    
+                    base.GetConditionExec();
+                }
+                catch (Exception ex)
+                {
+                    // Avoid DB freeze when it doesn't recognize something in a condition
+                    Logger.LogError("Invalid condition: {1}", Condition, ex.Message);
+                }                
+            }
+            else
+            {
+                result = ConditionParser.Evaluate(_parsedConditions);
+            }
+            return result; 
         }
 
         public Composite AsyncGetBehavior()
@@ -989,7 +1007,8 @@ namespace QuestTools.ProfileTags.Complex
         public List<ProfileBehavior> Children
         {
             get { return GetNodes().ToList(); }
-        }
+            set { Body = value; }
+        }        
 
         public Composite AsyncGetBaseBehavior()
         {

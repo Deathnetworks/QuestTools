@@ -3,7 +3,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using QuestTools.Helpers;
 using QuestTools.ProfileTags;
 using Zeta.Game;
 using Zeta.Game.Internals.Actors;
@@ -16,8 +15,10 @@ namespace QuestTools.Helpers
         {
             Unknown = 0,
             Variable,
+            BoolVariable,
             Method,
             BoolMethod,
+            Group,
         }
 
         #region Variable Conditions
@@ -36,11 +37,12 @@ namespace QuestTools.Helpers
             CurrentWorldId,
             CurrentSceneId,
             CurrentSceneName,
+            IsInTown,
         }
 
         public static bool CurrentWave(Expression exp)
         {
-            return ConditionParser.EvalInt(exp.Operator, QuestTools.RiftTrial.CurrentWave, exp.Value.ChangeType<int>());
+            return ConditionParser.EvalInt(exp.Operator, RiftTrial.CurrentWave, exp.Value.ChangeType<int>());
         }
 
         public static bool CurrentLevelAreaId(Expression exp)
@@ -111,6 +113,31 @@ namespace QuestTools.Helpers
             Logger.Log(string.Format("Key Counts: Act 1 => {0},  Act 2 => {1},  Act 3 => {2}, Act 4 => {3}", keyCounts[0], keyCounts[1], keyCounts[2], keyCounts[3]));
 
             return (value > 0) && !isAllSameCount && ConditionParser.EvalInt(exp.Operator, lowestKey, value);
+        }
+
+        #endregion
+
+        #region Bool Variable Conditions
+
+        /// <summary>
+        /// Conditions that take no paremeters and result in a variable 
+        /// that must be compared to another value
+        /// </summary>
+        public enum BoolVariableConditionType
+        {
+            Unknown = 0,
+            IsInTown,
+            ActiveBounty
+        }
+
+        public static bool IsInTown(Expression exp)
+        {
+            return ZetaDia.IsInTown;
+        }
+
+        public static bool ActiveBounty(Expression exp)
+        {
+            return ZetaDia.ActInfo.ActiveBounty != null;
         }
 
         #endregion
@@ -235,7 +262,13 @@ namespace QuestTools.Helpers
             ActorExistsNearMe,
             MarkerExistsAt,
             ActorIsAlive,
-            ActorFound                  
+            ActorFound,       
+            IsActiveQuestAndStep,
+            IsActiveQuest,
+            IsActiveQuestStep,
+            IsSceneLoaded,
+            SceneIntersects,
+            HasBuff,
         }
 
         public static bool HasBackpackItem(Expression exp)
@@ -284,7 +317,7 @@ namespace QuestTools.Helpers
 
         public static bool ActorExistsAt(Expression exp)
         {
-            if (exp.Params.Count != 5)
+            if (IsValidParams(exp.Params, 5))
                 return false;
 
             var range = exp.Params.ElementAtOrDefault(4).ChangeType<float>();
@@ -314,7 +347,7 @@ namespace QuestTools.Helpers
 
         public static bool MarkerExistsAt(Expression exp)
         {
-            if (exp.Params.Count != 5)
+            if (IsValidParams(exp.Params, 5))
                 return false;
 
             var range = exp.Params.ElementAtOrDefault(4).ChangeType<float>();
@@ -331,6 +364,85 @@ namespace QuestTools.Helpers
             return Zeta.Bot.ConditionParser.MarkerExistsAt(id, x, y, z, range);
         }
 
+        public static bool IsActiveQuestAndStep(Expression exp)
+        {
+            if (IsValidParams(exp.Params, 2))
+                return false;
+
+            var questId = exp.Params.ElementAtOrDefault(1).ChangeType<int>();
+            var stepId = exp.Params.ElementAtOrDefault(0).ChangeType<int>();
+
+            return Zeta.Bot.ConditionParser.IsActiveQuestAndStep(questId,stepId);
+        }
+
+        public static bool IsActiveQuest(Expression exp)
+        {
+            if (IsValidParams(exp.Params, 1))
+                return false;
+
+            var questId = exp.Params.ElementAtOrDefault(1).ChangeType<int>();
+
+            return Zeta.Bot.ConditionParser.IsActiveQuest(questId);
+        }
+
+        public static bool IsActiveQuestStep(Expression exp)
+        {
+            if (IsValidParams(exp.Params, 1))
+                return false;
+
+            var stepId = exp.Params.ElementAtOrDefault(1).ChangeType<int>();
+
+            return Zeta.Bot.ConditionParser.IsActiveQuestStep(stepId);
+        }
+
+        public static bool IsSceneLoaded(Expression exp)
+        {
+            if (IsValidParams(exp.Params, 1))
+                return false;
+
+            var sceneId = exp.Params.ElementAtOrDefault(1).ChangeType<int>();
+
+            return Zeta.Bot.ConditionParser.IsSceneLoaded(sceneId);
+        }
+
+        public static bool SceneIntersects(Expression exp)
+        {
+            if (IsValidParams(exp.Params,3))
+                return false;
+
+            var sceneId = exp.Params.ElementAtOrDefault(0).ChangeType<int>();
+            var xToken = exp.Params.ElementAtOrDefault(1).ToLowerInvariant();
+            var yToken = exp.Params.ElementAtOrDefault(2).ToLowerInvariant();
+            var x = (xToken == "me.position.x") ? ZetaDia.Me.Position.X : xToken.ChangeType<float>();
+            var y = (yToken == "me.position.y") ? ZetaDia.Me.Position.Y : yToken.ChangeType<float>();
+
+            return Zeta.Bot.ConditionParser.SceneIntersects(sceneId, x, y);
+        }
+
+        public static bool HasBuff(Expression exp)
+        {
+            if (IsValidParams(exp.Params, 1))
+                return false;
+
+            var buffId = exp.Params.ElementAtOrDefault(0).ChangeType<int>();
+
+            return Zeta.Bot.ConditionParser.HasBuff(buffId);
+        }
+
         #endregion
+
+        public static bool IsValidParams(List<string> strings, int count)
+        {
+            if (strings.Count != count)
+                return false;
+
+            for (int i = 0; i < count; i++)
+            {
+                if (strings[i] == null)
+                    return false;
+            }
+            return true;
+        }
+
     }
 }

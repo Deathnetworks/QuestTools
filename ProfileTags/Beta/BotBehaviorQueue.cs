@@ -258,15 +258,19 @@ namespace QuestTools.Helpers
                 if (_activeProfileBehavior is IAsyncProfileBehavior)
                 {
                     (_activeProfileBehavior as IAsyncProfileBehavior).ReadyToRun = true;
-                    
+
                     // Properly populate the .Behavior field of a ProfileBehavior
                     if (_activeProfileBehavior.Behavior == null)
                         (_activeProfileBehavior as IAsyncProfileBehavior).AsyncUpdateBehavior();
-                    
+
 
                     // Reset everything back through to the base
-                    _activeProfileBehavior.ResetCachedDone();                                       
-                   
+                    _activeProfileBehavior.ResetCachedDone();
+
+                }
+                else
+                {
+                    Logger.Warn("Tag {0} is not yet supported within a WHEN tag", _activeProfileBehavior.GetType());
                 }
 
                 _activeBehavior = _activeProfileBehavior.Behavior;

@@ -91,6 +91,11 @@ namespace QuestTools.Helpers
             return operators.Contains(value);
         }
 
+        public static bool IsOperator(string value, OperatorType type)
+        {
+            return GetOperatorType(value) == type;
+        }
+
         public static OperatorType GetOperatorType(string value)
         {
             if (!string.IsNullOrEmpty(value))
@@ -130,6 +135,36 @@ namespace QuestTools.Helpers
             return default(OperatorType);
         }
 
+        public static string GetOperatorSymbol(OperatorType value)
+        {
+            switch (value)
+            {
+                case OperatorType.LessThan:
+                    return "<";
+                case OperatorType.LessThanEqual:
+                    return "<=";
+                case OperatorType.GreaterThan:
+                    return ">";
+                case OperatorType.GreaterThanEqual:
+                    return ">=";
+                case OperatorType.NotEqual:
+                    return "!=";
+                case OperatorType.Equal:
+                    return "==";
+                case OperatorType.And:
+                    return "and";
+                case OperatorType.Or:
+                    return "or";
+                case OperatorType.Not:
+                    return "not";
+                case OperatorType.OpenParen:
+                    return "(";
+                case OperatorType.CloseParen:
+                    return ")";
+            }        
+            return string.Empty;
+        }
+
         public static OperatorType GetLogicalOperatorType(string value)
         {
             if (!string.IsNullOrEmpty(value))
@@ -154,6 +189,32 @@ namespace QuestTools.Helpers
         public static bool IsEnumValue<T>(string value)
         {
             return Enum.GetNames(typeof(T)).Any(token => token == value);
+        }
+
+        public static bool IsEnumValueFromPartial<T>(string value)
+        {
+            foreach (var name in Enum.GetNames(typeof(T)))
+            {
+                if (value.ToLowerInvariant().Contains(name.ToLowerInvariant()))
+                    return true;
+            }
+            return false;
+        }
+
+        public static T GetEnumValueFromPartial<T>(string value) where T : struct, IConvertible
+        {
+            if (!typeof(T).IsEnum)
+                throw new ArgumentException("T must be an enumerated type");
+            
+            var i = 0;
+            foreach (var name in Enum.GetNames(typeof(T)))
+            {
+                if (value.ToLowerInvariant().Contains(name.ToLowerInvariant()))
+                    return (T)(object)i;
+
+                i++;
+            }
+            return default(T);
         }
 
         public static T GetEnumValue<T>(string value) where T : struct, IConvertible

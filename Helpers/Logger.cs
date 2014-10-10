@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
+using log4net.Core;
+using Zeta.Bot.Settings;
+using Zeta.Common;
 
 namespace QuestTools
 {
@@ -22,8 +25,8 @@ namespace QuestTools
 
             string msg = "[QuestTools][" + type.Name + "] " + string.Format(message, args);
 
-            if (_lastLogMessage == msg)
-                return;
+            //if (_lastLogMessage == msg)
+            //    return;
 
             _lastLogMessage = msg;
             Logging.Info(msg);
@@ -40,8 +43,8 @@ namespace QuestTools
 
             string msg = string.Format("[{0}] " + message, type.Name);
 
-            if (_lastLogMessage == msg)
-                return;
+            //if (_lastLogMessage == msg)
+            //    return;
 
             _lastLogMessage = msg;
             Logging.Info(msg);
@@ -60,8 +63,8 @@ namespace QuestTools
 
             string msg = "[QuestTools][" + type.Name + "] " + string.Format(message, args);
 
-            if (_lastLogMessage == msg)
-                return;
+            //if (_lastLogMessage == msg)
+            //    return;
 
             _lastLogMessage = msg;
             Logging.Warn(msg);
@@ -78,8 +81,8 @@ namespace QuestTools
 
             string msg = string.Format("[{0}] " + message, type.Name);
 
-            if (_lastLogMessage == msg)
-                return;
+            //if (_lastLogMessage == msg)
+            //    return;
 
             _lastLogMessage = msg;
             Logging.Warn(msg);
@@ -108,8 +111,8 @@ namespace QuestTools
 
             string msg = string.Format("[{0}] " + string.Format(message, args), type.Name);
 
-            if (_lastLogMessage == msg)
-                return;
+            //if (_lastLogMessage == msg)
+            //    return;
 
             _lastLogMessage = msg;
             Logging.Error(msg);
@@ -122,9 +125,10 @@ namespace QuestTools
         /// <param name="args"></param>
         public static void Verbose(string message, params object[] args)
         {
-            if (!QuestToolsSettings.Instance.DebugEnabled)
+            if (!QuestToolsSettings.Instance.DebugEnabled || GlobalSettings.Instance.ActualLogLevel != Level.Verbose)
                 return;
-            StackFrame frame = new StackFrame(1);
+
+            var frame = new StackFrame(1);
             var method = frame.GetMethod();
             var type = method.DeclaringType;
 
@@ -134,18 +138,19 @@ namespace QuestTools
                 return;
 
             _lastLogMessage = msg;
-            Logging.Info(msg);
+            Logging.Debug(msg);
         }
+
         /// <summary>
         /// Log Verbose
         /// </summary>
         /// <param name="message"></param>
         public static void Verbose(string message)
         {
-
-            if (!QuestToolsSettings.Instance.DebugEnabled)
+            if (!QuestToolsSettings.Instance.DebugEnabled || GlobalSettings.Instance.ActualLogLevel != Level.Verbose)
                 return;
-            StackFrame frame = new StackFrame(1);
+
+            var frame = new StackFrame(1);
             var method = frame.GetMethod();
             var type = method.DeclaringType;
 
@@ -155,7 +160,7 @@ namespace QuestTools
                 return;
 
             _lastLogMessage = msg;
-            Logging.Info(msg);
+            Logging.Debug(msg);
         }
 
         /// <summary>
@@ -173,8 +178,8 @@ namespace QuestTools
 
             string msg = string.Format("[{0}] " + string.Format(message, args), type.Name);
 
-            if (_lastLogMessage == msg)
-                return;
+            //if (_lastLogMessage == msg)
+            //    return;
 
             _lastLogMessage = msg;
             Logging.Debug(msg);
@@ -193,8 +198,8 @@ namespace QuestTools
 
             string msg = string.Format("[{0}] " + message, type.Name);
 
-            if (_lastLogMessage == msg)
-                return;
+            //if (_lastLogMessage == msg)
+            //    return;
 
             _lastLogMessage = msg;
             Logging.Debug(msg);

@@ -97,6 +97,7 @@
     <Compile Include="Helpers\ActorHistory.cs" />
     <Compile Include="Helpers\FileManager.cs" />
     <Compile Include="Helpers\ProfileHistory.cs" />
+    <Compile Include="Helpers\RiftTrial.cs" />
     <Compile Include="ProfileTags\Beta\AsyncCastExtensions.cs" />
     <Compile Include="ProfileTags\Beta\AsyncCommonBehaviors.cs" />
     <Compile Include="ProfileTags\Beta\AsyncProfileWrappers.cs" />
