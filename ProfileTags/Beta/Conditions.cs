@@ -317,7 +317,7 @@ namespace QuestTools.Helpers
 
         public static bool ActorExistsAt(Expression exp)
         {
-            if (IsValidParams(exp.Params, 5))
+            if (!IsValidParams(exp.Params, 5))
                 return false;
 
             var range = exp.Params.ElementAtOrDefault(4).ChangeType<float>();
@@ -347,7 +347,7 @@ namespace QuestTools.Helpers
 
         public static bool MarkerExistsAt(Expression exp)
         {
-            if (IsValidParams(exp.Params, 5))
+            if (!IsValidParams(exp.Params, 5))
                 return false;
 
             var range = exp.Params.ElementAtOrDefault(4).ChangeType<float>();
@@ -366,7 +366,7 @@ namespace QuestTools.Helpers
 
         public static bool IsActiveQuestAndStep(Expression exp)
         {
-            if (IsValidParams(exp.Params, 2))
+            if (!IsValidParams(exp.Params, 2))
                 return false;
 
             var questId = exp.Params.ElementAtOrDefault(1).ChangeType<int>();
@@ -377,7 +377,7 @@ namespace QuestTools.Helpers
 
         public static bool IsActiveQuest(Expression exp)
         {
-            if (IsValidParams(exp.Params, 1))
+            if (!IsValidParams(exp.Params, 1))
                 return false;
 
             var questId = exp.Params.ElementAtOrDefault(1).ChangeType<int>();
@@ -387,7 +387,7 @@ namespace QuestTools.Helpers
 
         public static bool IsActiveQuestStep(Expression exp)
         {
-            if (IsValidParams(exp.Params, 1))
+            if (!IsValidParams(exp.Params, 1))
                 return false;
 
             var stepId = exp.Params.ElementAtOrDefault(1).ChangeType<int>();
@@ -397,7 +397,7 @@ namespace QuestTools.Helpers
 
         public static bool IsSceneLoaded(Expression exp)
         {
-            if (IsValidParams(exp.Params, 1))
+            if (!IsValidParams(exp.Params, 1))
                 return false;
 
             var sceneId = exp.Params.ElementAtOrDefault(1).ChangeType<int>();
@@ -407,7 +407,7 @@ namespace QuestTools.Helpers
 
         public static bool SceneIntersects(Expression exp)
         {
-            if (IsValidParams(exp.Params,3))
+            if (!IsValidParams(exp.Params,3))
                 return false;
 
             var sceneId = exp.Params.ElementAtOrDefault(0).ChangeType<int>();
@@ -421,7 +421,7 @@ namespace QuestTools.Helpers
 
         public static bool HasBuff(Expression exp)
         {
-            if (IsValidParams(exp.Params, 1))
+            if (!IsValidParams(exp.Params, 1))
                 return false;
 
             var buffId = exp.Params.ElementAtOrDefault(0).ChangeType<int>();
