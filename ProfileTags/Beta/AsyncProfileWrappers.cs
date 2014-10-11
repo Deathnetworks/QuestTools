@@ -1014,14 +1014,6 @@ namespace QuestTools.ProfileTags.Complex
             UpdateBehavior();
         }
 
-        public override void ResetCachedDone()
-        {
-            foreach (var behavior in Body)
-            {
-                behavior.ResetCachedDone();
-            }            
-        }
-
         private bool _readyToRun;
         public bool ReadyToRun
         {
