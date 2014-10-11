@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using QuestTools.ProfileTags.Complex;
+using Zeta.Bot.Profile;
 using Zeta.TreeSharp;
 
 namespace QuestTools.ProfileTags.Complex
@@ -10,27 +13,14 @@ namespace QuestTools.ProfileTags.Complex
     public interface IAsyncProfileBehavior
     {
         /// <summary>
-        /// Returns the parent/original CreateBehaviorComposite
-        /// </summary>
-        /// <returns></returns>
-        Composite AsyncGetBaseBehavior();
-
-        /// <summary>
-        /// returns the CreateBehavior composite
-        /// </summary>
-        /// <returns></returns>
-        Composite AsyncGetBehavior();
-
-        /// <summary>
-        /// ProfileBehavior expects .Behavior to contain the composite so we have to
-        /// populate .Behavior using ProfileBehavior.UpdateBehavior().
-        /// AsyncUpdateBehavior should expose this method.
-        /// Call ResetCachedDone after this.
+        /// ProfileBehavior expects .Behavior to contain the composite
+        /// UpdateBehavior() and OnStart() need to be exposed;        
         /// </summary>
         void AsyncUpdateBehavior();
-        
+        void AsyncOnStart();
+
         bool ReadyToRun { get; set; }
         bool ForceDone { get; set; }
         void Tick();
-    }    
+    }
 }

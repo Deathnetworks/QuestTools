@@ -21,7 +21,6 @@ namespace QuestTools.ProfileTags.Complex
         private bool _isDone;
 
         private List<Vector3> _points;
-        private Vector3 _startingPosition;
         private DefaultNavigationProvider _navigator;
 
         [XmlAttribute("radius")]
@@ -29,6 +28,9 @@ namespace QuestTools.ProfileTags.Complex
 
         [XmlAttribute("points")]
         public int Points { get; set; }
+
+        [XmlAttribute("pathPrecision")]
+        public float PathPrecision { get; set; }
 
         public override bool IsDone
         {
@@ -39,9 +41,9 @@ namespace QuestTools.ProfileTags.Complex
         {
             Radius = Radius < 10 ? 10 : Radius;
             Points = Points < 4 || Points > 30 ? 10 : Points;
+            PathPrecision = PathPrecision < 2f ? 5f : PathPrecision;
 
-            _startingPosition = ZetaDia.Me.Position;
-            _points = GetCirclePoints(10, Radius, _startingPosition);
+            _points = GetCirclePoints(Points, Radius, ZetaDia.Me.Position);
             _points.Add(ZetaDia.Me.Position);
             _navigator = Navigator.GetNavigationProviderAs<DefaultNavigationProvider>();
 
@@ -66,10 +68,10 @@ namespace QuestTools.ProfileTags.Complex
         {
             get
             {
-                if (_points.Take(1).First().Distance2D(ZetaDia.Me.Position) < 10f)
+                if (!_points.Any() || _points.First().Distance2D(ZetaDia.Me.Position) < 10f)
                     return false;
 
-                if (!_navigator.CanPathWithinDistance(_points.First()) || Navigator.StuckHandler.IsStuck)
+                if (!_navigator.CanPathWithinDistance(_points.First(), PathPrecision) || Navigator.StuckHandler.IsStuck)
                     return false;
 
                 return true;

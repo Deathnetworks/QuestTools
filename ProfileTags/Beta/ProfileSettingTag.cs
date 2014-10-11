@@ -26,7 +26,6 @@ namespace QuestTools.ProfileTags
         public static void Initialize()
         {
             BotMain.OnStart += bot => ProfileSettings.Clear();
-            GameEvents.OnGameChanged += (sender, args) => ProfileSettings.Clear();
             Initialized = true;
         }
 

@@ -34,30 +34,15 @@ namespace QuestTools.ProfileTags.Complex
 
         public AsyncCommonBehaviors.IsDoneCondition IsDoneDelegate;
 
-        public Composite AsyncGetBehavior()
-        {
-            return CreateBehavior();
-        }
-
-        public Composite AsyncGetBaseBehavior()
-        {
-            return base.CreateBehavior();
-        }
-
         public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
         }
 
-        //public void AsyncEmptyProfileBehavior()
-        //{
-        //    BehaviorDelegate = DefaultBehavior;
-        //}
-
-        //public AsyncEmptyProfileBehavior(Composite behavior)
-        //{
-        //    BehaviorDelegate = behavior;
-        //}
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
 
         public bool ReadyToRun { get; set; }
         public bool ForceDone { get; set; }
@@ -101,6 +86,11 @@ namespace QuestTools.ProfileTags.Complex
             UpdateBehavior();
         }
 
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
         public bool ReadyToRun { get; set; }
         public bool ForceDone { get; set; }        
         public void Tick() {}
@@ -128,19 +118,14 @@ namespace QuestTools.ProfileTags.Complex
             get { return _isDone || base.IsDone || ForceDone; }
         }
 
-        public Composite AsyncGetBehavior()
-        {
-            return CreateBehavior();
-        }
-
-        public Composite AsyncGetBaseBehavior()
-        {
-            return base.CreateBehavior();
-        }
-
         public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
         }
 
         public bool ReadyToRun { get; set; }
@@ -177,19 +162,14 @@ namespace QuestTools.ProfileTags.Complex
             get { return _isDone || base.IsDone || ForceDone; }
         }
 
-        public Composite AsyncGetBehavior()
-        {
-            return CreateBehavior();
-        }
-
-        public Composite AsyncGetBaseBehavior()
-        {
-            return base.CreateBehavior();
-        }
-
         public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
         }
 
         public bool ReadyToRun { get; set; }
@@ -220,19 +200,14 @@ namespace QuestTools.ProfileTags.Complex
             get { return _isDone || base.IsDone || ForceDone; }
         }
 
-        public Composite AsyncGetBehavior()
-        {
-            return CreateBehavior();
-        }
-
-        public Composite AsyncGetBaseBehavior()
-        {
-            return base.CreateBehavior();
-        }
-
         public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
         }
 
         public bool ReadyToRun { get; set; }
@@ -263,19 +238,14 @@ namespace QuestTools.ProfileTags.Complex
             get { return _isDone || base.IsDone || ForceDone; }
         }
 
-        public Composite AsyncGetBehavior()
-        {
-            return CreateBehavior();
-        }
-
-        public Composite AsyncGetBaseBehavior()
-        {
-            return base.CreateBehavior();
-        }
-
         public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
         }
 
         public bool ReadyToRun { get; set; }
@@ -306,19 +276,14 @@ namespace QuestTools.ProfileTags.Complex
             get { return _isDone || base.IsDone || ForceDone; }
         }
 
-        public Composite AsyncGetBehavior()
-        {
-            return CreateBehavior();
-        }
-
-        public Composite AsyncGetBaseBehavior()
-        {
-            return base.CreateBehavior();
-        }
-
         public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
         }
 
         public bool ReadyToRun { get; set; }
@@ -349,19 +314,14 @@ namespace QuestTools.ProfileTags.Complex
             get { return _isDone || base.IsDone || ForceDone; }
         }
 
-        public Composite AsyncGetBehavior()
-        {
-            return CreateBehavior();
-        }
-
-        public Composite AsyncGetBaseBehavior()
-        {
-            return base.CreateBehavior();
-        }
-
         public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
         }
 
         public bool ReadyToRun { get; set; }
@@ -392,19 +352,14 @@ namespace QuestTools.ProfileTags.Complex
             get { return _isDone || base.IsDone || ForceDone; }
         }
 
-        public Composite AsyncGetBehavior()
-        {
-            return CreateBehavior();
-        }
-
-        public Composite AsyncGetBaseBehavior()
-        {
-            return base.CreateBehavior();
-        }
-
         public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
         }
 
         public bool ReadyToRun { get; set; }
@@ -435,19 +390,14 @@ namespace QuestTools.ProfileTags.Complex
             get { return _isDone || base.IsDone || ForceDone; }
         }
 
-        public Composite AsyncGetBehavior()
-        {
-            return CreateBehavior();
-        }
-
-        public Composite AsyncGetBaseBehavior()
-        {
-            return base.CreateBehavior();
-        }
-
         public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
         }
 
         public bool ReadyToRun { get; set; }
@@ -478,19 +428,14 @@ namespace QuestTools.ProfileTags.Complex
             get { return _isDone || base.IsDone || ForceDone; }
         }
 
-        public Composite AsyncGetBehavior()
-        {
-            return CreateBehavior();
-        }
-
-        public Composite AsyncGetBaseBehavior()
-        {
-            return base.CreateBehavior();
-        }
-
         public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
         }
 
         public bool ReadyToRun { get; set; }
@@ -521,19 +466,14 @@ namespace QuestTools.ProfileTags.Complex
             get { return _isDone || base.IsDone || ForceDone; }
         }
 
-        public Composite AsyncGetBehavior()
-        {
-            return CreateBehavior();
-        }
-
-        public Composite AsyncGetBaseBehavior()
-        {
-            return base.CreateBehavior();
-        }
-
         public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
         }
 
         public bool ReadyToRun { get; set; }
@@ -564,19 +504,14 @@ namespace QuestTools.ProfileTags.Complex
             get { return _isDone || base.IsDone || ForceDone; }
         }
 
-        public Composite AsyncGetBehavior()
-        {
-            return CreateBehavior();
-        }
-
-        public Composite AsyncGetBaseBehavior()
-        {
-            return base.CreateBehavior();
-        }
-
         public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
         }
 
         public bool ReadyToRun { get; set; }
@@ -607,19 +542,14 @@ namespace QuestTools.ProfileTags.Complex
             get { return _isDone || base.IsDone || ForceDone; }
         }
 
-        public Composite AsyncGetBehavior()
-        {
-            return CreateBehavior();
-        }
-
-        public Composite AsyncGetBaseBehavior()
-        {
-            return base.CreateBehavior();
-        }
-
         public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
         }
 
         public bool ReadyToRun { get; set; }
@@ -651,19 +581,14 @@ namespace QuestTools.ProfileTags.Complex
             get { return _isDone || base.IsDone || ForceDone; }
         }
 
-        public Composite AsyncGetBehavior()
-        {
-            return CreateBehavior();
-        }
-
-        public Composite AsyncGetBaseBehavior()
-        {
-            return base.CreateBehavior();
-        }
-
         public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
         }
 
         public bool ReadyToRun { get; set; }
@@ -694,19 +619,14 @@ namespace QuestTools.ProfileTags.Complex
             get { return _isDone || base.IsDone || ForceDone; }
         }
 
-        public Composite AsyncGetBehavior()
-        {
-            return CreateBehavior();
-        }
-
-        public Composite AsyncGetBaseBehavior()
-        {
-            return base.CreateBehavior();
-        }
-
         public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
         }
 
         public bool ReadyToRun { get; set; }
@@ -737,19 +657,14 @@ namespace QuestTools.ProfileTags.Complex
             get { return _isDone || base.IsDone || ForceDone; }
         }
 
-        public Composite AsyncGetBehavior()
-        {
-            return CreateBehavior();
-        }
-
-        public Composite AsyncGetBaseBehavior()
-        {
-            return base.CreateBehavior();
-        }
-
         public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
         }
 
         public bool ReadyToRun { get; set; }
@@ -784,19 +699,14 @@ namespace QuestTools.ProfileTags.Complex
             get { return _isDone || base.IsDone || ForceDone; }
         }
 
-        public Composite AsyncGetBehavior()
-        {
-            return CreateBehavior();
-        }
-
-        public Composite AsyncGetBaseBehavior()
-        {
-            return base.CreateBehavior();
-        }
-
         public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
         }
 
         public bool ReadyToRun { get; set; }
@@ -854,19 +764,14 @@ namespace QuestTools.ProfileTags.Complex
             get { return _isDone || base.IsDone || ForceDone; }
         }
 
-        public Composite AsyncGetBehavior()
-        {
-            return CreateBehavior();
-        }
-
-        public Composite AsyncGetBaseBehavior()
-        {
-            return base.CreateBehavior();
-        }
-
         public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
         }
 
         public bool ReadyToRun { get; set; }
@@ -899,19 +804,14 @@ namespace QuestTools.ProfileTags.Complex
             get { return _isDone || base.IsDone || ForceDone; }
         }
 
-        public Composite AsyncGetBehavior()
-        {
-            return CreateBehavior();
-        }
-
-        public Composite AsyncGetBaseBehavior()
-        {
-            return base.CreateBehavior();
-        }
-
         public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
         }
 
         public bool ReadyToRun { get; set; }
@@ -946,20 +846,13 @@ namespace QuestTools.ProfileTags.Complex
     [XmlElement("AsyncIf")]
     public class AsyncIfTag : IfTag, IAsyncProfileBehavior
     {
+        private bool _isDone;
         public override bool IsDone
         {
             get
             {
-                if (!_initialized)
-                    Initialize();
-
-                return !_readyToRun || IsChildrenDone || !GetConditionExec() || ForceDone;                
+                return !_readyToRun || ForceDone || _isDone || !GetConditionExec();
             }
-        }
-
-        private bool IsChildrenDone 
-        {
-            get { return Body.All(p => p.IsDone);  }
         }
 
         private bool _initialized;
@@ -973,29 +866,14 @@ namespace QuestTools.ProfileTags.Complex
 
         public new bool GetConditionExec()
         {
-            var result = false;
-            if (!QuestToolsSettings.Instance.EnableBetaFeatures)
-            {
-                try
-                {                    
-                    base.GetConditionExec();
-                }
-                catch (Exception ex)
-                {
-                    // Avoid DB freeze when it doesn't recognize something in a condition
-                    Logger.LogError("Invalid condition: {1}", Condition, ex.Message);
-                }                
-            }
-            else
-            {
-                result = ConditionParser.Evaluate(_parsedConditions);
-            }
-            return result; 
-        }
+            if (!_initialized)
+                Initialize();
 
-        public Composite AsyncGetBehavior()
-        {
-            return CreateBehavior();
+            var result = ConditionParser.Evaluate(_parsedConditions);
+            
+            _isDone = true;
+
+            return result;
         }
 
         public List<ProfileBehavior> Children
@@ -1004,14 +882,13 @@ namespace QuestTools.ProfileTags.Complex
             set { Body = value; }
         }        
 
-        public Composite AsyncGetBaseBehavior()
+        public override void ResetCachedDone()
         {
-            return base.CreateBehavior();
-        }
-
-        public void AsyncUpdateBehavior()
-        {
-            UpdateBehavior();
+            foreach (ProfileBehavior behavior in Body)
+            {
+                behavior.ResetCachedDone();
+            }
+            _isDone = false;
         }
 
         private bool _readyToRun;
@@ -1029,107 +906,23 @@ namespace QuestTools.ProfileTags.Complex
             }
         }
 
-        public bool ForceDone { get; set; }
-        public void Tick() {}
-
-    }
-
-    [XmlElement("AsyncWhile")]
-    public class AsyncWhile : WhileTag, IAsyncProfileBehavior
-    {
-        public override bool IsDone
-        {
-            get
-            {
-                if (!_initialized)
-                    Initialize();
-
-                return !_readyToRun || IsChildrenDone || !GetConditionExec() || ForceDone;
-            }
-        }
-
-        private bool IsChildrenDone
-        {
-            get { return Body.All(p => p.IsDone); }
-        }
-
-        private bool _initialized;
-        private void Initialize()
-        {
-            _parsedConditions = ConditionParser.Parse(Condition);
-            _initialized = true;
-        }
-
-        private List<Expression> _parsedConditions = new List<Expression>();
-
-        public new bool GetConditionExec()
-        {
-            var result = false;
-            if (!QuestToolsSettings.Instance.EnableBetaFeatures)
-            {
-                try
-                {
-                    base.GetConditionExec();
-                }
-                catch (Exception ex)
-                {
-                    // Avoid DB freeze when it doesn't recognize something in a condition
-                    Logger.LogError("Invalid condition: {1}", Condition, ex.Message);
-                }
-            }
-            else
-            {
-                result = ConditionParser.Evaluate(_parsedConditions);
-            }
-            return result;
-        }
-
-        public Composite AsyncGetBehavior()
-        {
-            return CreateBehavior();
-        }
-
-        public List<ProfileBehavior> Children
-        {
-            get { return GetNodes().ToList(); }
-            set { Body = value; }
-        }
-
-        public Composite AsyncGetBaseBehavior()
-        {
-            return base.CreateBehavior();
-        }
+        #region IAsyncProfileBehavior
 
         public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
         }
 
-        public override void ResetCachedDone()
+        public void AsyncOnStart()
         {
-            foreach (var behavior in Body)
-            {
-                behavior.ResetCachedDone();
-            }
-        }
-
-        private bool _readyToRun;
-        public bool ReadyToRun
-        {
-            get { return _readyToRun; }
-            set
-            {
-                _readyToRun = value;
-                Body.ForEach(b =>
-                {
-                    if (b is IAsyncProfileBehavior)
-                        (b as IAsyncProfileBehavior).ReadyToRun = value;
-                });
-            }
+            OnStart();
         }
 
         public bool ForceDone { get; set; }
         public void Tick() { }
 
+        #endregion
+
     }
+
 }

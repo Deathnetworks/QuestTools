@@ -37,6 +37,8 @@ namespace QuestTools.Helpers
             
             (behavior as ProfileBehavior).ResetCachedDone();
 
+            behavior.AsyncOnStart();
+
             behavior.ReadyToRun = true;
 
             return (behavior as ProfileBehavior).Behavior;
