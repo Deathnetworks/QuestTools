@@ -1,6 +1,7 @@
 ﻿using System;
 using QuestTools.Helpers;
 using QuestTools.Navigation;
+using QuestTools.ProfileTags.Complex;
 using Zeta.Bot;
 using Zeta.Bot.Navigation;
 using Zeta.Bot.Profile;
@@ -22,7 +23,7 @@ namespace QuestTools.ProfileTags.Movement
     /// </summary>
     [XmlElement("TrinityMoveTo")]
     [XmlElement("SafeMoveTo")]
-    public class SafeMoveToTag : ProfileBehavior
+    public class SafeMoveToTag : ProfileBehavior, IAsyncProfileBehavior
     {
         public SafeMoveToTag() { }
 
@@ -206,5 +207,24 @@ namespace QuestTools.ProfileTags.Movement
             _lastMoveResult = MoveResult.Moved;
             _tagStartTime = DateTime.MinValue;
         }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
     }
 }

@@ -3,6 +3,7 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using QuestTools.Helpers;
+using QuestTools.ProfileTags.Complex;
 using Zeta.Bot;
 using Zeta.Bot.Navigation;
 using Zeta.Bot.Profile;
@@ -17,13 +18,13 @@ namespace QuestTools.ProfileTags
     /// Reloads the current profile, and optionally restarts the act quest if the profile has been reloaded too many times.
     /// </summary>
     [XmlElement("ReloadProfile")]
-    public class ReloadProfileTag : ProfileBehavior
+    public class ReloadProfileTag : ProfileBehavior, IAsyncProfileBehavior
     {
         public ReloadProfileTag() { }
-        private bool _done;
+        private bool _isDone;
         public override bool IsDone
         {
-            get { return _done; }
+            get { return _isDone; }
         }
 
         [XmlAttribute("force")]
@@ -71,7 +72,7 @@ namespace QuestTools.ProfileTags
             if (!QuestToolsSettings.Instance.AllowProfileReloading && !Force)
             {
                 Logger.Log("Profile reloading disabled, skipping tag. questId=\"{0}\" stepId=\"{1}\"", ZetaDia.CurrentQuest.QuestSNO, ZetaDia.CurrentQuest.StepId);
-                _done = true;
+                _isDone = true;
                 return false;
             }
 
@@ -93,7 +94,7 @@ namespace QuestTools.ProfileTags
             if (DateTime.UtcNow.Subtract(BotEvents.LastProfileReload).TotalSeconds < 2)
             {
                 Logger.Log("Profile loading loop detected, counted {0} reloads", QuestStepReloadLoops);
-                _done = true;
+                _isDone = true;
                 return true;
             }
 
@@ -164,5 +165,24 @@ namespace QuestTools.ProfileTags
                 ZetaDia.CurrentWorldId
                 );
         }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
     }
 }

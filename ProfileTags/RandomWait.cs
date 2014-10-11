@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using QuestTools.ProfileTags.Complex;
 using Zeta.Bot.Profile;
 using Zeta.TreeSharp;
 using Zeta.XmlEngine;
@@ -10,7 +11,7 @@ namespace QuestTools.ProfileTags
     // * TrinityUseReset - Resets a UseOnce tag as if it has never been used
     [XmlElement("TrinityRandomWait")]
     [XmlElement("RandomWait")]
-    public class RandomWaitTag : ProfileBehavior
+    public class RandomWaitTag : ProfileBehavior, IAsyncProfileBehavior
     {
         public RandomWaitTag() { }
         private bool _isDone;
@@ -61,5 +62,24 @@ namespace QuestTools.ProfileTags
             _isDone = false;
             base.ResetCachedDone();
         }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using QuestTools.ProfileTags.Complex;
 using Zeta.Bot;
 using Zeta.Bot.Navigation;
 using Zeta.Bot.Profile;
@@ -11,7 +12,7 @@ namespace QuestTools.ProfileTags
     // TrinityTownRun forces a town-run request
     [XmlElement("TrinityTownPortal")]
     [XmlElement("TownPortal")]
-    public class TownPortalTag : ProfileBehavior
+    public class TownPortalTag : ProfileBehavior, IAsyncProfileBehavior
     {
         public static int DefaultWaitTime = -1;
 
@@ -153,6 +154,25 @@ namespace QuestTools.ProfileTags
             _isDone = false;
             base.ResetCachedDone();
         }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
     }
 }
 

@@ -1,4 +1,5 @@
 ﻿using QuestTools.Helpers;
+using QuestTools.ProfileTags.Complex;
 using Zeta.Bot.Profile;
 using Zeta.TreeSharp;
 using Zeta.XmlEngine;
@@ -7,7 +8,7 @@ namespace QuestTools.ProfileTags
 {
     [XmlElement("TrinitySetQuesting")]
     [XmlElement("SetQuesting")]
-    public class SetQuestingTag : ProfileBehavior
+    public class SetQuestingTag : ProfileBehavior, IAsyncProfileBehavior
     {
         public SetQuestingTag() { }
         private bool _isDone;
@@ -32,5 +33,24 @@ namespace QuestTools.ProfileTags
             _isDone = false;
             base.ResetCachedDone();
         }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
     }
 }

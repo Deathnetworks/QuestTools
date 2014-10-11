@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using Buddy.Coroutines;
+using QuestTools.ProfileTags.Complex;
 using Zeta.Bot;
 using Zeta.Bot.Coroutines;
 using Zeta.Bot.Profile;
@@ -18,7 +19,7 @@ using Zeta.XmlEngine;
 namespace QuestTools.ProfileTags
 {
     [XmlElement("GetItemFromStash")]
-    public class GetItemFromStashTag : ProfileBehavior
+    public class GetItemFromStashTag : ProfileBehavior, IAsyncProfileBehavior
     {
         private const int SharedStashSNO = 130400;
 
@@ -195,5 +196,24 @@ namespace QuestTools.ProfileTags
             _isDone = false;
             base.ResetCachedDone();
         }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
     }
 }

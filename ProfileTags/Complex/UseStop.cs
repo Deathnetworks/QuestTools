@@ -1,4 +1,5 @@
-﻿using Zeta.Bot.Profile;
+﻿using QuestTools.ProfileTags.Complex;
+using Zeta.Bot.Profile;
 using Zeta.TreeSharp;
 using Zeta.XmlEngine;
 
@@ -9,14 +10,14 @@ namespace QuestTools.ProfileTags
     /// </summary>                    
     [XmlElement("UseStop")]
     [XmlElement("TrinityUseStop")]
-    public class UseStopTag : ProfileBehavior
+    public class UseStopTag : ProfileBehavior, IAsyncProfileBehavior
     {
         public UseStopTag() { }
-        private bool isDone = false;
+        private bool _isDone = false;
 
         public override bool IsDone
         {
-            get { return isDone; }
+            get { return _isDone; }
         }
 
         protected override Composite CreateBehavior()
@@ -32,7 +33,7 @@ namespace QuestTools.ProfileTags
                         new Action(ret => UseOnceTag.UseOnceCounter.Add(ID, -1))
                     )
                 ),
-                new Action(ret => isDone = true)
+                new Action(ret => _isDone = true)
             );
         }
 
@@ -41,8 +42,27 @@ namespace QuestTools.ProfileTags
 
         public override void ResetCachedDone()
         {
-            isDone = false;
+            _isDone = false;
             base.ResetCachedDone();
         }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
     }
 }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using QuestTools.ProfileTags.Complex;
 using Zeta.Bot.Profile;
 using Zeta.Game;
 using Zeta.Game.Internals.SNO;
@@ -13,7 +14,7 @@ namespace QuestTools.ProfileTags.Beta
     /// XML tag for a profile to STOP a timer
     /// </summary>
     [XmlElement("StopTimer")]
-    public class StopTimerTag : ProfileBehavior
+    public class StopTimerTag : ProfileBehavior, IAsyncProfileBehavior
     {
         private bool _isDone;
         public override bool IsDone { get { return _isDone; } }
@@ -51,5 +52,24 @@ namespace QuestTools.ProfileTags.Beta
             _isDone = false;
             base.ResetCachedDone();
         }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
     }
 }

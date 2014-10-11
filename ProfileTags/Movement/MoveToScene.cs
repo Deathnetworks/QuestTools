@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using QuestTools.Navigation;
+using QuestTools.ProfileTags.Complex;
 using Zeta.Bot.Navigation;
 using Zeta.Bot.Profile;
 using Zeta.Common;
@@ -16,7 +17,7 @@ namespace QuestTools.ProfileTags.Movement
 {
     [XmlElement("MoveToScene")]
     [XmlElement("TrinityMoveToScene")]
-    public class MoveToSceneTag : ProfileBehavior
+    public class MoveToSceneTag : ProfileBehavior, IAsyncProfileBehavior
     {
         /// <summary>
         /// The Scene SNOId
@@ -347,6 +348,25 @@ namespace QuestTools.ProfileTags.Movement
             _isDone = false;
             base.ResetCachedDone();
         }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
 
     }
 }

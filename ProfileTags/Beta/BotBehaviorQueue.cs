@@ -251,27 +251,29 @@ namespace QuestTools.Helpers
 
                 //Logger.Log("NodeToExecute Count={0}",_nodesToExecute.Count);
 
-                _activeProfileBehavior = _nodesToExecute.Take(1).First();
+                _activeProfileBehavior = _nodesToExecute.First();
 
                 _nodesToExecute.Remove(_activeProfileBehavior);
 
-                if (_activeProfileBehavior is IAsyncProfileBehavior)
-                {
-                    (_activeProfileBehavior as IAsyncProfileBehavior).ReadyToRun = true;
+                //if (_activeProfileBehavior is IAsyncProfileBehavior)
+                //{
+                //    //(_activeProfileBehavior as IAsyncProfileBehavior).ReadyToRun = true;
 
-                    // Properly populate the .Behavior field of a ProfileBehavior
-                    if (_activeProfileBehavior.Behavior == null)
-                        (_activeProfileBehavior as IAsyncProfileBehavior).AsyncUpdateBehavior();
+                //    //// Properly populate the .Behavior field of a ProfileBehavior
+                //    //if (_activeProfileBehavior.Behavior == null)
+                //    //    (_activeProfileBehavior as IAsyncProfileBehavior).AsyncUpdateBehavior();
 
+                //    //// Reset everything back through to the base
+                //    //_activeProfileBehavior.ResetCachedDone();
 
-                    // Reset everything back through to the base
-                    _activeProfileBehavior.ResetCachedDone();
+                    
+                //}
+                //else
+                //{
+                //    Logger.Warn("Tag {0} is not yet supported by BotBehaviorQueue", _activeProfileBehavior.GetType());
+                //}
 
-                }
-                else
-                {
-                    Logger.Warn("Tag {0} is not yet supported within a WHEN tag", _activeProfileBehavior.GetType());
-                }
+                _activeProfileBehavior.Run();
 
                 _activeBehavior = _activeProfileBehavior.Behavior;
                 
@@ -306,7 +308,7 @@ namespace QuestTools.Helpers
                 if (_activeProfileBehavior is IAsyncProfileBehavior)
                 {
                     BotMain.StatusText = _activeProfileBehavior.StatusText;
-                    (_activeProfileBehavior as IAsyncProfileBehavior).Tick();
+                    //(_activeProfileBehavior as IAsyncProfileBehavior).Tick();
                 }
 
                 if (IsQueueActive) return false;

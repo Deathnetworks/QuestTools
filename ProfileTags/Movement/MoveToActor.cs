@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Buddy.Coroutines;
 using QuestTools.Helpers;
 using QuestTools.Navigation;
+using QuestTools.ProfileTags.Complex;
 using Zeta.Bot;
 using Zeta.Bot.Navigation;
 using Zeta.Bot.Profile;
@@ -19,14 +20,14 @@ using Zeta.XmlEngine;
 namespace QuestTools.ProfileTags.Movement
 {
     [XmlElement("MoveToActor")]
-    public class MoveToActor : ProfileBehavior
+    public class MoveToActor : ProfileBehavior, IAsyncProfileBehavior
     {
         public MoveToActor() { }
 
-        private bool _done;
+        private bool _isDone;
         public override bool IsDone
         {
-            get { return !IsActiveQuestStep || _done; }
+            get { return !IsActiveQuestStep || _isDone; }
         }
 
         [XmlAttribute("x")]
@@ -674,7 +675,7 @@ namespace QuestTools.ProfileTags.Movement
         private void EndDebug(string message, params object[] args)
         {
             Logger.Debug(message, args);
-            _done = true;
+            _isDone = true;
 
         }
         private void EndDebug(string message)
@@ -684,7 +685,7 @@ namespace QuestTools.ProfileTags.Movement
         private void End(string message, params object[] args)
         {
             Logger.Log(message, args);
-            _done = true;
+            _isDone = true;
         }
         private void End(string message)
         {
@@ -699,11 +700,30 @@ namespace QuestTools.ProfileTags.Movement
 
         public override void ResetCachedDone()
         {
-            _done = false;
+            _isDone = false;
             _tagStartTime = DateTime.UtcNow;
             _completedInteractions = 0;
             _startingWorldId = 0;
             base.ResetCachedDone();
         }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
     }
 }

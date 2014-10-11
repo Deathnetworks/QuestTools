@@ -1,6 +1,7 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
 using QuestTools.Helpers;
+using QuestTools.ProfileTags.Complex;
 using Zeta.Bot;
 using Zeta.Bot.Profile;
 using Zeta.Game;
@@ -13,7 +14,7 @@ namespace QuestTools.ProfileTags
     // TrinityTownRun forces a town-run request
     [XmlElement("TownRun")]
     [XmlElement("TrinityTownRun")]
-    public class TownRunTag : ProfileBehavior
+    public class TownRunTag : ProfileBehavior, IAsyncProfileBehavior
     {
         public TownRunTag() { }
 
@@ -121,5 +122,24 @@ namespace QuestTools.ProfileTags
             _isDone = false;
             base.ResetCachedDone();
         }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
     }
 }

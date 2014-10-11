@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using QuestTools.ProfileTags.Complex;
 using Zeta.Bot;
 using Zeta.Bot.Profile;
 using Zeta.TreeSharp;
@@ -6,13 +7,13 @@ using Zeta.XmlEngine;
 
 namespace QuestTools.ProfileTags
 {
-    [XmlElement("ProfileSetting")] 
-    public class ProfileSettingTag : ProfileBehavior 
+    [XmlElement("ProfileSetting")]
+    public class ProfileSettingTag : ProfileBehavior, IAsyncProfileBehavior
     { 
-        private bool isDone; 
+        private bool _isDone; 
         public override bool IsDone 
         { 
-            get { return isDone; } 
+            get { return _isDone; } 
         } 
 
         [XmlAttribute("name")]	
@@ -43,10 +44,29 @@ namespace QuestTools.ProfileTags
 
                 Logger.Log("Setting Condition={0} to {1}", Name, Value);
 
-				isDone = true;
+				_isDone = true;
                 return RunStatus.Failure;
             }); 
-        } 
+        }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
     } 
 }
 

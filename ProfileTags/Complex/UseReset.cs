@@ -1,4 +1,5 @@
-﻿using Zeta.Bot.Profile;
+﻿using QuestTools.ProfileTags.Complex;
+using Zeta.Bot.Profile;
 using Zeta.TreeSharp;
 using Zeta.XmlEngine;
 
@@ -9,7 +10,7 @@ namespace QuestTools.ProfileTags
     /// </summary>
     [XmlElement("UseReset")]
     [XmlElement("TrinityUseReset")]
-    public class UseResetTag : ProfileBehavior
+    public class UseResetTag : ProfileBehavior, IAsyncProfileBehavior
     {
         public UseResetTag() { }
         private bool _isDone = false;
@@ -39,5 +40,24 @@ namespace QuestTools.ProfileTags
             _isDone = false;
             base.ResetCachedDone();
         }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
     }
 }

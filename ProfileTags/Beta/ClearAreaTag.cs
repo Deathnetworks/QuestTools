@@ -34,7 +34,7 @@ namespace QuestTools.ProfileTags.Complex
 
         public override bool IsDone
         {
-            get { return _isDone; }
+            get { return !IsActiveQuestStep || _isDone; }
         }
 
         public override void OnStart()

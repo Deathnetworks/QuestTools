@@ -1,26 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using QuestTools.ProfileTags.Complex;
 using Zeta.Bot.Profile;
 using Zeta.TreeSharp;
 
 namespace QuestTools.ProfileTags.Complex
-{
+{    
     public interface IAsyncProfileBehavior
     {
         /// <summary>
-        /// ProfileBehavior expects .Behavior to contain the composite
-        /// UpdateBehavior() and OnStart() need to be exposed;        
+        /// ProfileBehavior expects .Behavior to contain the composite 
+        /// Call this.UpdateBehavior() in implementation.    
         /// </summary>
         void AsyncUpdateBehavior();
+
+        /// <summary>
+        /// Many tags use OnStart for setup and default params
+        /// Call this.OnStart() in implementation.
+        /// </summary>
         void AsyncOnStart();
 
-        bool ReadyToRun { get; set; }
-        bool ForceDone { get; set; }
-        void Tick();
+        /// <summary>
+        /// Sets a behavior to Done
+        /// Set _isDone = true in implementation.
+        /// Call Done() on children if INodeContainer
+        /// </summary>
+        void Done();
+
+        ///// <summary>
+        ///// When true, should prevent a tag from Running
+        ///// </summary>
+        //bool ReadyToRun { get; set; }
     }
 }

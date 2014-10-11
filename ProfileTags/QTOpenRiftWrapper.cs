@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using QuestTools.ProfileTags.Complex;
 using Zeta.Bot.Profile.Common;
 using Zeta.Game;
 using Zeta.Game.Internals.Actors;
@@ -8,7 +9,7 @@ using Zeta.XmlEngine;
 namespace QuestTools.ProfileTags
 {
     [XmlElement("QTOpenRiftWrapper")]
-    public class QTOpenRiftWrapper : OpenRiftTag
+    public class QTOpenRiftWrapper : OpenRiftTag, IAsyncProfileBehavior
     {
         const int riftPortalSno = 396751;
 
@@ -116,5 +117,24 @@ namespace QuestTools.ProfileTags
                 return ZetaDia.Actors.GetActorsOfType<ACDItem>().Any(i => i.IsValid && i.ItemType == ItemType.KeystoneFragment && i.TieredLootRunKeyLevel < 0);
             }
         }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
     }
 }

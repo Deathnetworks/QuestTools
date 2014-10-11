@@ -1,4 +1,5 @@
 ﻿using QuestTools.Helpers;
+using QuestTools.ProfileTags.Complex;
 using Zeta.Bot.Profile;
 using Zeta.TreeSharp;
 using Zeta.XmlEngine;
@@ -8,7 +9,7 @@ namespace QuestTools.ProfileTags
     // TrinityMaxDeaths tells Trinity to handle deaths and exit game after X deaths
     [XmlElement("TrinityMaxDeaths")]
     [XmlElement("MaxDeaths")]
-    public class MaxDeathsTag : ProfileBehavior
+    public class MaxDeathsTag : ProfileBehavior, IAsyncProfileBehavior
     {
         public MaxDeathsTag() { }
         private bool _isDone;
@@ -44,5 +45,24 @@ namespace QuestTools.ProfileTags
             _isDone = false;
             base.ResetCachedDone();
         }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
     }
 }

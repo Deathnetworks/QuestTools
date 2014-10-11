@@ -21,18 +21,22 @@ namespace QuestTools.ProfileTags.Beta
             {
                 if (node is IfTag && type == typeof(IfTag))
                 {
-                    // TODO - figure out why this ToAsync() approach is throwing its toys (exception)
-                    //var newnode = (node as IfTag).ToAsync();
-                    //newnode.ReadyToRun = true;
-                    //return newnode;
-
                     return new AsyncIfTag
                     {
                         Body = (node as IfTag).Body,
                         Condition = (node as IfTag).Condition,
                         Conditional = (node as IfTag).Conditional,
-                        ReadyToRun = true
                     };
+                }
+
+                if (node is WhileTag && type == typeof(WhileTag))
+                {
+                    return new AsyncWhileTag
+                    {
+                        Body = (node as IfTag).Body,
+                        Condition = (node as IfTag).Condition,
+                        Conditional = (node as IfTag).Conditional,
+                    };                    
                 }
 
                 return node;
@@ -43,6 +47,9 @@ namespace QuestTools.ProfileTags.Beta
         {
             RecurseBehaviors(tags, (behavior, i, type) =>
             {
+                if (behavior is IAsyncProfileBehavior)
+                    return behavior;
+
                 if (type == typeof(LoadProfileTag))
                     return (behavior as LoadProfileTag).ToAsync();
 
@@ -55,59 +62,18 @@ namespace QuestTools.ProfileTags.Beta
                 if (type == typeof(WaitTimerTag))
                     return (behavior as WaitTimerTag).ToAsync();
 
-                if (type == typeof(UseStopTag))
-                    return (behavior as UseStopTag).ToAsync();
-
-                if (type == typeof(SafeMoveToTag))
-                    return (behavior as SafeMoveToTag).ToAsync();
-
-                if (type == typeof(MoveToActor))
-                    return (behavior as MoveToActor).ToAsync();
-
-                if (type == typeof(MoveToMapMarker))
-                    return (behavior as MoveToMapMarker).ToAsync();
-
-                if (type == typeof(OffsetMoveTag))
-                    return (behavior as OffsetMoveTag).ToAsync();
-
                 if (type == typeof(UseWaypointTag))
                     return (behavior as UseWaypointTag).ToAsync();
-
-                if (type == typeof(ExploreDungeonTag))
-                    return (behavior as ExploreDungeonTag).ToAsync();
-
-                if (type == typeof(ReloadProfileTag))
-                    return (behavior as ReloadProfileTag).ToAsync();
 
                 if (type == typeof(ToggleTargetingTag))
                     return (behavior as ToggleTargetingTag).ToAsync();
 
-                if (type == typeof(TownPortalTag))
-                    return (behavior as TownPortalTag).ToAsync();
 
-                if (type == typeof(ProfileSettingTag))
-                    return (behavior as ProfileSettingTag).ToAsync();
+                if (type == typeof(IfTag))
+                    return (behavior as IfTag).ToAsync();
 
-                if (type == typeof(StartTimerTag))
-                    return (behavior as StartTimerTag).ToAsync();
-
-                if (type == typeof(StopTimerTag))
-                    return (behavior as StopTimerTag).ToAsync();
-
-                if (type == typeof(StopAllTimersTag))
-                    return (behavior as StopAllTimersTag).ToAsync();
-
-                if (type == typeof(LoadLastProfileTag))
-                    return (behavior as LoadLastProfileTag).ToAsync();
-
-                if (behavior is IfTag && type == typeof(IfTag))
-                    return new AsyncIfTag
-                    {
-                        Body = (behavior as IfTag).Body,
-                        Condition = (behavior as IfTag).Condition,
-                        Conditional = (behavior as IfTag).Conditional,
-                        ReadyToRun = true
-                    };
+                if (type == typeof(WhileTag))
+                    return (behavior as WhileTag).ToAsync();
 
                 return behavior;
             });

@@ -11,7 +11,7 @@ namespace QuestTools.ProfileTags.Complex
     /// For example bounties or keys - each bot would start a different bounty
     /// </summary>
     [XmlElement("Shuffle")]
-    public class ShuffleTag : NewBaseComplexNodeTag
+    public class ShuffleTag : BaseComplexNodeTag, IAsyncProfileBehavior
     {
         [XmlAttribute("order")]
         public OrderType Order { get; set; }
@@ -20,6 +20,12 @@ namespace QuestTools.ProfileTags.Complex
         {
             Random = 0,
             Reverse
+        }
+
+        private bool _isDone;
+        public override bool IsDone
+        {
+            get { return _isDone || !IsActiveQuestStep; }
         }
 
         public override bool GetConditionExec()
@@ -59,6 +65,24 @@ namespace QuestTools.ProfileTags.Complex
             }
         }
 
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
     }
 }
 

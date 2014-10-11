@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using QuestTools.Helpers;
+using QuestTools.ProfileTags.Complex;
 using Zeta.Bot;
 using Zeta.Bot.Profile;
 using Zeta.TreeSharp;
@@ -9,12 +10,12 @@ using Zeta.XmlEngine;
 namespace QuestTools.ProfileTags
 {
     [XmlElement("LoadLastProfile")]
-    public class LoadLastProfileTag : ProfileBehavior
+    public class LoadLastProfileTag : ProfileBehavior, IAsyncProfileBehavior
     {
-        private bool isDone;
+        private bool _isDone;
         public override bool IsDone
         {
-            get { return isDone; }
+            get { return _isDone; }
         }
 
         [XmlAttribute("fallbackFile")]
@@ -50,11 +51,32 @@ namespace QuestTools.ProfileTags
                     Logger.Log("Failed to load profile! file doesnt exist");
                 }
 
-                isDone = true;
+                _isDone = true;
                 return RunStatus.Failure;
             });
         }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
+
     }
+
 }
 
 

@@ -7,6 +7,7 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Buddy.Coroutines;
 using Org.BouncyCastle.Ocsp;
+using QuestTools.ProfileTags.Complex;
 using Zeta.Bot;
 using Zeta.Bot.Coroutines;
 using Zeta.Bot.Logic;
@@ -21,7 +22,7 @@ using Zeta.XmlEngine;
 namespace QuestTools.ProfileTags
 {
     [XmlElement("CompleteGreaterRift")]
-    public class CompleteGreaterRift : ProfileBehavior
+    public class CompleteGreaterRift : ProfileBehavior, IAsyncProfileBehavior
     {
         private bool _isDone;
         private bool _isGemsOnly;
@@ -247,5 +248,24 @@ namespace QuestTools.ProfileTags
             _isDone = false;
             base.ResetCachedDone();
         }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
     }
 }

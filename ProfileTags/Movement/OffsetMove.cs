@@ -1,5 +1,6 @@
 ﻿using System;
 using QuestTools.Navigation;
+using QuestTools.ProfileTags.Complex;
 using Zeta.Bot.Navigation;
 using Zeta.Bot.Pathfinding;
 using Zeta.Bot.Profile;
@@ -20,7 +21,7 @@ namespace QuestTools.ProfileTags.Movement
     /// </summary>
     [XmlElement("OffsetMove")]
     [XmlElement("TrinityOffsetMove")]
-    public class OffsetMoveTag : ProfileBehavior
+    public class OffsetMoveTag : ProfileBehavior, IAsyncProfileBehavior
     {
         public OffsetMoveTag() { }
 
@@ -112,5 +113,24 @@ namespace QuestTools.ProfileTags.Movement
             _isDone = false;
             base.ResetCachedDone();
         }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
     }
 }

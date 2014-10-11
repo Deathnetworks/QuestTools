@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using QuestTools.Navigation;
+using QuestTools.ProfileTags.Complex;
 using Zeta.Bot;
 using Zeta.Bot.Navigation;
 using Zeta.Bot.Profile;
@@ -17,7 +18,7 @@ using Action = Zeta.TreeSharp.Action;
 namespace QuestTools.ProfileTags.Movement
 {
     [XmlElement("MoveToObjective")]
-    public class MoveToObjective : ProfileBehavior
+    public class MoveToObjective : ProfileBehavior, IAsyncProfileBehavior
     {
         public MoveToObjective() { }
         private bool _isDone;
@@ -487,6 +488,25 @@ namespace QuestTools.ProfileTags.Movement
             _isDone = false;
             base.ResetCachedDone();
         }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
 
     }
 }

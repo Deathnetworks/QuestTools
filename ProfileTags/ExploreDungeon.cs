@@ -6,6 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using QuestTools.Helpers;
 using QuestTools.Navigation;
+using QuestTools.ProfileTags.Complex;
 using Zeta.Bot;
 using Zeta.Bot.Dungeons;
 using Zeta.Bot.Logic;
@@ -32,7 +33,7 @@ namespace QuestTools.ProfileTags
     /// </summary>
     [XmlElement("TrinityExploreDungeon")]
     [XmlElement("ExploreDungeon")]
-    public class ExploreDungeonTag : ProfileBehavior
+    public class ExploreDungeonTag : ProfileBehavior, IAsyncProfileBehavior
     {
         public ExploreDungeonTag() { }
 
@@ -1932,6 +1933,25 @@ namespace QuestTools.ProfileTags
                 return Navigator.GetNavigationProviderAs<DefaultNavigationProvider>();
             }
         }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
     }
 }
 
