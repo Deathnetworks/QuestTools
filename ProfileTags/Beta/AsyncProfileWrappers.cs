@@ -843,19 +843,54 @@ namespace QuestTools.ProfileTags.Complex
         }
     }
 
+
     [XmlElement("AsyncIf")]
     public class AsyncIfTag : IfTag, IAsyncProfileBehavior
     {
         private bool _isDone;
+        private bool _initialized;
+        private bool _firstRun = true;
+
+        public bool ShouldRecheckCondition;
+
         public override bool IsDone
         {
             get
             {
-                return !_readyToRun || ForceDone || _isDone || !GetConditionExec();
+                // If a QuestId is specified, it has to match
+                if (QuestId > 1 && !IsActiveQuestStep)
+                    return true;
+
+                if (_isDone || !ReadyToRun)
+                    return true;
+
+                Logger.Verbose("Children Finished? {0}", Body.All(p => p.IsDone));
+
+                // End if children are finished
+                if (Body.All(p => p.IsDone))
+                {
+                    _isDone = true;
+                    return true;
+                }
+
+                Logger.Verbose("Should Check Condition? {0}", _firstRun || ShouldRecheckCondition);
+
+                // Check Condition
+                if (_firstRun || ShouldRecheckCondition)
+                {
+                    // End if condition is false
+                    if (!GetConditionExec())
+                    {
+                        _isDone = true;
+                        return true;
+                    }
+                    _firstRun = false;
+                }
+
+                return false;
             }
         }
 
-        private bool _initialized;
         private void Initialize()
         {
             _parsedConditions = ConditionParser.Parse(Condition);
@@ -869,44 +904,14 @@ namespace QuestTools.ProfileTags.Complex
             if (!_initialized)
                 Initialize();
 
-            var result = ConditionParser.Evaluate(_parsedConditions);
-            
-            _isDone = true;
-
-            return result;
+            return ConditionParser.Evaluate(_parsedConditions);
         }
 
         public List<ProfileBehavior> Children
         {
             get { return GetNodes().ToList(); }
             set { Body = value; }
-        }        
-
-        public override void ResetCachedDone()
-        {
-            foreach (ProfileBehavior behavior in Body)
-            {
-                behavior.ResetCachedDone();
-            }
-            _isDone = false;
         }
-
-        private bool _readyToRun;
-        public bool ReadyToRun
-        {
-            get { return _readyToRun; }
-            set
-            {
-                _readyToRun = value; 
-                Body.ForEach(b =>
-                {
-                    if(b is IAsyncProfileBehavior)
-                        (b as IAsyncProfileBehavior).ReadyToRun = value;
-                });            
-            }
-        }
-
-        #region IAsyncProfileBehavior
 
         public void AsyncUpdateBehavior()
         {
@@ -918,11 +923,32 @@ namespace QuestTools.ProfileTags.Complex
             OnStart();
         }
 
+        public override void ResetCachedDone()
+        {
+            _firstRun = true;
+            _isDone = false;
+            base.ResetCachedDone();
+        }
+
+        private bool _readyToRun;
+        public bool ReadyToRun
+        {
+            get { return _readyToRun; }
+            set
+            {
+                _readyToRun = value;
+                Body.ForEach(b =>
+                {
+                    if (b is IAsyncProfileBehavior)
+                        (b as IAsyncProfileBehavior).ReadyToRun = value;
+                });
+            }
+        }
+
         public bool ForceDone { get; set; }
         public void Tick() { }
-
-        #endregion
 
     }
 
 }
+

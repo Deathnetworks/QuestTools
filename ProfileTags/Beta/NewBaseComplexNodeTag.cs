@@ -30,15 +30,21 @@ namespace QuestTools.ProfileTags
             }
         }
 
+        private readonly HashSet<Guid> _seenGuids = new HashSet<Guid>();
+
         public override bool IsDone
         {
             get
-            {
+            {                
                 if (_AlreadyCompleted.GetValueOrDefault(false))
-                    return true; 
+                    return true;
 
-                if (Body.Contains(ProfileManager.CurrentProfileBehavior))
+                var b = ProfileManager.CurrentProfileBehavior;
+                if (Body.Contains(b) && !_seenGuids.Contains(b.Behavior.Guid))
+                {
                     OnChildStart();
+                    _seenGuids.Add(b.Behavior.Guid);
+                }
 
                 if (!ComplexDoneCheck.HasValue)
                 {

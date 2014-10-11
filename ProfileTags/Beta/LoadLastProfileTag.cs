@@ -47,9 +47,7 @@ namespace QuestTools.ProfileTags
                 }
                 else
                 {
-                    Logger.Log("Failed to load profile! file doesnt exist {0} {1}", 
-                        ProfileHistory.LastProfile.Path,
-                        string.IsNullOrEmpty(FallbackFile) ? string.Empty : string.Format("or {0}", FallbackFile));
+                    Logger.Log("Failed to load profile! file doesnt exist");
                 }
 
                 isDone = true;
