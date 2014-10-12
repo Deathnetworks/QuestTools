@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Linq;
+using System.Threading.Tasks;
 using QuestTools.ProfileTags.Complex;
+using Zeta.Bot;
 using Zeta.Bot.Profile.Common;
 using Zeta.Game;
 using Zeta.Game.Internals.Actors;
+using Zeta.Game.Internals.Actors.Gizmos;
+using Zeta.TreeSharp;
 using Zeta.XmlEngine;
 
 namespace QuestTools.ProfileTags
@@ -11,7 +15,7 @@ namespace QuestTools.ProfileTags
     [XmlElement("QTOpenRiftWrapper")]
     public class QTOpenRiftWrapper : OpenRiftTag, IAsyncProfileBehavior
     {
-        const int riftPortalSno = 396751;
+        const int RiftPortalSno = 396751;
 
         private bool _isDone;
 
@@ -43,7 +47,7 @@ namespace QuestTools.ProfileTags
                     throw new ArgumentOutOfRangeException("RiftKeyPriority", "Expected 3 Rift keys, are settings are broken?");
 
 
-                if (ZetaDia.Actors.GetActorsOfType<DiaObject>(true).Any(i => i.IsValid && i.ActorSNO == riftPortalSno))
+                if (ZetaDia.Actors.GetActorsOfType<DiaObject>(true).Any(i => i.IsValid && i.ActorSNO == RiftPortalSno))
                 {
                     Logger.Log("Rift Portal already open!");
                     _isDone = true;
@@ -92,6 +96,26 @@ namespace QuestTools.ProfileTags
             {
                 Logger.LogError("Error in QTOpenRiftWrapper: " + ex);
             }
+        }
+
+        protected override Composite CreateBehavior()
+        {
+            return new Sequence(
+                new ActionRunCoroutine(ret => MainCoroutine()),
+                base.CreateBehavior()
+            );
+        }
+
+        private async Task<bool> MainCoroutine()
+        {
+            var portals = ZetaDia.Actors.GetActorsOfType<GizmoPortal>(true).Where(p => p.IsValid && p.ActorSNO == RiftPortalSno);
+            if (portals.Any())
+            {
+                Logger.Log("Rift portal already open!");
+                _isDone = true;
+                return false;
+            }
+            return true;
         }
 
         public bool HasGreaterRiftKeys
