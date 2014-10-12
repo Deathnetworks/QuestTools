@@ -88,7 +88,7 @@ namespace QuestTools
             Logging.Warn(msg);
         }
 
-        public static void LogError(string message)
+        public static void Error(string message)
         {
             StackFrame frame = new StackFrame(1);
             var method = frame.GetMethod();
@@ -103,7 +103,7 @@ namespace QuestTools
             Logging.Error(msg);
         }
 
-        public static void LogError(string message, params object[] args)
+        public static void Error(string message, params object[] args)
         {
             StackFrame frame = new StackFrame(1);
             var method = frame.GetMethod();

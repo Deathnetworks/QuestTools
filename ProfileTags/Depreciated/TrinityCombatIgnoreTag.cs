@@ -17,7 +17,7 @@ namespace QuestTools.ProfileTags.Depreciated
 
         public override void OnStart()
         {
-            Logger.LogError("TrinityCombatIgnore is no longer supported.");
+            Logger.Error("TrinityCombatIgnore is no longer supported.");
             _isDone = true;
             base.OnStart();
         }

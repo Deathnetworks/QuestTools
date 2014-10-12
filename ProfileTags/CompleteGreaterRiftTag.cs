@@ -125,7 +125,7 @@ namespace QuestTools.ProfileTags
                     // Map to known gem type or dynamic priority
                     if (selectedGemId == int.MaxValue)
                     {
-                        Logger.LogError("Invalid Gem Name: {0}", gemName);
+                        Logger.Error("Invalid Gem Name: {0}", gemName);
                         continue;
                     }
 
@@ -197,13 +197,13 @@ namespace QuestTools.ProfileTags
                     Random random = new Random(DateTime.UtcNow.Millisecond);
                     int i = random.Next(0, randomGems.Count - 1);
                     var randomGem = gems[i];
-                    Logger.LogError("Gem Upgrade failed! Upgrading random Gem {0} ({1}) - {2:##.##}% {3} ", randomGem.Name, randomGem.JewelRank, GetUpgradeChance(randomGem) * 100, IsGemEquipped(randomGem) ? "Equipped" : string.Empty);
+                    Logger.Error("Gem Upgrade failed! Upgrading random Gem {0} ({1}) - {2:##.##}% {3} ", randomGem.Name, randomGem.JewelRank, GetUpgradeChance(randomGem) * 100, IsGemEquipped(randomGem) ? "Equipped" : string.Empty);
                     if (await CommonCoroutines.AttemptUpgradeGem(randomGem))
                     {
                     }
                     else
                     {
-                        Logger.LogError("Random gem upgrade also failed. Something... seriously... wrong... ");
+                        Logger.Error("Random gem upgrade also failed. Something... seriously... wrong... ");
                     }
                     return true;
                 }

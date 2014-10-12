@@ -9,7 +9,7 @@ namespace QuestTools.ProfileTags.Depreciated
         public TrinityIfTag() { }
         public override void OnStart()
         {
-            Logger.LogError("TrinityIf is decpreciated. Use <If condition=\"\" /> instead.");
+            Logger.Error("TrinityIf is decpreciated. Use <If condition=\"\" /> instead.");
             base.OnStart();
         }
 

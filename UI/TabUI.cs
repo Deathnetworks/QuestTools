@@ -634,12 +634,12 @@ namespace QuestTools.UI
                     Process.Start(logFile);
                 else
                 {
-                    Logger.LogError("Unable to open log file {0} - file does not exist", logFile);
+                    Logger.Error("Unable to open log file {0} - file does not exist", logFile);
                 }
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error opening log file: {0} {1}", logFile, ex.Message);
+                Logger.Error("Error opening log file: {0} {1}", logFile, ex.Message);
             }
         }
         static void _btnDumpCPlayer_Click(object sender, RoutedEventArgs e)

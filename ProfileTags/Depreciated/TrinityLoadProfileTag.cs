@@ -10,7 +10,7 @@ namespace QuestTools.ProfileTags.Depreciated
 
         public override void OnStart()
         {
-            Logger.LogError("TrinityLoadProfile is decpreciated. Use <LoadProfile /> instead.");
+            Logger.Error("TrinityLoadProfile is decpreciated. Use <LoadProfile /> instead.");
             base.OnStart();
         }
     }

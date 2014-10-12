@@ -24,7 +24,7 @@ namespace QuestTools.Helpers
             }
             catch (Exception ex)
             {
-                Logger.LogError("ConditionParser Exception: {0}, {1}", ex.Message, ex.InnerException);
+                Logger.Error("ConditionParser Exception: {0}, {1}", ex.Message, ex.InnerException);
             }
             return false;
         };

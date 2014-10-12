@@ -11,7 +11,7 @@ namespace QuestTools.ProfileTags.Depreciated
 
         public override void OnStart()
         {
-            Logger.LogError("TrinityMoveToSNO is depreciated. Use MoveToActor instead.");
+            Logger.Error("TrinityMoveToSNO is depreciated. Use MoveToActor instead.");
             _isDone = true;
             base.OnStart();
         }

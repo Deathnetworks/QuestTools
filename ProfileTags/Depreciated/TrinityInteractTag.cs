@@ -11,7 +11,7 @@ namespace QuestTools.ProfileTags.Depreciated
 
         public override void OnStart()
         {
-            Logger.LogError("TrinityInteract is depreciated. Use MoveToActor instead.");
+            Logger.Error("TrinityInteract is depreciated. Use MoveToActor instead.");
             _isDone = true;
             base.OnStart();
         }

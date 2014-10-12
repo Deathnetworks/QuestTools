@@ -94,7 +94,7 @@ namespace QuestTools.ProfileTags
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error in QTOpenRiftWrapper: " + ex);
+                Logger.Error("Error in QTOpenRiftWrapper: " + ex);
             }
         }
 
