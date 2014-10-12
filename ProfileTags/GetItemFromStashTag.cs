@@ -105,7 +105,7 @@ namespace QuestTools.ProfileTags
             // Check to see if we already have the stack in our backpack
             if (StackCount != 0 && backPackCount >= StackCount)
             {
-                Logger.Log("Already have {0} items in our backpack (GameBalanceId={1} ActorSNO={2})", backPackCount, GameBalanceId, ActorId);
+                Logger.Log("Already have {0} items in our backpack (GameBalanceId={1} ActorSNO={2} GreaterRiftKey={3})", backPackCount, GameBalanceId, ActorId, GreaterRiftKey);
                 _isDone = true;
                 return true;
             }
@@ -166,7 +166,27 @@ namespace QuestTools.ProfileTags
 
                 while (StackCount == 0 || StackCount > backPackCount)
                 {
-                    var item = ZetaDia.Me.Inventory.StashItems.Where(ItemMatcherFunc).OrderByDescending(i => i.ItemStackQuantity).FirstOrDefault();
+                    bool highestFirst = QuestToolsSettings.Instance.UseHighestKeystone;
+
+                    var itemsList = ZetaDia.Me.Inventory.StashItems.Where(ItemMatcherFunc).ToList();
+
+                    ACDItem item;
+                    if (GreaterRiftKey && highestFirst)
+                    {
+                        item = itemsList.OrderByDescending(i => i.TieredLootRunKeyLevel)
+                            .ThenBy(i => i.ItemStackQuantity)
+                            .FirstOrDefault();
+                    }
+                    else if (GreaterRiftKey && !highestFirst)
+                    {
+                        item = itemsList.OrderBy(i => i.TieredLootRunKeyLevel)
+                            .ThenBy(i => i.ItemStackQuantity)
+                            .FirstOrDefault();
+                    }
+                    else
+                    {
+                        item = itemsList.OrderByDescending(i => i.ItemStackQuantity).FirstOrDefault();
+                    }
                     if (item == null)
                         break;
                     Logger.Debug("Withdrawing item {0} from stash {0}", item.Name);
