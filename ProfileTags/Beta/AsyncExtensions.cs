@@ -19,7 +19,7 @@ namespace QuestTools.Helpers
     public static class AsyncExtensions
     {
 
-        public static List<ProfileBehavior> Children(this ProfileBehavior behavior)
+        public static List<ProfileBehavior> GetChildren(this ProfileBehavior behavior)
         {
             var result = new List<ProfileBehavior>();
 
@@ -31,7 +31,7 @@ namespace QuestTools.Helpers
 
         public static void SetChildrenDone(this ProfileBehavior behavior)
         {
-            behavior.Children().ForEach(b =>
+            behavior.GetChildren().ForEach(b =>
             {
                 if (b is IAsyncProfileBehavior)
                     (b as IAsyncProfileBehavior).Done();                

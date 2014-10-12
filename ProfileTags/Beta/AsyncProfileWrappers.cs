@@ -325,6 +325,12 @@ namespace QuestTools.ProfileTags.Complex
 
         #endregion
 
+        public List<ProfileBehavior> Children
+        {
+            get { return Body; }
+            set { Body = value; }
+        }
+
     }
 
     [XmlElement("AsyncWhile")]
@@ -423,6 +429,12 @@ namespace QuestTools.ProfileTags.Complex
         }
 
         #endregion
+
+        public List<ProfileBehavior> Children
+        {
+            get { return Body; }
+            set { Body = value; }
+        }
 
     }
 

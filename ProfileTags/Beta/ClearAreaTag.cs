@@ -16,7 +16,7 @@ namespace QuestTools.ProfileTags.Complex
     /// Run a circle around the current location then return to starting point
     /// </summary>
     [XmlElement("ClearArea")]
-    public class ClearAreaTag : ProfileBehavior
+    public class ClearAreaTag : ProfileBehavior, IAsyncProfileBehavior
     {
         private bool _isDone;
 
@@ -101,5 +101,24 @@ namespace QuestTools.ProfileTags.Complex
             _isDone = false;
             base.ResetCachedDone();
         }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
     }
 }
