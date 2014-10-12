@@ -233,7 +233,7 @@ namespace QuestTools.UI
                             ZetaDia.CurrentQuest.QuestSNO, ZetaDia.CurrentQuest.StepId);
                     }
                     Clipboard.SetText(tagText);
-                    Logger.Log(tagText);
+                    Logger.RawLog(tagText);
 
                 }
             }
@@ -282,7 +282,7 @@ namespace QuestTools.UI
 
                     string tagText = string.Format("\n<WaitTimer questId=\"{0}\" stepId=\"{1}\" waitTime=\"500\" />\n", ZetaDia.CurrentQuest.QuestSNO, ZetaDia.CurrentQuest.StepId);
                     Clipboard.SetText(tagText);
-                    Logger.Log(tagText);
+                    Logger.RawLog(tagText);
                 }
             }
             catch (Exception ex)
@@ -336,7 +336,7 @@ namespace QuestTools.UI
                         "\n    </IgnoreScenes>" +
                         "\n</ExploreDungeon>";
                     Clipboard.SetText(tagText);
-                    Logger.Log(tagText);
+                    Logger.RawLog(tagText);
                 }
             }
             catch (Exception ex)
@@ -420,7 +420,7 @@ namespace QuestTools.UI
                             ZetaDia.CurrentQuest.Name, worldName, levelAreaName, ZetaDia.CurrentQuest.QuestSNO, ZetaDia.CurrentQuest.StepId, ZetaDia.CurrentWorldId, Player.LevelAreaId);
 
                     }
-                    Logger.Log(tagText);
+                    Logger.RawLog(tagText);
                 }
             }
             catch (Exception ex)
@@ -481,7 +481,7 @@ namespace QuestTools.UI
                                                        Indent3Hang + "pathPrecision=\"5\" pathPointLimit=\"250\" isPortal=\"True\" destinationWorldId=\"-1\" statusText=\"\" /> \n",
                             marker.NameHash, portal.ActorSNO, portal.CollisionSphere.Radius);
                         Clipboard.SetText(tagText);
-                        Logger.Log(tagText);
+                        Logger.RawLog(tagText);
                     }
                 }
             }
@@ -550,7 +550,7 @@ namespace QuestTools.UI
                         tagText = string.Format(questHeader + "\n<MoveToActor " + questInfo + " x=\"\" y=\"\" z=\"\" actorId=\"\" interactRange=\"20\" pathPrecision=\"50\" pathPointLimit=\"250\" statusText=\"\" /> \n");
                     }
                     Clipboard.SetText(tagText);
-                    Logger.Log(tagText);
+                    Logger.RawLog(tagText);
 
                 }
             }
@@ -581,10 +581,10 @@ namespace QuestTools.UI
 
                     ZetaDia.Actors.Update();
 
-                    string tagText = string.Format("\n<SafeMoveTo questId=\"{3}\" stepId=\"{4}\" x=\"{0:0}\" y=\"{1:0}\" z=\"{2:0}\" pathPrecision=\"5\" pathPointLimit=\"250\" statusText=\"\" /> \n",
-                        ZetaDia.Me.Position.X, ZetaDia.Me.Position.Y, ZetaDia.Me.Position.Z, ZetaDia.CurrentQuest.QuestSNO, ZetaDia.CurrentQuest.StepId);
+                    string tagText = string.Format("<SafeMoveTo questId=\"{3}\" stepId=\"{4}\" x=\"{0:0}\" y=\"{1:0}\" z=\"{2:0}\" pathPrecision=\"5\" pathPointLimit=\"250\" scene=\"{5}\" statusText=\"\" />",
+                        ZetaDia.Me.Position.X, ZetaDia.Me.Position.Y, ZetaDia.Me.Position.Z, ZetaDia.CurrentQuest.QuestSNO, ZetaDia.CurrentQuest.StepId, ZetaDia.Me.CurrentScene.Name);
                     Clipboard.SetText(tagText);
-                    Logger.Log(tagText);
+                    Logger.RawLog(tagText);
                 }
             }
             catch (Exception ex)
@@ -613,7 +613,7 @@ namespace QuestTools.UI
             }
             catch (Exception ex)
             {
-                Logger.Log("Could not reset grid: {0}", ex);
+                Logger.RawLog("Could not reset grid: {0}", ex);
             }
 
         }
@@ -661,11 +661,11 @@ namespace QuestTools.UI
                     foreach (var slot in Enum.GetValues(typeof(HotbarSlot)).Cast<HotbarSlot>())
                     {
                         DiaActiveSkill skill = ZetaDia.CPlayer.GetActiveSkillBySlot(slot);
-                        Logger.Log("{0} Active Skill: {1} RuneIndex: {2}", slot, skill.Power, skill.RuneIndex);
+                        Logger.RawLog("{0} Active Skill: {1} RuneIndex: {2}", slot, skill.Power, skill.RuneIndex);
                     }
                     foreach (var power in ZetaDia.CPlayer.PassiveSkills)
                     {
-                        Logger.Log("Passive Skill: {0}", power);
+                        Logger.RawLog("Passive Skill: {0}", power);
                     }
 
                 }
@@ -730,7 +730,7 @@ namespace QuestTools.UI
 
                     //DumpService();
 
-                    Logger.Log("ZetaDia.Service.Hero.IsValid={0}", ZetaDia.Service.Hero.IsValid);
+                    Logger.RawLog("ZetaDia.Service.Hero.IsValid={0}", ZetaDia.Service.Hero.IsValid);
 
                     //DumpPlayerProperties();
                 }
@@ -751,7 +751,7 @@ namespace QuestTools.UI
             {
                 if (prop.PropertyType.IsValueType || prop.PropertyType == typeof(string))
                 {
-                    Logger.Log("\nName: {0} Value: {1} Type: {2}", prop.Name, prop.GetValue(ZetaDia.Me, null), prop.PropertyType.Name);
+                    Logger.RawLog("\nName: {0} Value: {1} Type: {2}", prop.Name, prop.GetValue(ZetaDia.Me, null), prop.PropertyType.Name);
                 }
             }
         }
@@ -781,7 +781,7 @@ namespace QuestTools.UI
 
                 try
                 {
-                    Logger.Log("\nUnit ActorSNO: {0} Name: {1} Type: {2} Radius: {7:0.00} Position: {3} ({4}) Animation: {5} has Attributes:\n{6}\nProperties:\n{8}\n\n",
+                    Logger.RawLog("\nUnit ActorSNO: {0} Name: {1} Type: {2} Radius: {7:0.00} Position: {3} ({4}) Animation: {5} has Attributes:\n{6}\nProperties:\n{8}\n\n",
                                         o.ActorSNO, o.Name, o.ActorInfo.GizmoType, StringUtils.GetProfileCoordinates(o.Position),
                                         StringUtils.GetSimplePosition(o.Position),
                                         o.CommonData.CurrentAnimation, attributesFound, o.CollisionSphere.Radius, propertiesFound);
@@ -836,38 +836,45 @@ namespace QuestTools.UI
         }
         private static double DumpObjects(IEnumerable<DiaObject> objects, double iType)
         {
-            Logger.Log("Objects found: {0}", objects.Count());
-            foreach (DiaObject o in objects)
+            try
             {
-                if (!o.IsValid)
-                    continue;
 
-                string attributesFound = "";
-
-                foreach (ActorAttributeType aType in Enum.GetValues(typeof(ActorAttributeType)))
+                Logger.Log("Objects found: {0}", objects.Count());
+                foreach (DiaObject o in objects)
                 {
-                    if (IgnoreActorAttributeTypes.Contains(aType))
+                    if (!o.IsValid)
                         continue;
-                    try
-                    {
-                        iType = GetAttribute(iType, o, aType);
-                    }
-                    catch { }
 
-                    if (iType > 0)
-                    {
-                        attributesFound += aType.ToString() + "=" + iType + ", ";
-                    }
-                }
+                    string attributesFound = "";
 
-                Vector3 myPos = ZetaDia.Me.Position;
-                try
-                {
-                    Logger.Log("\nObject ActorSNO: {0} Name: {1} Type: {2} Radius: {3:0.00} Position: {4} ({5}) Animation: {6} Distance: {7:0.0} has Attributes: {8}\n\n",
+                    foreach (ActorAttributeType aType in Enum.GetValues(typeof (ActorAttributeType)))
+                    {
+                        if (IgnoreActorAttributeTypes.Contains(aType))
+                            continue;
+                        try
+                        {
+                            iType = GetAttribute(iType, o, aType);
+                        }
+                        catch
+                        {
+                        }
+
+                        if (iType > 0)
+                        {
+                            attributesFound += aType.ToString() + "=" + iType + ", ";
+                        }
+                    }
+
+                    Vector3 myPos = ZetaDia.Me.Position;
+
+                    Logger.RawLog("\nObject ActorSNO: {0} Name: {1} Type: {2} Radius: {3:0.00} Position: {4} ({5}) Animation: {6} Distance: {7:0.0} has Attributes: {8}\n\n",
                         o.ActorSNO, o.Name, o.ActorType, o.CollisionSphere.Radius, StringUtils.GetProfileCoordinates(o.Position), StringUtils.GetSimplePosition(o.Position), o.CommonData.CurrentAnimation, o.Position.Distance(myPos),
                         attributesFound);
                 }
-                catch { }
+            }
+            catch (Exception ex)
+            {
+                Logger.LogError("Exception {0}", ex.ToString());
             }
             return iType;
         }
@@ -912,7 +919,7 @@ namespace QuestTools.UI
 
                 try
                 {
-                    Logger.Log("\nGizmo ActorSNO: {0} Name: {1} Type: {2} Radius: {3:0.00} Position: {4} ({5}) Distance: {6:0} Animation: {7} AppearanceSNO: {8} has Attributes: {9}\n\n",
+                    Logger.RawLog("\nGizmo ActorSNO: {0} Name: {1} Type: {2} Radius: {3:0.00} Position: {4} ({5}) Distance: {6:0} Animation: {7} AppearanceSNO: {8} has Attributes: {9}\n\n",
                         o.ActorSNO, o.Name, o.ActorInfo.GizmoType, o.CollisionSphere.Radius, StringUtils.GetProfileCoordinates(o.Position), StringUtils.GetSimplePosition(o.Position), o.Distance, o.CommonData.CurrentAnimation, o.AppearanceSNO, attributesFound);
                 }
                 catch { }
@@ -944,7 +951,7 @@ namespace QuestTools.UI
 
                 try
                 {
-                    Logger.Log("\nItem ActorSNO: {0} Name: {1} Type: {2} Radius: {3:0.00} Position: {4} ({5}) Distance: {6:0} Animation: {7} AppearanceSNO: {8} has Attributes: {9}\n\n",
+                    Logger.RawLog("\nItem ActorSNO: {0} Name: {1} Type: {2} Radius: {3:0.00} Position: {4} ({5}) Distance: {6:0} Animation: {7} AppearanceSNO: {8} has Attributes: {9}\n\n",
                         o.ActorSNO, o.Name, o.ActorInfo.GizmoType, o.CollisionSphere.Radius, StringUtils.GetProfileCoordinates(o.Position), StringUtils.GetSimplePosition(o.Position), o.Distance, o.CommonData.CurrentAnimation, o.AppearanceSNO, attributesFound);
                 }
                 catch { }
@@ -987,7 +994,7 @@ namespace QuestTools.UI
 
                 try
                 {
-                    Logger.Log("\nPlayer ActorSNO: {0} Name: {1} Type: {2} Radius: {3:0.00} Position: {4} ({5}) RActorGUID: {6} ACDGuid: {7} SummonerId: {8} " +
+                    Logger.RawLog("\nPlayer ActorSNO: {0} Name: {1} Type: {2} Radius: {3:0.00} Position: {4} ({5}) RActorGUID: {6} ACDGuid: {7} SummonerId: {8} " +
                         "SummonedByAcdId: {9} Animation: {10} isHidden: {11} SNOApperance: {12} has Attributes: {13}\nProperties:\n{14}\n\n",
                     o.ActorSNO, o.Name, o.ActorInfo.GizmoType, o.CollisionSphere.Radius, StringUtils.GetProfileCoordinates(o.Position), StringUtils.GetSimplePosition(o.Position),
                     o.RActorGuid, o.ACDGuid, o.SummonerId, o.SummonedByACDId,
