@@ -320,12 +320,11 @@ namespace QuestTools.Helpers
             if (!IsValidParams(exp.Params, 5))
                 return false;
 
-            var range = exp.Params.ElementAtOrDefault(4).ChangeType<float>();
             var id = exp.Params.ElementAtOrDefault(0).ChangeType<int>();
-
             var xToken = exp.Params.ElementAtOrDefault(1).ToLowerInvariant();
             var yToken = exp.Params.ElementAtOrDefault(2).ToLowerInvariant();
             var zToken = exp.Params.ElementAtOrDefault(3).ToLowerInvariant();
+            var range = exp.Params.ElementAtOrDefault(4).ChangeType<float>();
 
             var x = xToken.Contains("me.position.x") ? ZetaDia.Me.Position.X : xToken.ChangeType<float>();
             var y = yToken.Contains("me.position.y") ? ZetaDia.Me.Position.Y : yToken.ChangeType<float>();
@@ -369,8 +368,8 @@ namespace QuestTools.Helpers
             if (!IsValidParams(exp.Params, 2))
                 return false;
 
-            var questId = exp.Params.ElementAtOrDefault(1).ChangeType<int>();
-            var stepId = exp.Params.ElementAtOrDefault(0).ChangeType<int>();
+            var questId = exp.Params.ElementAtOrDefault(0).ChangeType<int>();
+            var stepId = exp.Params.ElementAtOrDefault(1).ChangeType<int>();
 
             return Zeta.Bot.ConditionParser.IsActiveQuestAndStep(questId,stepId);
         }
@@ -380,7 +379,7 @@ namespace QuestTools.Helpers
             if (!IsValidParams(exp.Params, 1))
                 return false;
 
-            var questId = exp.Params.ElementAtOrDefault(1).ChangeType<int>();
+            var questId = exp.Params.ElementAtOrDefault(0).ChangeType<int>();
 
             return Zeta.Bot.ConditionParser.IsActiveQuest(questId);
         }
@@ -390,7 +389,7 @@ namespace QuestTools.Helpers
             if (!IsValidParams(exp.Params, 1))
                 return false;
 
-            var stepId = exp.Params.ElementAtOrDefault(1).ChangeType<int>();
+            var stepId = exp.Params.ElementAtOrDefault(0).ChangeType<int>();
 
             return Zeta.Bot.ConditionParser.IsActiveQuestStep(stepId);
         }
@@ -400,7 +399,7 @@ namespace QuestTools.Helpers
             if (!IsValidParams(exp.Params, 1))
                 return false;
 
-            var sceneId = exp.Params.ElementAtOrDefault(1).ChangeType<int>();
+            var sceneId = exp.Params.ElementAtOrDefault(0).ChangeType<int>();
 
             return Zeta.Bot.ConditionParser.IsSceneLoaded(sceneId);
         }
