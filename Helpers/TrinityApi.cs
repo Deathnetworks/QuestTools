@@ -13,7 +13,7 @@ namespace QuestTools.Helpers
         // Trinity_635346394618921335.dll
         private const string AssemblyName = "Trinity";
         // namespace Trinity, public class Trinity
-        private const string MainClass = "Trinity.Trinity";
+        private const string MainClass = "Trinity.Combat.Abilities.CombatBase";
 
         private static Assembly _mainAssembly;
         private static Dictionary<Tuple<string, Type>, PropertyInfo> _propertyInfoDictionary = new Dictionary<Tuple<string, Type>, PropertyInfo>();
@@ -128,8 +128,6 @@ namespace QuestTools.Helpers
                         _fieldInfoDictionary[key] = fieldInfo;
                     else
                         _fieldInfoDictionary.Add(key, fieldInfo);
-
-                    _fieldInfoDictionary.Add(new Tuple<string, Type>(memberName, targetType), fieldInfo);
 
                     fieldInfo.SetValue(null, value);
                     return true;
@@ -250,8 +248,8 @@ namespace QuestTools.Helpers
 
                 if (TypeDictionary.TryGetValue(name, out result) && result != null)
                     return true;
-
-                result = _mainAssembly.GetType(name);
+                string fullName = AssemblyName + "." + name;
+                result = _mainAssembly.GetType(fullName);
 
                 if (TypeDictionary.ContainsKey(name))
                     TypeDictionary[name] = result;
@@ -277,13 +275,17 @@ namespace QuestTools.Helpers
             {
                 if (_mainAssembly != null)
                     return;
-
-                foreach (var asm in AppDomain.CurrentDomain.GetAssemblies().Where(x => x.GetName().Name.StartsWith(AssemblyName)).Where(asm => asm != null))
+                var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(x => x.GetName().Name.StartsWith(AssemblyName + "_")).Where(asm => asm != null);
+                foreach (var asm in assemblies)
                 {
                     try
                     {
-                        asm.GetType(MainClass);
-                        _mainAssembly = asm;
+                        var mainType = asm.GetType(MainClass);
+                        if (mainType != null)
+                        {
+                            _mainAssembly = asm;
+                            break;
+                        }
                     }
                     catch
                     {
