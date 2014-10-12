@@ -26,7 +26,7 @@ namespace QuestTools.ProfileTags
             int oldValue;
 
             // If the dictionary value doesn't even exist, FAIL!
-            if (!RandomRoll.RandomIds.TryGetValue(ID, out oldValue))
+            if (!RandomRollTag.RandomIds.TryGetValue(ID, out oldValue))
                 return false;
 
             // Ok, do the results match up what we want? then SUCCESS!

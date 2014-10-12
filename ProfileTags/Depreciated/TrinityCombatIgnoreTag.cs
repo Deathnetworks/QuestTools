@@ -7,7 +7,7 @@ namespace QuestTools.ProfileTags.Depreciated
     /// Trinity Combat Ignore will let users add a SNO, and optionally specify to exclude elites or trash. This will be reset on every profile load.
     /// </summary>
     [XmlElement("TrinityCombatIgnore")]
-    class TrinityCombatIgnore : ProfileBehavior
+    class TrinityCombatIgnoreTag : ProfileBehavior
     {
         private bool _isDone;
         public override bool IsDone
@@ -22,7 +22,7 @@ namespace QuestTools.ProfileTags.Depreciated
             base.OnStart();
         }
 
-        public TrinityCombatIgnore() { }
+        public TrinityCombatIgnoreTag() { }
 
         /*
         [XmlAttribute("actorId")]

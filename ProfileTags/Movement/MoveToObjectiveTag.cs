@@ -18,9 +18,9 @@ using Action = Zeta.TreeSharp.Action;
 namespace QuestTools.ProfileTags.Movement
 {
     [XmlElement("MoveToObjective")]
-    public class MoveToObjective : ProfileBehavior, IAsyncProfileBehavior
+    public class MoveToObjectiveTag : ProfileBehavior, IAsyncProfileBehavior
     {
-        public MoveToObjective() { }
+        public MoveToObjectiveTag() { }
         private bool _isDone;
         /// <summary>
         /// Setting this to true will cause the Tree Walker to continue to the next profile tag
@@ -388,7 +388,7 @@ namespace QuestTools.ProfileTags.Movement
         private readonly QTNavigator _qtNavigator = new QTNavigator();
 
         /// <summary>
-        /// Safely Moves the player to the requested destination <seealso cref="MoveToObjective.PathPointLimit"/>
+        /// Safely Moves the player to the requested destination <seealso cref="MoveToObjectiveTag.PathPointLimit"/>
         /// </summary>
         /// <param name="newpos">Vector3 of the new position</param>
         /// <param name="destinationName">For logging purposes</param>

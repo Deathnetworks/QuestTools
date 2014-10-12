@@ -10,9 +10,9 @@ namespace QuestTools.ProfileTags
 {
     [XmlElement("TrinityRandomRoll")]
     [XmlElement("RandomRoll")]
-    public class RandomRoll : ProfileBehavior
+    public class RandomRollTag : ProfileBehavior
     {
-        public RandomRoll() { }
+        public RandomRollTag() { }
         private bool _isDone;
 
         public override bool IsDone

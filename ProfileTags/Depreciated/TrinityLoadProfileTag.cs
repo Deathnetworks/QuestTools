@@ -4,9 +4,9 @@ using Zeta.XmlEngine;
 namespace QuestTools.ProfileTags.Depreciated
 {
     [XmlElement("TrinityLoadProfile")]
-    public class TrinityLoadProfile : LoadProfileTag
+    public class TrinityLoadProfileTag : LoadProfileTag
     {
-        public TrinityLoadProfile() { }
+        public TrinityLoadProfileTag() { }
 
         public override void OnStart()
         {

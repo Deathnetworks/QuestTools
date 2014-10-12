@@ -4,9 +4,9 @@ using Zeta.XmlEngine;
 namespace QuestTools.ProfileTags.Depreciated
 {
     [XmlElement("TrinityIf")]
-    public class TrinityIf : IfTag
+    public class TrinityIfTag : IfTag
     {
-        public TrinityIf() { }
+        public TrinityIfTag() { }
         public override void OnStart()
         {
             Logger.LogError("TrinityIf is decpreciated. Use <If condition=\"\" /> instead.");

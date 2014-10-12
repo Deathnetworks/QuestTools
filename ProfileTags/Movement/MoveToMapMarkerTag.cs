@@ -18,9 +18,9 @@ using Action = Zeta.TreeSharp.Action;
 namespace QuestTools.ProfileTags.Movement
 {
     [XmlElement("MoveToMapMarker")]
-    public class MoveToMapMarker : ProfileBehavior, IAsyncProfileBehavior
+    public class MoveToMapMarkerTag : ProfileBehavior, IAsyncProfileBehavior
     {
-        public MoveToMapMarker() { }
+        public MoveToMapMarkerTag() { }
         private bool _isDone;
         /// <summary>
         /// Setting this to true will cause the Tree Walker to continue to the next profile tag
@@ -64,7 +64,7 @@ namespace QuestTools.ProfileTags.Movement
         public float InteractRange { get; set; }
 
         /// <summary>
-        /// Profile Attribute to Optionally set this to true if you're using a portal. Requires use of destinationWorldId. <seealso cref="MoveToMapMarker.DestinationWorldId"/>
+        /// Profile Attribute to Optionally set this to true if you're using a portal. Requires use of destinationWorldId. <seealso cref="MoveToMapMarkerTag.DestinationWorldId"/>
         /// </summary>
         [XmlAttribute("isPortal")]
         public bool IsPortal { get; set; }
@@ -514,7 +514,7 @@ namespace QuestTools.ProfileTags.Movement
         private readonly QTNavigator _qtNavigator = new QTNavigator();
 
         /// <summary>
-        /// Safely Moves the player to the requested destination <seealso cref="MoveToMapMarker.PathPointLimit"/>
+        /// Safely Moves the player to the requested destination <seealso cref="MoveToMapMarkerTag.PathPointLimit"/>
         /// </summary>
         /// <param name="newpos">Vector3 of the new position</param>
         /// <param name="destinationName">For logging purposes</param>

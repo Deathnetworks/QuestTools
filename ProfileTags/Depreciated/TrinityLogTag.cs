@@ -4,9 +4,9 @@ using Zeta.XmlEngine;
 namespace QuestTools.ProfileTags.Depreciated
 {
     [XmlElement("TrinityLog")]
-    public class TrinityLog : LogMessageTag
+    public class TrinityLogTag : LogMessageTag
     {
-        public TrinityLog() { }
+        public TrinityLogTag() { }
 
         public override void OnStart()
         {

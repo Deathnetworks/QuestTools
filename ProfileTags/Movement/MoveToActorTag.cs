@@ -20,9 +20,9 @@ using Zeta.XmlEngine;
 namespace QuestTools.ProfileTags.Movement
 {
     [XmlElement("MoveToActor")]
-    public class MoveToActor : ProfileBehavior, IAsyncProfileBehavior
+    public class MoveToActorTag : ProfileBehavior, IAsyncProfileBehavior
     {
-        public MoveToActor() { }
+        public MoveToActorTag() { }
 
         private bool _isDone;
         public override bool IsDone

@@ -166,7 +166,7 @@ namespace QuestTools
                 if (ProfileManager.CurrentProfileBehavior != null)
                 {
                     Type behaviorType = ProfileManager.CurrentProfileBehavior.GetType();
-                    if (behaviorType == typeof(UseObjectTag) || behaviorType == typeof(UsePortalTag) || behaviorType == typeof(MoveToActor) || behaviorType == typeof(MoveToMapMarker))
+                    if (behaviorType == typeof(UseObjectTag) || behaviorType == typeof(UsePortalTag) || behaviorType == typeof(MoveToActorTag) || behaviorType == typeof(MoveToMapMarkerTag))
                     {
                         result = true;
                     }

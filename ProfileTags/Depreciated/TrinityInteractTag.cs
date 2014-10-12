@@ -3,15 +3,15 @@ using Zeta.XmlEngine;
 
 namespace QuestTools.ProfileTags.Depreciated
 {
-    // * TrinityMoveTo moves in a straight line without any navigation hits, and allows tag-skips
-    [XmlElement("TrinityMoveToSNO")]
-    public class TrinityMoveToSNO : ProfileBehavior
+    // TrinityInteract attempts a blind object-use of an SNO without movement
+    [XmlElement("TrinityInteract")]
+    public class TrinityInteractTag : ProfileBehavior
     {
-        public TrinityMoveToSNO() { }
+        public TrinityInteractTag() { }
 
         public override void OnStart()
         {
-            Logger.LogError("TrinityMoveToSNO is depreciated. Use MoveToActor instead.");
+            Logger.LogError("TrinityInteract is depreciated. Use MoveToActor instead.");
             _isDone = true;
             base.OnStart();
         }
@@ -29,5 +29,4 @@ namespace QuestTools.ProfileTags.Depreciated
             base.ResetCachedDone();
         }
     }
-
 }

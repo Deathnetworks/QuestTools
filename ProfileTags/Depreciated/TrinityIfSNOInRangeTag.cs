@@ -4,9 +4,9 @@ using Zeta.XmlEngine;
 namespace QuestTools.ProfileTags.Depreciated
 {
     [XmlElement("TrinityIfSNOInRange")]
-    public class TrinityIfSNOInRange : IfTag
+    public class TrinityIfSNOInRangeTag : IfTag
     {
-        public TrinityIfSNOInRange() { }
+        public TrinityIfSNOInRangeTag() { }
         public override void OnStart()
         {
             Logger.LogError("TrinityIfSNOInRange is decpreciated. Use <If condition=\"ActorExistsAt(actorId, x, y, z, range)\" /> instead.");
