@@ -42,8 +42,8 @@ namespace QuestTools.Helpers
             {
                 get
                 {
-                    return ZetaDia.CurrentLevelAreaId == LevelAreaId && 
-                        TimeSinceSeen.TotalSeconds < 20 && 
+                    return ZetaDia.CurrentLevelAreaId == LevelAreaId &&
+                        TimeSinceSeen.TotalSeconds < 20 &&
                         Position.Distance(ZetaDia.Me.Position) < 120;
                 }
             }
@@ -94,12 +94,18 @@ namespace QuestTools.Helpers
             return Actors.TryGetValue(actorId, out cActor) ? DateTime.UtcNow.Subtract(cActor.LastSeen) : TimeSpan.Zero;
         }
 
+        private static int _currentLevelAreaId;
+        private static int _currentWorldId;
+
         public static void UpdateActors()
         {
             if (DateTime.UtcNow.Subtract(_lastChangeCheckTime).TotalMilliseconds < 500)
                 return;
 
             _lastChangeCheckTime = DateTime.UtcNow;
+
+            _currentWorldId = ZetaDia.CurrentWorldId;
+            _currentLevelAreaId = ZetaDia.CurrentLevelAreaId;
 
             if (!ZetaDia.IsInGame || !ZetaDia.Me.IsValid || ZetaDia.IsLoadingWorld)
                 return;
@@ -130,8 +136,8 @@ namespace QuestTools.Helpers
             {
                 //Logger.Log("Updating Existing Actor {0} ({0})", actor.Name, actor.ActorSNO);
                 cachedActor.Position = actor.Position;
-                cachedActor.WorldId = ZetaDia.CurrentWorldId;
-                cachedActor.LevelAreaId = ZetaDia.CurrentLevelAreaId;
+                cachedActor.WorldId = _currentWorldId;
+                cachedActor.LevelAreaId = _currentLevelAreaId;
                 cachedActor.LastSeen = DateTime.UtcNow;
 
                 if (UnitsWithAnimationTracking.Contains(actor.ActorSNO) && shouldTrackAnimations)
