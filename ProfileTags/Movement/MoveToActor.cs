@@ -182,16 +182,19 @@ namespace QuestTools.ProfileTags.Movement
 
         private async Task<bool> MainCoroutine()
         {
-            if (ZetaDia.Me.IsDead)
+            if (ZetaDia.Me == null)
+                return false;
+
+            if (!ZetaDia.IsInGame)
+                return false;
+
+            if (ZetaDia.IsLoadingWorld)
                 return false;
 
             if (!ZetaDia.Me.IsValid)
                 return false;
 
-            if (ZetaDia.IsLoadingWorld)
-                return false;
-
-            if (ZetaDia.IsLoadingWorld)
+            if (ZetaDia.Me.IsDead)
                 return false;
 
             if (DateTime.UtcNow.Subtract(_lastInteract).TotalMilliseconds < 500 && WorldHasChanged())
@@ -218,7 +221,7 @@ namespace QuestTools.ProfileTags.Movement
                 _lastPosition = ZetaDia.Me.Position;
             }
 
-            if (ExitWithVendorWindow && UIElements.VendorWindow.IsVisible)
+            if (ExitWithVendorWindow && GameUI.IsElementVisible(UIElements.VendorWindow))
             {
                 EndDebug("Vendor window is visible " + Status());
             }
