@@ -22,17 +22,28 @@ namespace QuestTools.ProfileTags.Complex
             Reverse
         }
 
+        private bool _shuffled;
         private bool _isDone;
         public override bool IsDone
         {
-            get { return _isDone || !IsActiveQuestStep; }
+            get
+            {                
+                var done = _isDone || QuestId > 0 && !IsActiveQuestStep;
+
+                if(!_shuffled)
+                    Shuffle();
+
+                return done;
+            }
         }
 
         public override bool GetConditionExec()
         {
-            var i = 0;
-            var nodes = GetNodes().ToList();
+            return false;
+        }
 
+        public void Shuffle()
+        {
             Logger.Log("{0} Shuffling {1} tags", Order, Body.Count);
 
             switch (Order)
@@ -44,14 +55,14 @@ namespace QuestTools.ProfileTags.Complex
 
                 default:
 
-                    Shuffle(Body);
+                    RandomShuffle(Body);
                     break;
             }
 
-            return true;
+            _shuffled = true;
         }
-
-        public static void Shuffle<T>(IList<T> list)
+            
+        public static void RandomShuffle<T>(IList<T> list)
         {
             var rng = new Random();
             var n = list.Count;
@@ -63,6 +74,13 @@ namespace QuestTools.ProfileTags.Complex
                 list[k] = list[n];
                 list[n] = value;
             }
+        }
+
+        public override void ResetCachedDone()
+        {
+            _shuffled = false;
+            _isDone = false;
+            base.ResetCachedDone();
         }
 
         #region IAsyncProfileBehavior

@@ -34,7 +34,10 @@ namespace QuestTools.Helpers
 
                 if (LoadedProfiles.Count > 1)
                 {
-                    for (int i = (LoadedProfiles.Count-1); i-- > 0; )
+
+                    Logger.Log("ProfileCount = {0}", LoadedProfiles.Count);
+
+                    for (int i = LoadedProfiles.Count - 1; i-- > 0;)
                     {
                         var profile = LoadedProfiles.ElementAt(i);
 
@@ -43,8 +46,13 @@ namespace QuestTools.Helpers
                             Logger.Debug("Processing History Index={0} Name={1} SecondsSinceLoad={2}", i, profile.Value.Name, DateTime.UtcNow.Subtract(profile.Key).TotalSeconds);
                             _lastProfile = profile.Value;
                             break;
-                        } 
-                    }                  
+                        }
+                    }
+
+                }
+                else if (LoadedProfiles.Count == 1)
+                {
+                    _lastProfile = LoadedProfiles.First().Value;
                 }
 
                 return _lastProfile;
