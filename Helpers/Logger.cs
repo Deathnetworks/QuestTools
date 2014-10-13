@@ -53,7 +53,7 @@ namespace QuestTools
         /// <summary>
         /// Log without the Plugin Identifier
         /// </summary>
-        public static void RawLog(string message)
+        public static void Raw(string message)
         {
             var frame = new StackFrame(1);
             var method = frame.GetMethod();
@@ -68,7 +68,7 @@ namespace QuestTools
         /// <summary>
         /// Log without the Plugin Identifier
         /// </summary>
-        public static void RawLog(string message, params object[] args)
+        public static void Raw(string message, params object[] args)
         {
             var frame = new StackFrame(1);
             var method = frame.GetMethod();
