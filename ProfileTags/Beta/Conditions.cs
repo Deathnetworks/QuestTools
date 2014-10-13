@@ -15,6 +15,7 @@ namespace QuestTools.Helpers
         {
             Unknown = 0,
             Variable,
+            Boolean,
             BoolVariable,
             Method,
             BoolMethod,
@@ -37,7 +38,6 @@ namespace QuestTools.Helpers
             CurrentWorldId,
             CurrentSceneId,
             CurrentSceneName,
-            IsInTown,
         }
 
         public static bool CurrentWave(Expression exp)
@@ -117,6 +117,17 @@ namespace QuestTools.Helpers
 
         #endregion
 
+        #region Boolean Conditions
+
+        public static bool GetBoolean(Expression exp)
+        {
+            bool result;
+            Boolean.TryParse(exp.Value, out result);
+            return result;
+        }
+
+        #endregion
+
         #region Bool Variable Conditions
 
         /// <summary>
@@ -139,7 +150,6 @@ namespace QuestTools.Helpers
         {
             return ZetaDia.ActInfo.ActiveBounty != null;
         }
-
         #endregion
 
         #region Method Conditions
