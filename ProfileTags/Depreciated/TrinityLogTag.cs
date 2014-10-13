@@ -10,7 +10,7 @@ namespace QuestTools.ProfileTags.Depreciated
 
         public override void OnStart()
         {
-            Logger.LogError("TrinityLog is decpreciated. Use <LogMessage /> instead.");
+            Logger.Error("TrinityLog is decpreciated. Use <LogMessage /> instead.");
             base.OnStart();
         }
     }

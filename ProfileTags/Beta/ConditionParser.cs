@@ -24,7 +24,7 @@ namespace QuestTools.Helpers
             }
             catch (Exception ex)
             {
-                Logger.LogError("ConditionParser Exception: {0}, {1}", ex.Message, ex.InnerException);
+                Logger.Error("ConditionParser Exception: {0}, {1}", ex.Message, ex.InnerException);
             }
             return false;
         };
@@ -37,12 +37,12 @@ namespace QuestTools.Helpers
         {
             return RecursiveEvaluate(expressions);
         }
-        
-        private static bool RecursiveEvaluate (List<Expression> expressions, int depth = 0)
+
+        private static bool RecursiveEvaluate(List<Expression> expressions, int depth = 0)
         {
             var runningResult = false;
             var first = true;
-            var indent = ">".PadLeft(5*depth);
+            var indent = ">".PadLeft(5 * depth);
 
             Logger.Verbose(indent + " Starting Group of {0} Expressions", expressions.Count);
 
@@ -54,7 +54,7 @@ namespace QuestTools.Helpers
 
                 // abort if there's no point evaluating the rest of the expressions
                 if (exp.Join == OperatorType.Or && (runningResult || first))
-                {                    
+                {
                     Logger.Verbose("true OR this => we're done.");
                     runningResult = true;
                     break;
@@ -62,19 +62,19 @@ namespace QuestTools.Helpers
 
                 if (exp.Children.Any())
                 {
-                    thisResult = RecursiveEvaluate(exp.Children, depth+1);
-                    thisResultLog = string.Format("{0} Group: Result={1}", exp.Join + " " + notLog, thisResult);                    
+                    thisResult = RecursiveEvaluate(exp.Children, depth + 1);
+                    thisResultLog = string.Format("{0} Group: Result={1}", exp.Join + " " + notLog, thisResult);
                 }
                 else
                 {
                     thisResult = EvaluateExpression(exp);
                     thisResultLog = string.Format("{0} Result={1}", exp.Join + " " + notLog + " " + exp.Original, thisResult);
                 }
-                
+
                 if (exp.Negated)
                 {
                     thisResult = !thisResult;
-                }                    
+                }
 
                 if (exp.Join == OperatorType.And && (runningResult || first))
                 {
@@ -98,7 +98,7 @@ namespace QuestTools.Helpers
 
             Logger.Verbose(indent + " Evaluated Group as {0}", runningResult);
 
-            return runningResult;           
+            return runningResult;
         }
 
         /// <summary>
@@ -179,19 +179,23 @@ namespace QuestTools.Helpers
                 {
                     expression.Type = Conditions.ConditionType.Variable;
                 }
+                else if (token.ToLower() == "true" || token.ToLower() == "false")
+                {
+                    expression.Type = Conditions.ConditionType.Boolean;
+                }
                 else if (Tokenizer.IsEnumValueFromPartial<Conditions.BoolVariableConditionType>(token))
                 {
                     expression.Type = Conditions.ConditionType.BoolVariable;
                 }
                 else if (Tokenizer.IsEnumValue<Conditions.MethodConditionType>(token))
                 {
-                    expression.Type = Conditions.ConditionType.Method;    
+                    expression.Type = Conditions.ConditionType.Method;
                 }
                 else if (Tokenizer.IsEnumValue<Conditions.BoolMethodConditionType>(token))
                 {
                     expression.Type = Conditions.ConditionType.BoolMethod;
-                }                
-                else if(Tokenizer.IsOperator(token, OperatorType.OpenParen))
+                }
+                else if (Tokenizer.IsOperator(token, OperatorType.OpenParen))
                 {
                     expression.Type = Conditions.ConditionType.Group;
                 }
@@ -201,7 +205,7 @@ namespace QuestTools.Helpers
                 }
                 else
                 {
-                    if(!Tokenizer.IsOperator(token))
+                    if (!Tokenizer.IsOperator(token))
                         Logger.Verbose("Unrecognized token {0}", token);
 
                     return;
@@ -222,7 +226,7 @@ namespace QuestTools.Helpers
                 }
 
                 // Order by Depth
-                Func<KeyValuePair<int,Expression>> getDirectParent = () => parents.OrderBy(k => k.Key).FirstOrDefault();
+                Func<KeyValuePair<int, Expression>> getDirectParent = () => parents.OrderBy(k => k.Key).FirstOrDefault();
 
                 Logger.Verbose("Found {2} Token {0}: {1}", i, token, expression.Type);
 
@@ -231,8 +235,9 @@ namespace QuestTools.Helpers
                     case Conditions.ConditionType.Group:
 
                         if (Tokenizer.IsOperator(token, OperatorType.OpenParen))
-                        {                            
-                            parents.Add(depth+1,expression);
+                        {
+                            depth++;
+                            parents.Add(depth, expression);
 
                             Logger.Verbose("Created Group parentsCount={0} depth={1}", parents.Count, depth);
                         }
@@ -241,7 +246,7 @@ namespace QuestTools.Helpers
                         {
                             if (parents.Any())
                             {
-                                
+
                                 var parent = getDirectParent();
 
                                 Logger.Verbose("Ending Group parentsCount={0} parentChildCount={1}", parents.Count, parent.Value.Children.Count);
@@ -254,8 +259,8 @@ namespace QuestTools.Helpers
                             {
                                 Logger.Debug("Orphan close paren found :(");
                             }
-                            
-                            
+
+
                         }
 
                         return;
@@ -276,7 +281,7 @@ namespace QuestTools.Helpers
                             return;
                         }
 
-                        skippableTokenIndexes.AddRange(new [] { i+1, i+2 });
+                        skippableTokenIndexes.AddRange(new[] { i + 1, i + 2 });
 
                         expression.Operator = Tokenizer.GetOperatorType(aheadOne);
                         expression.MethodName = Tokenizer.GetEnumValue<Conditions.VariableConditionType>(token).ToString();
@@ -284,6 +289,10 @@ namespace QuestTools.Helpers
 
                         break;
 
+                    case Conditions.ConditionType.Boolean:
+                        expression.MethodName = "GetBoolean";
+                        expression.Value = token;
+                        break;
                     case Conditions.ConditionType.BoolVariable:
 
                         expression.MethodName = Tokenizer.GetEnumValueFromPartial<Conditions.BoolVariableConditionType>(token).ToString();
@@ -365,7 +374,7 @@ namespace QuestTools.Helpers
                         break;
                 }
 
-                
+
 
                 if (parents.Any())
                 {
@@ -377,7 +386,7 @@ namespace QuestTools.Helpers
                     Logger.Verbose("Adding expression to root");
                     expressions.Add(expression);
                 }
-                
+
             });
 
             Logger.Verbose("Original = {0}", input);
@@ -393,7 +402,7 @@ namespace QuestTools.Helpers
         {
             Func<List<Expression>, int, string> recurseExpressions = null;
 
-            recurseExpressions = (e,d) =>
+            recurseExpressions = (e, d) =>
             {
                 var output = string.Empty;
                 var indent = "".PadLeft(d * 5);
@@ -401,20 +410,20 @@ namespace QuestTools.Helpers
                 {
                     var not = exp.Negated ? "NOT" : string.Empty;
 
-                    output += "\n" + indent + exp.Join.ToString().ToUpperInvariant() + " " + not + " " +exp.Original;
+                    output += "\n" + indent + exp.Join.ToString().ToUpperInvariant() + " " + not + " " + exp.Original;
 
                     if (exp.Children.Any())
                     {
                         if (recurseExpressions != null)
                             output += "(" + indent + recurseExpressions(exp.Children, d + 1) + "\n" + indent + ")";
                     }
-                        
+
                 });
                 return output;
             };
-                
+
             if (expressions.Any())
-            {                
+            {
                 var output = (string.IsNullOrEmpty(message) ? ">" : message) + recurseExpressions(expressions, 1);
 
                 //output += string.Format("\n> Result = {0}", Evaluate(expressions));
@@ -424,7 +433,7 @@ namespace QuestTools.Helpers
             else
             {
                 Logger.Log("No Expressions Found");
-            }        
+            }
         }
 
     }

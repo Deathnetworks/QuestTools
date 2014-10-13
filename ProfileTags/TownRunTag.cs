@@ -106,7 +106,10 @@ namespace QuestTools.ProfileTags
             if (CheckDurability() || CheckMinBagSlots())
             {
                 Logger.Log("Town-run request received, will town-run at next possible moment.");
-                TrinityApi.SetField("Trinity", "ForceVendorRunASAP", true);
+                if (!TrinityApi.SetField("Trinity.Trinity", "ForceVendorRunASAP", true))
+                {
+                    Logger.Error("Unable to set field ForceVendorRunASAP!");
+                }
                 _isDone = true;
             }
             else

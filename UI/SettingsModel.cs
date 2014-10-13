@@ -68,7 +68,7 @@ namespace QuestTools.UI
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error ordering rift key priority up for {0}, {1}", selectedItem, ex);
+                Logger.Error("Error ordering rift key priority up for {0}, {1}", selectedItem, ex);
             }
         }
         public void RiftKeyOrderDownAction(object selectedItem)
@@ -96,7 +96,7 @@ namespace QuestTools.UI
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error ordering rift key priority down for {0}, {1}", selectedItem, ex);
+                Logger.Error("Error ordering rift key priority down for {0}, {1}", selectedItem, ex);
             }
 
         }
@@ -108,7 +108,7 @@ namespace QuestTools.UI
 
                 if (!LegendaryGems.ContainsValue((string)selectedItem))
                 {
-                    Logger.LogError("Unknown gem when parsing gem name, order up action {0}", gem);
+                    Logger.Error("Unknown gem when parsing gem name, order up action {0}", gem);
                     return;
                 }
 
@@ -125,7 +125,7 @@ namespace QuestTools.UI
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error ordering gem priority up for {0}, {1}", selectedItem, ex);
+                Logger.Error("Error ordering gem priority up for {0}, {1}", selectedItem, ex);
             }
         }
         public void GemOrderDownAction(object selectedItem)
@@ -136,7 +136,7 @@ namespace QuestTools.UI
 
                 if (!LegendaryGems.ContainsValue(gem))
                 {
-                    Logger.LogError("Unknown gem when parsing gem name, order up action {0}", gem);
+                    Logger.Error("Unknown gem when parsing gem name, order up action {0}", gem);
                     return;
                 }
 
@@ -159,7 +159,7 @@ namespace QuestTools.UI
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error ordering gem priority up for {0}, {1}", selectedItem, ex);
+                Logger.Error("Error ordering gem priority up for {0}, {1}", selectedItem, ex);
             }
         }
     }

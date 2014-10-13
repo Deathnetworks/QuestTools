@@ -217,7 +217,7 @@ namespace QuestTools.ProfileTags.Movement
                             )
                         ),
                         new Action(ret =>
-                            Logger.LogError("MoveToObjective Error: marker={0} actor={1}/{2} completedInteracts={3} isPortal={4} dist={5} interactRange={6}",
+                            Logger.Error("MoveToObjective Error: marker={0} actor={1}/{2} completedInteracts={3} isPortal={4} dist={5} interactRange={6}",
                             _miniMapMarker != null,
                             _objectiveObject != null,
                             (_objectiveObject != null && _objectiveObject.IsValid),

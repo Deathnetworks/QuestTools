@@ -22,8 +22,11 @@ namespace QuestTools.ProfileTags
         {
             return new Action(ret =>
             {
-                TrinityApi.SetProperty("CombatBase", "IsQuestingMode", true); // CombatBase.IsQuestingMode = true;
                 Logger.Log("Setting Trinity Combat mode as QUESTING for the current profile.");
+                if (!TrinityApi.SetProperty("Trinity.Combat.Abilities.CombatBase", "IsQuestingMode", true))
+                {
+                    Logger.Error("Unable to set IsQuestingMode Property!");
+                }
                 _isDone = true;
             });
         }

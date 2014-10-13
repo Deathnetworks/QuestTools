@@ -9,7 +9,7 @@ namespace QuestTools.ProfileTags.Depreciated
         public TrinityIfSNOInRangeTag() { }
         public override void OnStart()
         {
-            Logger.LogError("TrinityIfSNOInRange is decpreciated. Use <If condition=\"ActorExistsAt(actorId, x, y, z, range)\" /> instead.");
+            Logger.Error("TrinityIfSNOInRange is decpreciated. Use <If condition=\"ActorExistsAt(actorId, x, y, z, range)\" /> instead.");
             base.OnStart();
         }
     }

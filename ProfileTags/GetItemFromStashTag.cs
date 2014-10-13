@@ -95,7 +95,7 @@ namespace QuestTools.ProfileTags
             // Validate parameters
             if (GameBalanceId == 0 && ActorId == 0 && !GreaterRiftKey)
             {
-                Logger.LogError("GetItemFromStash: invalid parameters. Please specify at least gameBalanceId=\"\" or actorId=\"\" with valid ID numbers or set greaterRiftKey=\"True\"");
+                Logger.Error("GetItemFromStash: invalid parameters. Please specify at least gameBalanceId=\"\" or actorId=\"\" with valid ID numbers or set greaterRiftKey=\"True\"");
                 _isDone = true;
                 return true;
             }
@@ -120,7 +120,7 @@ namespace QuestTools.ProfileTags
 
             if (StashLocation.Distance2D(ZetaDia.Me.Position) <= 10f && SharedStash == null)
             {
-                Logger.LogError("Shared Stash actor is null!");
+                Logger.Error("Shared Stash actor is null!");
             }
 
             // Open Stash
@@ -141,12 +141,12 @@ namespace QuestTools.ProfileTags
                 bool invalidGameBalanceId = false, invalidActorId = false;
                 if (GameBalanceId != 0 && itemList.All(item => item.GameBalanceId != GameBalanceId))
                 {
-                    Logger.LogError("Unable to find item in stash with GameBalanceId {0}", GameBalanceId);
+                    Logger.Error("Unable to find item in stash with GameBalanceId {0}", GameBalanceId);
                     invalidGameBalanceId = true;
                 }
                 if (ActorId != 0 && itemList.All(item => item.ActorSNO != ActorId))
                 {
-                    Logger.LogError("Unable to find item in stash with ActorSNO {0}", ActorId);
+                    Logger.Error("Unable to find item in stash with ActorSNO {0}", ActorId);
                     invalidActorId = true;
                 }
                 if (firstItem == null || (invalidGameBalanceId && invalidActorId))
