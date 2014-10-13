@@ -438,13 +438,21 @@ namespace QuestTools.UI
                     string questInfo;
                     string questHeader ;
 
+                    var locationInfo = string.Empty;
+
+                    if (!ZetaDia.WorldInfo.IsGenerated)
+                    {
+                        locationInfo = string.Format("x={0:0} y={1:0} z={2:0}",
+                            ZetaDia.Me.Position.X, ZetaDia.Me.Position.Y, ZetaDia.Me.Position.Z);
+                    }
+
                     GetQuestInfoText(out questInfo, out questHeader, null, ZetaDia.Me.CurrentScene);
 
                     var tagText = string.Format(questHeader + "\n<If condition=\"CurrentLevelAreaId=={0} and SceneIntersects({1},{2:0},{3:0}) \">\n",
                             Player.LevelAreaId, ZetaDia.Me.CurrentScene.SceneInfo.SNOId, ZetaDia.Me.Position.X,ZetaDia.Me.Position.Y);
 
-                    var logText = string.Format("<LogMessage questId=\"{0}\" output=\"Found Scene {1} ({2}) at {3}\">\n",
-                            ZetaDia.CurrentQuest.QuestSNO, ZetaDia.Me.CurrentScene.Name, ZetaDia.Me.CurrentScene.SceneInfo.SNOId, ZetaDia.Me.Position.ToString());
+                    var logText = string.Format("<LogMessage questId=\"{0}\" output=\"Found Scene {1} ({2}) at {3}\" />\n",
+                            ZetaDia.CurrentQuest.QuestSNO, ZetaDia.Me.CurrentScene.Name, ZetaDia.Me.CurrentScene.SceneInfo.SNOId, locationInfo);
 
                     Logger.Raw(tagText + Indent + logText + "\n</If>");
                 }
@@ -609,15 +617,15 @@ namespace QuestTools.UI
 
                         if (!ZetaDia.WorldInfo.IsGenerated)
                         {
-                            locationInfo = string.Format(" x=\"{0:0}\" y=\"{1:0}\" z=\"{2:0}\" ",
+                            locationInfo = string.Format("x={0:0} y={1:0} z={2:0}",
                                 obj.Position.X, obj.Position.Y, obj.Position.Z);
                         }
 
                         var tagText = string.Format(questHeader + "\n<If condition=\"ActorExistsAt({8},{9:0},{10:0},{11:0},50) and CurrentLevelAreaId=={7}\">\n",
                             ZetaDia.ActInfo.ActiveBounty.Info.Quest, worldName, ZetaDia.CurrentWorldId, levelAreaName, ZetaDia.CurrentLevelAreaId, ZetaDia.ActInfo.ActiveBounty.Info.QuestSNO, ZetaDia.CurrentWorldId, Player.LevelAreaId, obj.ActorSNO, obj.Position.X, obj.Position.Y, obj.Position.Z);
 
-                        var logText = string.Format("<LogMessage questId=\"{0}\" output=\"Actor Found {1} ({2}) at {3} \">\n",
-                            ZetaDia.CurrentQuest.QuestSNO, obj.Name, obj.ActorSNO, obj.Position.ToString());
+                        var logText = string.Format("<LogMessage questId=\"{0}\" output=\"Actor Found {1} ({2}) at {3}\" />\n",
+                            ZetaDia.CurrentQuest.QuestSNO, obj.Name, obj.ActorSNO, locationInfo);
 
                         Logger.Raw(tagText + Indent + logText + "\n</If>");
                     }
