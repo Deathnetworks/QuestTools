@@ -434,7 +434,7 @@ namespace QuestTools.Helpers
             return Zeta.Bot.ConditionParser.HasBuff(buffId);
         }
 
-        public static bool KeyAboveMedianCount(Expression exp)
+        public static bool KeyAboveMedian(Expression exp)
         {
             if (!IsValidParams(exp.Params, 1))
                 return false;
@@ -442,7 +442,7 @@ namespace QuestTools.Helpers
             return Keys.GetKeyCount(exp.Params.ElementAtOrDefault(0).ChangeType<int>()) > Keys.Median;
         }
 
-        public static bool KeyBelowMedianCount(Expression exp)
+        public static bool KeyBelowMedian(Expression exp)
         {
             if (!IsValidParams(exp.Params, 1))
                 return false;

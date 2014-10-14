@@ -103,6 +103,11 @@ namespace QuestTools.Helpers
             if (!(DateTime.UtcNow.Subtract(_lastCheckedKeys).TotalSeconds > 10)) 
                 return false;
 
+            KeyCounts[0] = 0;
+            KeyCounts[1] = 0;
+            KeyCounts[2] = 0;
+            KeyCounts[3] = 0;
+
             var keys = ZetaDia.Me.Inventory.StashItems.Where(IsKeyId).Concat(ZetaDia.Me.Inventory.Backpack.Where(IsKeyId)).ToList();
             keys.ForEach(key => { KeyCounts[Array.IndexOf(KeyIds, key.ActorSNO)] += key.ItemStackQuantity; });
             _lastCheckedKeys = DateTime.UtcNow;
