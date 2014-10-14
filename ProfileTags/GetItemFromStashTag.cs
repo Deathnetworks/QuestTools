@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Data;
@@ -30,6 +31,7 @@ namespace QuestTools.ProfileTags
         public int ActorId { get; set; }
 
         [XmlAttribute("stackCount")]
+        [DefaultValue(1)]
         public int StackCount { get; set; }
 
         [XmlAttribute("greaterRiftKey")]
@@ -85,7 +87,7 @@ namespace QuestTools.ProfileTags
                 return i => (
                     i.GameBalanceId == GameBalanceId ||
                     i.ActorSNO == ActorId ||
-                    (GreaterRiftKey && i.GetAttribute<int>(ActorAttributeType.TieredLootRunKeyLevel) > -1)
+                    (GreaterRiftKey && i.GetAttribute<int>(ActorAttributeType.TieredLootRunKeyLevel) > 0)
                     );
             }
         }

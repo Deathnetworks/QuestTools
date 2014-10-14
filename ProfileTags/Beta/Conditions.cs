@@ -156,12 +156,18 @@ namespace QuestTools.Helpers
         {
             Unknown = 0,
             IsInTown,
+            IsInGame,
             ActiveBounty
         }
 
         public static bool IsInTown(Expression exp)
         {
             return ZetaDia.IsInTown;
+        }
+
+        public static bool IsInGame(Expression exp)
+        {
+            return ZetaDia.IsInGame;
         }
 
         public static bool ActiveBounty(Expression exp)

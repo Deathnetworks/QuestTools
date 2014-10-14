@@ -117,6 +117,13 @@ namespace QuestTools.ProfileTags
 
         private async Task<bool> MainCoroutine()
         {
+            if (ZetaDia.Me.IsParticipatingInTieredLootRun)
+            {
+                Logger.Log("Already in Greater Rift!");
+                _isDone = true;
+                return false;
+            }
+
             return CheckForRiftPortal();
         }
 
@@ -136,7 +143,7 @@ namespace QuestTools.ProfileTags
         {
             get
             {
-                return ZetaDia.Actors.GetActorsOfType<ACDItem>().Any(i => i.IsValid && i.ItemType == ItemType.KeystoneFragment && i.TieredLootRunKeyLevel > 0);
+                return ZetaDia.Me.Inventory.Backpack.Any(i => i.IsValid && i.ItemType == ItemType.KeystoneFragment && i.TieredLootRunKeyLevel > 0);
             }
         }
 
@@ -144,7 +151,7 @@ namespace QuestTools.ProfileTags
         {
             get
             {
-                return ZetaDia.Actors.GetActorsOfType<ACDItem>().Any(i => i.IsValid && i.ItemType == ItemType.KeystoneFragment && i.TieredLootRunKeyLevel == 0);
+                return ZetaDia.Me.Inventory.Backpack.Any(i => i.IsValid && i.ItemType == ItemType.KeystoneFragment && i.TieredLootRunKeyLevel == 0);
             }
         }
 
@@ -152,7 +159,7 @@ namespace QuestTools.ProfileTags
         {
             get
             {
-                return ZetaDia.Actors.GetActorsOfType<ACDItem>().Any(i => i.IsValid && i.ItemType == ItemType.KeystoneFragment && i.TieredLootRunKeyLevel < 0);
+                return ZetaDia.Me.Inventory.Backpack.Any(i => i.IsValid && i.ItemType == ItemType.KeystoneFragment && i.TieredLootRunKeyLevel < 0);
             }
         }
 
