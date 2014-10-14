@@ -216,7 +216,7 @@ namespace QuestTools.Helpers
                 if (propertyInfo != null)
                 {
                     _propertyInfoDictionary.Add(new Tuple<string, Type>(memberName, targetType), propertyInfo);
-                    propertyInfo.GetValue(null, null);
+                    value = propertyInfo.GetValue(null, null);
                     return true;
                 }
             }

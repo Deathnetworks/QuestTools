@@ -25,7 +25,7 @@ namespace QuestTools
     }
 
     [XmlElement("QuestToolsSettings")]
-    class QuestToolsSettings : XmlSettings
+    public class QuestToolsSettings : XmlSettings
     {
         private bool _debugEnabled;
         private bool _allowProfileReloading;

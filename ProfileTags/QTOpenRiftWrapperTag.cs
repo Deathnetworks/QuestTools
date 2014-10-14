@@ -15,7 +15,7 @@ namespace QuestTools.ProfileTags
     [XmlElement("QTOpenRiftWrapper")]
     public class QTOpenRiftWrapperTag : OpenRiftTag, IAsyncProfileBehavior
     {
-        const int RiftPortalSno = 396751;
+        const int RiftPortalSno = 345935; 
 
         private bool _isDone;
 
@@ -34,6 +34,7 @@ namespace QuestTools.ProfileTags
         {
             try
             {
+                Pulsator.OnPulse += Pulsator_OnPulse;
                 if (!ZetaDia.IsInTown)
                 {
                     _isDone = true;
@@ -44,9 +45,8 @@ namespace QuestTools.ProfileTags
                 var keyPriorityList = QuestToolsSettings.Instance.RiftKeyPriority;
 
                 if (keyPriorityList.Count != 3)
-                    throw new ArgumentOutOfRangeException("RiftKeyPriority", "Expected 3 Rift keys, are settings are broken?");
-
-
+                    throw new ArgumentOutOfRangeException("RiftKeyPriority", "Expected 3 Rift keys, settings are broken?");
+                
                 if (ZetaDia.Actors.GetActorsOfType<DiaObject>(true).Any(i => i.IsValid && i.ActorSNO == RiftPortalSno))
                 {
                     Logger.Log("Rift Portal already open!");
@@ -98,6 +98,15 @@ namespace QuestTools.ProfileTags
             }
         }
 
+        void Pulsator_OnPulse(object sender, EventArgs e)
+        {
+            CheckForRiftPortal();
+        }
+        public override void OnDone()
+        {
+            Pulsator.OnPulse -= Pulsator_OnPulse;
+            base.OnDone();
+        }
         protected override Composite CreateBehavior()
         {
             return new Sequence(
@@ -107,6 +116,11 @@ namespace QuestTools.ProfileTags
         }
 
         private async Task<bool> MainCoroutine()
+        {
+            return CheckForRiftPortal();
+        }
+
+        private bool CheckForRiftPortal()
         {
             var portals = ZetaDia.Actors.GetActorsOfType<GizmoPortal>(true).Where(p => p.IsValid && p.ActorSNO == RiftPortalSno);
             if (portals.Any())
