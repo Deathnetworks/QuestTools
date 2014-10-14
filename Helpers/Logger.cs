@@ -25,8 +25,8 @@ namespace QuestTools
 
             string msg = "[QuestTools][" + type.Name + "] " + string.Format(message, args);
 
-            //if (_lastLogMessage == msg)
-            //    return;
+            if (_lastLogMessage == msg)
+                return;
 
             _lastLogMessage = msg;
             Logging.Info(msg);
@@ -43,8 +43,8 @@ namespace QuestTools
 
             string msg = string.Format("[{0}] " + message, type.Name);
 
-            //if (_lastLogMessage == msg)
-            //    return;
+            if (_lastLogMessage == msg)
+                return;
 
             _lastLogMessage = msg;
             Logging.Info(msg);
@@ -93,8 +93,8 @@ namespace QuestTools
 
             string msg = "[QuestTools][" + type.Name + "] " + string.Format(message, args);
 
-            //if (_lastLogMessage == msg)
-            //    return;
+            if (_lastLogMessage == msg)
+                return;
 
             _lastLogMessage = msg;
             Logging.Warn(msg);
@@ -111,8 +111,8 @@ namespace QuestTools
 
             string msg = string.Format("[{0}] " + message, type.Name);
 
-            //if (_lastLogMessage == msg)
-            //    return;
+            if (_lastLogMessage == msg)
+                return;
 
             _lastLogMessage = msg;
             Logging.Warn(msg);
@@ -141,8 +141,8 @@ namespace QuestTools
 
             string msg = string.Format("[{0}] " + string.Format(message, args), type.Name);
 
-            //if (_lastLogMessage == msg)
-            //    return;
+            if (_lastLogMessage == msg)
+                return;
 
             _lastLogMessage = msg;
             Logging.Error(msg);
@@ -208,8 +208,8 @@ namespace QuestTools
 
             string msg = string.Format("[{0}] " + string.Format(message, args), type.Name);
 
-            //if (_lastLogMessage == msg)
-            //    return;
+            if (_lastLogMessage == msg)
+                return;
 
             _lastLogMessage = msg;
             Logging.Debug(msg);
@@ -228,8 +228,8 @@ namespace QuestTools
 
             string msg = string.Format("[{0}] " + message, type.Name);
 
-            //if (_lastLogMessage == msg)
-            //    return;
+            if (_lastLogMessage == msg)
+                return;
 
             _lastLogMessage = msg;
             Logging.Debug(msg);
