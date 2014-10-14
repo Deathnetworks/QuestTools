@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Org.BouncyCastle.Asn1.Cms;
+using QuestTools.Helpers;
+using Zeta.Bot.Profile;
+using Zeta.Bot.Profile.Composites;
 using Zeta.XmlEngine;
 
 namespace QuestTools.ProfileTags.Complex
@@ -11,35 +15,63 @@ namespace QuestTools.ProfileTags.Complex
     /// For example bounties or keys - each bot would start a different bounty
     /// </summary>
     [XmlElement("Shuffle")]
-    public class ShuffleTag : BaseComplexNodeTag, IAsyncProfileBehavior
+    public class ShuffleTag : ComplexNodeTag, IAsyncProfileBehavior
     {
+        public ShuffleTag()
+        {
+            QuestId = QuestId <= 0 ? 1 : QuestId;
+            Timeout = Timeout <= 0 ? 5 : Timeout;
+        }
+
         [XmlAttribute("order")]
         public OrderType Order { get; set; }
-
         public enum OrderType
         {
             Random = 0,
             Reverse
         }
 
+        /// <summary>
+        /// This is the longest time this behavior can run for. Default is 30 seconds.
+        /// </summary>
+        [XmlAttribute("timeout")]
+        public int Timeout { get; set; }
+
         private bool _shuffled;
         private bool _isDone;
+        private DateTime _startTime = DateTime.MaxValue;
+
         public override bool IsDone
         {
             get
-            {                
-                var done = _isDone || QuestId > 0 && !IsActiveQuestStep;
+            {
+                var done = _isDone || !IsActiveQuestStep || Body.All(p => p.IsDone);
+
+                if (done)
+                    return true;
+
+                CheckTimeout();
 
                 if(!_shuffled)
                     Shuffle();
 
-                return done;
+                return _isDone;
             }
         }
 
-        public override bool GetConditionExec()
+        public void CheckTimeout()
         {
-            return false;
+            if (DateTime.UtcNow.Subtract(_startTime).TotalSeconds <= Timeout)
+                return;
+
+            Logger.Log("timed out ({0} seconds)", Timeout);
+            _isDone = true;
+        }
+
+        public override void OnStart()
+        {
+            _startTime = DateTime.UtcNow;
+            base.OnStart();
         }
 
         public void Shuffle()
@@ -80,6 +112,7 @@ namespace QuestTools.ProfileTags.Complex
         {
             _shuffled = false;
             _isDone = false;
+            _startTime = DateTime.MaxValue;
             base.ResetCachedDone();
         }
 
@@ -98,6 +131,7 @@ namespace QuestTools.ProfileTags.Complex
         public void Done()
         {
             _isDone = true;
+            this.SetChildrenDone();
         }
 
         #endregion

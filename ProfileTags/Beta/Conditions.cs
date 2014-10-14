@@ -1,9 +1,11 @@
 ﻿
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Globalization;
 using System.Linq;
 using QuestTools.ProfileTags;
+using Zeta.Common;
 using Zeta.Game;
 using Zeta.Game.Internals.Actors;
 
@@ -90,22 +92,7 @@ namespace QuestTools.Helpers
 
             var value = exp.Value.ChangeType<int>();
 
-            int[] keyIds = { 364694, 364695, 364696, 364697 };
-            int[] keyCounts = { 0, 0, 0, 0 };
-
-            Func<ACDItem, int, bool> isKeyId = (acd, sno) => keyIds.Any(k => k == acd.ActorSNO);
-
-            List<ACDItem> keys = ZetaDia.Me.Inventory.StashItems.Where(isKeyId).Concat(ZetaDia.Me.Inventory.Backpack.Where(isKeyId)).ToList();
-
-            keys.ForEach(key => { keyCounts[Array.IndexOf(keyIds,key.ActorSNO)] += key.ItemStackQuantity; });
-
-            int maxCount = keyCounts.Max();
-            int highestKey = keyIds[Array.IndexOf(keyCounts,maxCount)];
-            var isAllSameCount = keyCounts.All(count => count == keyCounts[0]);
-
-            Logger.Log(string.Format("Key Counts: Act 1 => {0},  Act 2 => {1},  Act 3 => {2}, Act 4 => {3}", keyCounts[0], keyCounts[1], keyCounts[2], keyCounts[3]));
-
-            return (value > 0) && !isAllSameCount && ConditionParser.EvalInt(exp.Operator, highestKey, value);
+            return (value > 0) && !Keys.IsAllSameCount && ConditionParser.EvalInt(exp.Operator, Keys.LowestKeyId, value);
         }
 
         public static bool LowestKeyCountId(Expression exp)
@@ -115,22 +102,7 @@ namespace QuestTools.Helpers
 
             var value = exp.Value.ChangeType<int>();
 
-            int[] keyIds = { 364694, 364695, 364696, 364697 };
-            int[] keyCounts = { 0, 0, 0, 0 };
-
-            Func<ACDItem, int, bool> isKeyId = (acd, sno) => keyIds.Any(k => k == acd.ActorSNO);
-
-            List<ACDItem> keys = ZetaDia.Me.Inventory.StashItems.Where(isKeyId).Concat(ZetaDia.Me.Inventory.Backpack.Where(isKeyId)).ToList();
-
-            keys.ForEach(key => { keyCounts[Array.IndexOf(keyIds, key.ActorSNO)] += key.ItemStackQuantity; });
-
-            int minCount = keyCounts.Min();
-            int lowestKey = keyIds[Array.IndexOf(keyCounts, minCount)];
-            var isAllSameCount = keyCounts.All(count => count == keyCounts[0]);
-
-            Logger.Log(string.Format("Key Counts: Act 1 => {0},  Act 2 => {1},  Act 3 => {2}, Act 4 => {3}", keyCounts[0], keyCounts[1], keyCounts[2], keyCounts[3]));
-
-            return (value > 0) && !isAllSameCount && ConditionParser.EvalInt(exp.Operator, lowestKey, value);
+            return (value > 0) && !Keys.IsAllSameCount && ConditionParser.EvalInt(exp.Operator, Keys.LowestKeyId, value);
         }
 
         #endregion
@@ -297,6 +269,12 @@ namespace QuestTools.Helpers
             IsSceneLoaded,
             SceneIntersects,
             HasBuff,
+            KeyAboveMedianCount,
+            KeyBelowMedianCount,
+            KeyAboveUpperFence,
+            KeyBelowLowerFence,
+            KeyAboveUpperQuartile,
+            KeyBelowLowerQuartile,
         }
 
         public static bool HasBackpackItem(Expression exp)
@@ -454,6 +432,54 @@ namespace QuestTools.Helpers
             var buffId = exp.Params.ElementAtOrDefault(0).ChangeType<int>();
 
             return Zeta.Bot.ConditionParser.HasBuff(buffId);
+        }
+
+        public static bool KeyAboveMedianCount(Expression exp)
+        {
+            if (!IsValidParams(exp.Params, 1))
+                return false;
+
+            return exp.Params.ElementAtOrDefault(0).ChangeType<int>() > Keys.Median;
+        }
+
+        public static bool KeyBelowMedianCount(Expression exp)
+        {
+            if (!IsValidParams(exp.Params, 1))
+                return false;
+
+            return exp.Params.ElementAtOrDefault(0).ChangeType<int>() < Keys.Median;
+        }
+
+        public static bool KeyAboveUpperFence(Expression exp)
+        {
+            if (!IsValidParams(exp.Params, 1))
+                return false;
+
+            return exp.Params.ElementAtOrDefault(0).ChangeType<int>() > Keys.UpperFence;
+        }
+
+        public static bool KeyBelowLowerFence(Expression exp)
+        {
+            if (!IsValidParams(exp.Params, 1))
+                return false;
+
+            return exp.Params.ElementAtOrDefault(0).ChangeType<int>() < Keys.LowerFence;
+        }
+
+        public static bool KeyAboveUpperQuartile(Expression exp)
+        {
+            if (!IsValidParams(exp.Params, 1))
+                return false;
+
+            return exp.Params.ElementAtOrDefault(0).ChangeType<int>() > Keys.UpperQuartile;
+        }
+
+        public static bool KeyBelowLowerQuartile(Expression exp)
+        {
+            if (!IsValidParams(exp.Params, 1))
+                return false;
+
+            return exp.Params.ElementAtOrDefault(0).ChangeType<int>() < Keys.LowerQuartile;
         }
 
         #endregion
