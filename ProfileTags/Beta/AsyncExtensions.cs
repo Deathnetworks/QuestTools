@@ -98,6 +98,12 @@ namespace QuestTools.Helpers
 
             if (type == typeof(WhileTag))
                 return (behavior as WhileTag).ToAsync().RunAsync();
+
+            if (type == typeof(UseObjectTag))
+                return (behavior as UseObjectTag).ToAsync().RunAsync();
+
+            if (type == typeof(UsePowerTag))
+                return (behavior as UsePowerTag).ToAsync().RunAsync();
             
             Logger.Warn("You attempted to run a tag ({0}) that can't be converted to IAsyncProfileBehavior ", behavior.GetType());
 
@@ -188,6 +194,31 @@ namespace QuestTools.Helpers
             asyncVersion.Body = tag.Body;
             asyncVersion.Condition = tag.Condition;
             asyncVersion.Conditional = tag.Conditional;
+            tag.CopyTo(asyncVersion);
+            return asyncVersion;
+        }
+
+        internal static AsyncUseObjectTag ToAsync(this UseObjectTag tag)
+        {
+            var asyncVersion = new AsyncUseObjectTag();
+            asyncVersion.ActorId = tag.ActorId;
+            asyncVersion.Hotspots = tag.Hotspots;
+            asyncVersion.IsPortal = tag.IsPortal;
+            asyncVersion.InteractRange = tag.InteractRange;
+            asyncVersion.X = tag.X;
+            asyncVersion.Y = tag.Y;
+            asyncVersion.Z = tag.Z;
+            tag.CopyTo(asyncVersion);
+            return asyncVersion;
+        }
+
+        internal static AsyncUsePowerTag ToAsync(this UsePowerTag tag)
+        {
+            var asyncVersion = new AsyncUsePowerTag();
+            asyncVersion.SNOPower = tag.SNOPower;
+            asyncVersion.X = tag.X;
+            asyncVersion.Y = tag.Y;
+            asyncVersion.Z = tag.Z;
             tag.CopyTo(asyncVersion);
             return asyncVersion;
         }

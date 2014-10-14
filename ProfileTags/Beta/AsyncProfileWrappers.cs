@@ -3,9 +3,13 @@ using QuestTools.Helpers;
 using QuestTools.ProfileTags.Beta;
 using System.Collections.Generic;
 using System.Linq;
+using QuestTools.ProfileTags.Movement;
+using Zeta.Bot;
 using Zeta.Bot.Profile;
 using Zeta.Bot.Profile.Common;
 using Zeta.Bot.Profile.Composites;
+using Zeta.Game;
+using Zeta.Game.Internals.Actors;
 using Zeta.TreeSharp;
 using Zeta.XmlEngine;
 using Action = Zeta.TreeSharp.Action;
@@ -202,6 +206,72 @@ namespace QuestTools.ProfileTags.Complex
         public override bool IsDone
         {
             get { return !IsActiveQuestStep || _isDone || base.IsDone; }
+        }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
+    }
+
+    public class AsyncUseObjectTag : UseObjectTag, IAsyncProfileBehavior
+    {
+        public AsyncUseObjectTag()
+        {
+            QuestId = QuestId <= 0 ? 1 : QuestId;
+        }
+
+        private bool _isDone;
+        public override bool IsDone
+        {
+            get { return _isDone || base.IsDone; }
+        }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
+    }
+
+    public class AsyncUsePowerTag : UsePowerTag, IAsyncProfileBehavior
+    {
+        public AsyncUsePowerTag()
+        {
+            QuestId = QuestId <= 0 ? 1 : QuestId;
+        }
+
+        private bool _isDone;
+        public override bool IsDone
+        {
+            get { return _isDone || base.IsDone; }
         }
 
         #region IAsyncProfileBehavior

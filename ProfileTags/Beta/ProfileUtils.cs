@@ -68,12 +68,17 @@ namespace QuestTools.ProfileTags.Beta
                 if (type == typeof(ToggleTargetingTag))
                     return (behavior as ToggleTargetingTag).ToAsync();
 
-
                 if (type == typeof(IfTag))
                     return (behavior as IfTag).ToAsync();
 
                 if (type == typeof(WhileTag))
                     return (behavior as WhileTag).ToAsync();
+
+                if (type == typeof(UseObjectTag))
+                    return (behavior as UseObjectTag).ToAsync();
+
+                if (type == typeof(UsePowerTag))
+                    return (behavior as UsePowerTag).ToAsync();
 
                 return behavior;
             });

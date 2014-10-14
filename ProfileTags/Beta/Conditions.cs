@@ -269,8 +269,8 @@ namespace QuestTools.Helpers
             IsSceneLoaded,
             SceneIntersects,
             HasBuff,
-            KeyAboveMedianCount,
-            KeyBelowMedianCount,
+            KeyAboveMedian,
+            KeyBelowMedian,
             KeyAboveUpperFence,
             KeyBelowLowerFence,
             KeyAboveUpperQuartile,
@@ -439,7 +439,7 @@ namespace QuestTools.Helpers
             if (!IsValidParams(exp.Params, 1))
                 return false;
 
-            return exp.Params.ElementAtOrDefault(0).ChangeType<int>() > Keys.Median;
+            return Keys.GetKeyCount(exp.Params.ElementAtOrDefault(0).ChangeType<int>()) > Keys.Median;
         }
 
         public static bool KeyBelowMedianCount(Expression exp)
@@ -447,7 +447,7 @@ namespace QuestTools.Helpers
             if (!IsValidParams(exp.Params, 1))
                 return false;
 
-            return exp.Params.ElementAtOrDefault(0).ChangeType<int>() < Keys.Median;
+            return Keys.GetKeyCount(exp.Params.ElementAtOrDefault(0).ChangeType<int>()) < Keys.Median;
         }
 
         public static bool KeyAboveUpperFence(Expression exp)
@@ -455,7 +455,7 @@ namespace QuestTools.Helpers
             if (!IsValidParams(exp.Params, 1))
                 return false;
 
-            return exp.Params.ElementAtOrDefault(0).ChangeType<int>() > Keys.UpperFence;
+            return Keys.GetKeyCount(exp.Params.ElementAtOrDefault(0).ChangeType<int>()) > Keys.UpperFence;
         }
 
         public static bool KeyBelowLowerFence(Expression exp)
@@ -463,7 +463,7 @@ namespace QuestTools.Helpers
             if (!IsValidParams(exp.Params, 1))
                 return false;
 
-            return exp.Params.ElementAtOrDefault(0).ChangeType<int>() < Keys.LowerFence;
+            return Keys.GetKeyCount(exp.Params.ElementAtOrDefault(0).ChangeType<int>()) < Keys.LowerFence;
         }
 
         public static bool KeyAboveUpperQuartile(Expression exp)
@@ -471,7 +471,7 @@ namespace QuestTools.Helpers
             if (!IsValidParams(exp.Params, 1))
                 return false;
 
-            return exp.Params.ElementAtOrDefault(0).ChangeType<int>() > Keys.UpperQuartile;
+            return Keys.GetKeyCount(exp.Params.ElementAtOrDefault(0).ChangeType<int>()) > Keys.UpperQuartile;
         }
 
         public static bool KeyBelowLowerQuartile(Expression exp)
@@ -479,7 +479,7 @@ namespace QuestTools.Helpers
             if (!IsValidParams(exp.Params, 1))
                 return false;
 
-            return exp.Params.ElementAtOrDefault(0).ChangeType<int>() < Keys.LowerQuartile;
+            return Keys.GetKeyCount(exp.Params.ElementAtOrDefault(0).ChangeType<int>()) < Keys.LowerQuartile;
         }
 
         #endregion
