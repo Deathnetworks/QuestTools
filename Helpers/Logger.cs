@@ -51,6 +51,36 @@ namespace QuestTools
         }
 
         /// <summary>
+        /// Log without the Plugin Identifier
+        /// </summary>
+        public static void Raw(string message)
+        {
+            var frame = new StackFrame(1);
+            var method = frame.GetMethod();
+            var type = method.DeclaringType;
+
+            string msg = string.Format(message, type.Name);
+
+            _lastLogMessage = msg;
+            Logging.Info(msg);
+        }
+
+        /// <summary>
+        /// Log without the Plugin Identifier
+        /// </summary>
+        public static void Raw(string message, params object[] args)
+        {
+            var frame = new StackFrame(1);
+            var method = frame.GetMethod();
+            var type = method.DeclaringType;
+
+            string msg = string.Format(message, args);
+
+            _lastLogMessage = msg;
+            Logging.Info(msg);
+        }
+
+        /// <summary>
         /// Log Warning
         /// </summary>
         /// <param name="message"></param>

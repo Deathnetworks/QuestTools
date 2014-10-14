@@ -38,6 +38,9 @@ namespace QuestTools.Helpers
             CurrentWorldId,
             CurrentSceneId,
             CurrentSceneName,
+            Difficulty,
+            Class,
+            Level,
         }
 
         public static bool CurrentWave(Expression exp)
@@ -63,6 +66,21 @@ namespace QuestTools.Helpers
         public static bool CurrentSceneName(Expression exp)
         {
             return ConditionParser.EvalString(exp.Operator, ZetaDia.Me.CurrentScene.Name, exp.Value);
+        }
+
+        public static bool Difficulty(Expression exp)
+        {
+            return ConditionParser.EvalString(exp.Operator, ZetaDia.Service.Hero.CurrentDifficulty.ToString(), exp.Value);
+        }
+
+        public static bool Class(Expression exp)
+        {
+            return ConditionParser.EvalString(exp.Operator, ZetaDia.Service.Hero.Class.ToString(), exp.Value);
+        }
+
+        public static bool Level(Expression exp)
+        {
+            return ConditionParser.EvalInt(exp.Operator, ZetaDia.Service.Hero.Level, exp.Value.ChangeType<int>());
         }
 
         public static bool HighestKeyCountId(Expression exp)
