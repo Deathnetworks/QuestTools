@@ -35,7 +35,7 @@ namespace QuestTools.Helpers
                 if (LoadedProfiles.Count > 1)
                 {
 
-                    Logger.Log("ProfileCount = {0}", LoadedProfiles.Count);
+                    Logger.Debug("ProfileCount = {0}", LoadedProfiles.Count);
 
                     for (int i = LoadedProfiles.Count - 1; i-- > 0;)
                     {

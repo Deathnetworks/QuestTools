@@ -114,19 +114,21 @@
     <Compile Include="ProfileTags\Beta\ClearAreaTag.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ProfileTags\Beta\ConditionParser.cs">
+    <Compile Include="ProfileTags\Beta\ConditionParser\ConditionParser.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ProfileTags\Beta\Conditions.cs">
+    <Compile Include="ProfileTags\Beta\ConditionParser\Conditions.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ProfileTags\Beta\ConvertExtensions.cs">
+    <Compile Include="ProfileTags\Beta\ConditionParser\ConvertExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ProfileTags\Beta\ClearObstacleTag.cs" />
     <Compile Include="ProfileTags\Beta\ActionTag.cs" />
+    <Compile Include="ProfileTags\Beta\ConditionParser\ExpressionExtensions.cs" />
+    <Compile Include="ProfileTags\Beta\ConditionParser\ParserUtils.cs" />
     <Compile Include="ProfileTags\Beta\RandomMoveTag.cs" />
-    <Compile Include="ProfileTags\Beta\Expression.cs">
+    <Compile Include="ProfileTags\Beta\ConditionParser\Expression.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ProfileTags\Beta\IAsyncProfileBehavior.cs">
@@ -162,7 +164,7 @@
     <Compile Include="ProfileTags\Beta\TimeTracker\Timing.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ProfileTags\Beta\Tokenizer.cs">
+    <Compile Include="ProfileTags\Beta\ConditionParser\Tokenizer.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ProfileTags\Beta\WhenTag.cs">

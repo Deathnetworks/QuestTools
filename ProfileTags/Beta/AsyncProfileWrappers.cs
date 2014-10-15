@@ -366,7 +366,7 @@ namespace QuestTools.ProfileTags.Complex
                 if (_isDone)
                     return true;
 
-                Logger.Verbose("Children Finished? {0}", Body.All(p => p.IsDone));
+                //Logger.Verbose("Children Finished? {0}", Body.All(p => p.IsDone));
 
                 // End if children are finished
                 if (Body.All(p => p.IsDone))
@@ -375,7 +375,7 @@ namespace QuestTools.ProfileTags.Complex
                     return true;
                 }
 
-                Logger.Verbose("Should Check Condition? {0}", _firstRun || ShouldRecheckCondition);
+                //Logger.Verbose("Should Check Condition? {0}", _firstRun || ShouldRecheckCondition);
 
                 // Check Condition
                 if (_firstRun || ShouldRecheckCondition)
@@ -469,7 +469,7 @@ namespace QuestTools.ProfileTags.Complex
                 if (_isDone)
                     return true;
 
-                Logger.Verbose("Children Finished? {0}", Body.All(p => p.IsDone));
+                //Logger.Verbose("Children Finished? {0}", Body.All(p => p.IsDone));
 
                 // End if children are finished && condition is false, otherwise re-run them all
                 if (Body.All(p => p.IsDone))
@@ -485,7 +485,7 @@ namespace QuestTools.ProfileTags.Complex
                     return true;                  
                 }
 
-                Logger.Verbose("Should Check Condition? {0}", _firstRun || ShouldRecheckCondition);
+                //Logger.Verbose("Should Check Condition? {0}", _firstRun || ShouldRecheckCondition);
 
                 // Check Condition
                 if (_firstRun || ShouldRecheckCondition)
