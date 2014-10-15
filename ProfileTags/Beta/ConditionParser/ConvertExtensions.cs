@@ -1,10 +1,36 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
+using System.Windows.Forms;
 
 namespace QuestTools.Helpers
 {
     public static class ConvertExtesions
     {
+        public static void AddRange<T>(this ICollection<T> target, IEnumerable<T> source)
+        {
+            if (target == null)
+                throw new ArgumentNullException("target");
+            if (source == null)
+                throw new ArgumentNullException("source");
+            foreach (var element in source)
+                target.Add(element);
+        }
+
+        public static void InsertRange<T>(this ICollection<T> target, IEnumerable<T> source)
+        {
+            if (target == null)
+                throw new ArgumentNullException("target");
+            if (source == null)
+                throw new ArgumentNullException("source");
+
+            var newCollection = source.ToList();
+            newCollection.AddRange(target);
+            target.Clear();
+            target.AddRange(newCollection);
+        }
+
         // converts the source object variable value to the desired result type 
         public static TR ChangeType<TR>(this object value)
         {
@@ -23,6 +49,11 @@ namespace QuestTools.Helpers
         {
             if (convertToType == null)
                 throw new ArgumentNullException("convertToType");
+
+            if (value is string)
+            {
+                value = (value as string).Trim('\'');
+            }
 
             try
             {

@@ -104,10 +104,13 @@
     <Compile Include="ProfileTags\Beta\AsyncProfileWrappers.cs" />
     <Compile Include="ProfileTags\Beta\BotBehaviorQueue.cs" />
     <Compile Include="ProfileTags\Beta\ClearAreaTag.cs" />
-    <Compile Include="ProfileTags\Beta\ConditionParser.cs" />
-    <Compile Include="ProfileTags\Beta\Conditions.cs" />
-    <Compile Include="ProfileTags\Beta\ConvertExtensions.cs" />
-    <Compile Include="ProfileTags\Beta\Expression.cs" />
+    <Compile Include="ProfileTags\Beta\ConditionParser\ConditionParser.cs" />
+    <Compile Include="ProfileTags\Beta\ConditionParser\Conditions.cs" />
+    <Compile Include="ProfileTags\Beta\ConditionParser\ConvertExtensions.cs" />
+    <Compile Include="ProfileTags\Beta\ConditionParser\Expression.cs" />
+    <Compile Include="ProfileTags\Beta\ConditionParser\ExpressionExtensions.cs" />
+    <Compile Include="ProfileTags\Beta\ConditionParser\ParserUtils.cs" />
+    <Compile Include="ProfileTags\Beta\ConditionParser\Tokenizer.cs" />
     <Compile Include="ProfileTags\Beta\IAsyncProfileBehavior.cs" />
     <Compile Include="ProfileTags\Beta\LoadLastProfileTag.cs" />
     <Compile Include="ProfileTags\Beta\LoggingController.cs" />
@@ -119,7 +122,6 @@
     <Compile Include="ProfileTags\Beta\TimeTracker\StopTimerTag.cs" />
     <Compile Include="ProfileTags\Beta\TimeTracker\TimeTracker.cs" />
     <Compile Include="ProfileTags\Beta\TimeTracker\Timing.cs" />
-    <Compile Include="ProfileTags\Beta\Tokenizer.cs" />
     <Compile Include="ProfileTags\Beta\WhenTag.cs" />
     <Compile Include="ProfileTags\CombatSettingTag.cs" />
     <Compile Include="ProfileTags\Complex\HasTrialRiftKeysTag.cs" />
