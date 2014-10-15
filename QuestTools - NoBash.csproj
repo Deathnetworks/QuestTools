@@ -96,6 +96,7 @@
   <ItemGroup>
     <Compile Include="Helpers\ActorHistory.cs" />
     <Compile Include="Helpers\FileManager.cs" />
+    <Compile Include="Helpers\Keys.cs" />
     <Compile Include="Helpers\ProfileHistory.cs" />
     <Compile Include="Helpers\RiftTrial.cs" />
     <Compile Include="ProfileTags\Beta\AsyncCommonBehaviors.cs">
@@ -122,6 +123,9 @@
     <Compile Include="ProfileTags\Beta\ConvertExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="ProfileTags\Beta\ClearObstacleTag.cs" />
+    <Compile Include="ProfileTags\Beta\ActionTag.cs" />
+    <Compile Include="ProfileTags\Beta\RandomMoveTag.cs" />
     <Compile Include="ProfileTags\Beta\Expression.cs">
       <SubType>Code</SubType>
     </Compile>

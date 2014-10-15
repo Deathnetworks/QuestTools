@@ -18,11 +18,6 @@ namespace QuestTools.ProfileTags.Complex
     [XmlElement("ClearArea")]
     public class ClearAreaTag : ProfileBehavior, IAsyncProfileBehavior
     {
-        private bool _isDone;
-
-        private List<Vector3> _points;
-        private DefaultNavigationProvider _navigator;
-
         [XmlAttribute("radius")]
         public int Radius { get; set; }
 
@@ -32,21 +27,51 @@ namespace QuestTools.ProfileTags.Complex
         [XmlAttribute("pathPrecision")]
         public float PathPrecision { get; set; }
 
+        /// <summary>
+        /// This is the longest time this behavior can run for. Default is 120 seconds.
+        /// </summary>
+        [XmlAttribute("timeout")]
+        public int Timeout { get; set; }
+
+        private bool _isDone;
+        private List<Vector3> _points;
+        private DefaultNavigationProvider _navigator;
+        private DateTime _startTime = DateTime.MaxValue;
+
         public override bool IsDone
         {
-            get { return !IsActiveQuestStep || _isDone; }
+            get
+            {
+                var done = _isDone || !IsActiveQuestStep;
+                CheckTimeout();
+                return done;
+            }
+        }
+
+        public void CheckTimeout()
+        {
+            if (DateTime.UtcNow.Subtract(_startTime).TotalSeconds <= Timeout)
+                return;
+
+            Logger.Log("timed out ({0} seconds)", Timeout);
+            _isDone = true;
+        }
+
+        public ClearAreaTag()
+        {
+            QuestId = QuestId <= 0 ? 1 : QuestId;
+            Radius = Radius < 10 ? 10 : Radius;
+            Points = Points < 4 || Points > 30 ? 10 : Points;
+            Timeout = Timeout <= 0 ? 120 : Timeout;
+            PathPrecision = PathPrecision < 2f ? 5f : PathPrecision;
         }
 
         public override void OnStart()
         {
-            Radius = Radius < 10 ? 10 : Radius;
-            Points = Points < 4 || Points > 30 ? 10 : Points;
-            PathPrecision = PathPrecision < 2f ? 5f : PathPrecision;
-
+            _startTime = DateTime.UtcNow;
             _points = GetCirclePoints(Points, Radius, ZetaDia.Me.Position);
             _points.Add(ZetaDia.Me.Position);
             _navigator = Navigator.GetNavigationProviderAs<DefaultNavigationProvider>();
-
             base.OnStart();
         }
 
@@ -67,7 +92,7 @@ namespace QuestTools.ProfileTags.Complex
         private bool IsReachable
         {
             get
-            {
+            {               
                 if (!_points.Any() || _points.First().Distance2D(ZetaDia.Me.Position) < 10f)
                     return false;
 
@@ -98,6 +123,8 @@ namespace QuestTools.ProfileTags.Complex
 
         public override void ResetCachedDone()
         {
+            _points.Clear();
+            _startTime = DateTime.MaxValue;
             _isDone = false;
             base.ResetCachedDone();
         }

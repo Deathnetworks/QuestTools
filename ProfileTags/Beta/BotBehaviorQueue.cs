@@ -82,7 +82,7 @@ namespace QuestTools.Helpers
 
         private static void OnSchedulingHandler(object sender, EventArgs eventArgs)
         {
-            if (!ZetaDia.IsInGame || ZetaDia.IsLoadingWorld || ZetaDia.Me == null || !ZetaDia.Me.IsValid ||  ZetaDia.IsPlayingCutscene)
+            if (!BotMain.IsRunning || !ZetaDia.IsInGame || ZetaDia.IsLoadingWorld || ZetaDia.Me == null || !ZetaDia.Me.IsValid ||  ZetaDia.IsPlayingCutscene)
                 return;
 
             if (DateTime.UtcNow.Subtract(_lastCheckedConditionsTime).TotalMilliseconds < MinimumCheckInterval)

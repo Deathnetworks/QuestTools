@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using QuestTools.ProfileTags.Complex;
 using Zeta.Bot;
 using Zeta.Bot.Navigation;
@@ -6,6 +7,7 @@ using Zeta.Bot.Profile;
 using Zeta.Game;
 using Zeta.TreeSharp;
 using Zeta.XmlEngine;
+using Action = Zeta.TreeSharp.Action;
 
 namespace QuestTools.ProfileTags
 {
@@ -20,23 +22,47 @@ namespace QuestTools.ProfileTags
         [XmlAttribute("wait")]
         public int WaitTime { get; set; }
 
+        /// <summary>
+        /// This is the longest time this behavior can run for. Default is 120 seconds.
+        /// </summary>
+        [XmlAttribute("timeout")]
+        public int Timeout { get; set; }
+
         public static Stopwatch AreaClearTimer = null;
         public static Stopwatch PortalCastTimer = null;
         public static bool ForceClearArea = false;
-
+        private DateTime _startTime = DateTime.MaxValue;
         private double _startHealth = -1;
 
         private bool _isDone;
 
         public override bool IsDone
         {
-            get { return _isDone || !IsActiveQuestStep; }
+            get
+            {
+                var done = _isDone || !IsActiveQuestStep;
+
+                CheckTimeout();
+
+                return done;
+            }
+        }
+
+        public void CheckTimeout()
+        {
+            if (DateTime.UtcNow.Subtract(_startTime).TotalSeconds <= Timeout)
+                return;
+
+            Logger.Log("timed out ({0} seconds)", Timeout);
+            _isDone = true;
         }
 
         public TownPortalTag()
         {
             AreaClearTimer = new Stopwatch();
             PortalCastTimer = new Stopwatch();
+            QuestId = QuestId <= 0 ? 1 : QuestId;
+            Timeout = Timeout <= 0 ? 120 : Timeout;   
         }
 
         public override void OnStart()
@@ -45,8 +71,7 @@ namespace QuestTools.ProfileTags
             {
                 _isDone = true;
                 return;
-            }
-
+            }         
             ForceClearArea = true;
             AreaClearTimer.Reset();
             AreaClearTimer.Start();
@@ -56,6 +81,7 @@ namespace QuestTools.ProfileTags
                 WaitTime = DefaultWaitTime;
             }
             _startHealth = ZetaDia.Me.HitpointsCurrent;
+            _startTime = DateTime.UtcNow;
             Logger.Log("TownPortal started - clearing area, waitTime={0}, startHealth={1:0}", WaitTime, _startHealth);
         }
 
@@ -152,6 +178,7 @@ namespace QuestTools.ProfileTags
         public override void ResetCachedDone()
         {
             _isDone = false;
+            _startTime = DateTime.MaxValue;
             base.ResetCachedDone();
         }
 
