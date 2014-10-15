@@ -32,7 +32,7 @@ namespace QuestTools.ProfileTags
         /// Gets or sets the non elite range.
         /// </summary>
         /// <value>The non elite range.</value>
-        [XmlAttribute("monEliteRange")]
+        [XmlAttribute("nonEliteRange")]
         public int NonEliteRange { get; set; }
 
         /// <summary>
