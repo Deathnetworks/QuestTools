@@ -120,6 +120,7 @@
     <Compile Include="ProfileTags\Beta\TimeTracker\Timing.cs" />
     <Compile Include="ProfileTags\Beta\Tokenizer.cs" />
     <Compile Include="ProfileTags\Beta\WhenTag.cs" />
+    <Compile Include="ProfileTags\CombatSettingTag.cs" />
     <Compile Include="ProfileTags\Complex\HasTrialRiftKeysTag.cs" />
     <Compile Include="ProfileTags\QTOpenRiftWrapperTag.cs" />
     <Compile Include="UI\ConfigWindow.cs" />

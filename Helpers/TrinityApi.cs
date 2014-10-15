@@ -38,6 +38,43 @@ namespace QuestTools.Helpers
             set { _typeDictionary = value; }
         }
 
+        public static Type GetTrinityType()
+        {
+            Type trinityType;
+            if (!SetType("Trinity.Trinity", out trinityType))
+            {
+                Logger.Error("Unable to get Trinity Type!");
+            }
+            return trinityType;
+        }
+
+        public static object GetStaticPropertyFromType(Type type, string propertyName)
+        {
+            PropertyInfo propertyInfo = type.GetProperty(propertyName, BindingFlags.Static | BindingFlags.Public);
+            object property = propertyInfo.GetValue(null, null);
+            if (property == null)
+            {
+                Logger.Error("Unable to get Static Property {0} from Type {1}", propertyName, type);
+            }
+            return property;
+        }
+
+        public static object GetInstancePropertyFromObject(object source, string propertyName)
+        {
+            PropertyInfo propertyInfo = source.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
+            object property = propertyInfo.GetValue(source, null);
+            if (property == null)
+            {
+                Logger.Error("Unable to get Instance Property {0} from source object {1}", propertyName, source.GetType());
+            }
+            return property;
+        }
+
+        public static PropertyInfo GetInstancePropertyInfoFromObject(object source, string propertyName)
+        {
+            return source.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
+        }
+
         /// <summary>
         /// Sets a property with a given value
         /// </summary>
@@ -45,7 +82,7 @@ namespace QuestTools.Helpers
         /// <param name="memberName">The Member Name</param>
         /// <param name="value">The Value</param>
         /// <returns>If the Property was successfully set</returns>
-        internal static bool SetProperty(string fullTypeName, string memberName, object value)
+        public static bool SetProperty(string fullTypeName, string memberName, object value)
         {
             try
             {
@@ -101,7 +138,7 @@ namespace QuestTools.Helpers
         /// <param name="memberName">The Member name</param>
         /// <param name="value">The value</param>
         /// <returns>If the Field was successfully set</returns>
-        internal static bool SetField(string fullTypeName, string memberName, object value)
+        public static bool SetField(string fullTypeName, string memberName, object value)
         {
             try
             {
@@ -147,7 +184,7 @@ namespace QuestTools.Helpers
         /// <param name="memberName">The Member Name</param>
         /// <param name="value">The Value</param>
         /// <returns>If the field was successfully returned</returns>
-        internal static bool GetField(string fullTypeName, string memberName, out object value)
+        public static bool GetField(string fullTypeName, string memberName, out object value)
         {
             value = null;
             try
@@ -191,7 +228,7 @@ namespace QuestTools.Helpers
         /// <param name="memberName">The Member Name</param>
         /// <param name="value">The value to set</param>
         /// <returns>If the Property was successfully returned</returns>
-        internal static bool GetProperty(string fullTypeName, string memberName, out object value)
+        public static bool GetProperty(string fullTypeName, string memberName, out object value)
         {
             value = null;
             try
@@ -234,7 +271,7 @@ namespace QuestTools.Helpers
         /// <param name="fullName">The Full Type name (Namespace.Namespace.Class), e.g. Trinity.Combat.Abilities.CombatBase</param>
         /// <param name="result">The Type</param>
         /// <returns>If the type was found</returns>
-        private static bool SetType(string fullName, out Type result)
+        public static bool SetType(string fullName, out Type result)
         {
             result = null;
             try
@@ -268,7 +305,7 @@ namespace QuestTools.Helpers
         /// <summary>
         /// Caches the Assembly
         /// </summary>
-        private static void SetAssembly()
+        public static void SetAssembly()
         {
             try
             {
