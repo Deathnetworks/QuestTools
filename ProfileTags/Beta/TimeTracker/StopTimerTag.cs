@@ -14,7 +14,7 @@ namespace QuestTools.ProfileTags.Beta
     /// XML tag for a profile to STOP a timer
     /// </summary>
     [XmlElement("StopTimer")]
-    public class StopTimerTag : ProfileBehavior, IAsyncProfileBehavior
+    public class StopTimerTag : ProfileBehavior, IEnhancedProfileBehavior
     {
         private bool _isDone;
         public override bool IsDone { get { return _isDone; } }
@@ -53,14 +53,14 @@ namespace QuestTools.ProfileTags.Beta
             base.ResetCachedDone();
         }
 
-        #region IAsyncProfileBehavior
+        #region IEnhancedProfileBehavior
 
-        public void AsyncUpdateBehavior()
+        public void Update()
         {
             UpdateBehavior();
         }
 
-        public void AsyncOnStart()
+        public void Start()
         {
             OnStart();
         }

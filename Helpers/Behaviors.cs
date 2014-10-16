@@ -1,14 +1,8 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
-using Zeta.TreeSharp;
-using Action = System.Action;
+﻿using Zeta.TreeSharp;
 
-namespace QuestTools.ProfileTags.Beta
+namespace QuestTools.Helpers
 {
-    public static class AsyncCommonBehaviors
+    public static class Behaviors
     {
         public delegate bool IsDoneCondition(object ret);
         public delegate Composite CreateBehavior(object ret);

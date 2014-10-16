@@ -1,7 +1,6 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using QuestTools.Helpers;
+﻿using QuestTools.Helpers;
 using QuestTools.ProfileTags.Complex;
+using System.IO;
 using Zeta.Bot;
 using Zeta.Bot.Profile;
 using Zeta.TreeSharp;
@@ -10,7 +9,7 @@ using Zeta.XmlEngine;
 namespace QuestTools.ProfileTags
 {
     [XmlElement("LoadLastProfile")]
-    public class LoadLastProfileTag : ProfileBehavior, IAsyncProfileBehavior
+    public class LoadLastProfileTag : ProfileBehavior, IEnhancedProfileBehavior
     {
         private bool _isDone;
         public override bool IsDone
@@ -56,14 +55,14 @@ namespace QuestTools.ProfileTags
             });
         }
 
-        #region IAsyncProfileBehavior
+        #region IEnhancedProfileBehavior
 
-        public void AsyncUpdateBehavior()
+        public void Update()
         {
             UpdateBehavior();
         }
 
-        public void AsyncOnStart()
+        public void Start()
         {
             OnStart();
         }

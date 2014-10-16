@@ -11,7 +11,7 @@ using Action = Zeta.TreeSharp.Action;
 namespace QuestTools.ProfileTags
 {
     [XmlElement("RestartAct")]
-    public class RestartActTag : ProfileBehavior, IAsyncProfileBehavior
+    public class RestartActTag : ProfileBehavior, IEnhancedProfileBehavior
     {
         public RestartActTag() { }
         private bool _isDone;
@@ -44,14 +44,14 @@ namespace QuestTools.ProfileTags
             base.ResetCachedDone();
         }
 
-        #region IAsyncProfileBehavior
+        #region IEnhancedProfileBehavior
 
-        public void AsyncUpdateBehavior()
+        public void Update()
         {
             UpdateBehavior();
         }
 
-        public void AsyncOnStart()
+        public void Start()
         {
             OnStart();
         }

@@ -14,7 +14,7 @@ namespace QuestTools.ProfileTags
     // TrinityTownRun forces a town-run request
     [XmlElement("TownRun")]
     [XmlElement("TrinityTownRun")]
-    public class TownRunTag : ProfileBehavior, IAsyncProfileBehavior
+    public class TownRunTag : ProfileBehavior, IEnhancedProfileBehavior
     {
         public TownRunTag() { }
 
@@ -126,14 +126,14 @@ namespace QuestTools.ProfileTags
             base.ResetCachedDone();
         }
 
-        #region IAsyncProfileBehavior
+        #region IEnhancedProfileBehavior
 
-        public void AsyncUpdateBehavior()
+        public void Update()
         {
             UpdateBehavior();
         }
 
-        public void AsyncOnStart()
+        public void Start()
         {
             OnStart();
         }

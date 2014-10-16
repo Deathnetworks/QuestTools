@@ -15,7 +15,7 @@ namespace QuestTools.ProfileTags.Complex
     /// For example bounties or keys - each bot would start a different bounty
     /// </summary>
     [XmlElement("Shuffle")]
-    public class ShuffleTag : ComplexNodeTag, IAsyncProfileBehavior
+    public class ShuffleTag : ComplexNodeTag, IEnhancedProfileBehavior
     {
         public ShuffleTag()
         {
@@ -116,14 +116,14 @@ namespace QuestTools.ProfileTags.Complex
             base.ResetCachedDone();
         }
 
-        #region IAsyncProfileBehavior
+        #region IEnhancedProfileBehavior
 
-        public void AsyncUpdateBehavior()
+        public void Update()
         {
             UpdateBehavior();
         }
 
-        public void AsyncOnStart()
+        public void Start()
         {
             OnStart();
         }

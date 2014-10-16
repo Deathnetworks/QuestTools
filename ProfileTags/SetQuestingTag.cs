@@ -8,7 +8,7 @@ namespace QuestTools.ProfileTags
 {
     [XmlElement("TrinitySetQuesting")]
     [XmlElement("SetQuesting")]
-    public class SetQuestingTag : ProfileBehavior, IAsyncProfileBehavior
+    public class SetQuestingTag : ProfileBehavior, IEnhancedProfileBehavior
     {
         public SetQuestingTag() { }
         private bool _isDone;
@@ -37,14 +37,14 @@ namespace QuestTools.ProfileTags
             base.ResetCachedDone();
         }
 
-        #region IAsyncProfileBehavior
+        #region IEnhancedProfileBehavior
 
-        public void AsyncUpdateBehavior()
+        public void Update()
         {
             UpdateBehavior();
         }
 
-        public void AsyncOnStart()
+        public void Start()
         {
             OnStart();
         }

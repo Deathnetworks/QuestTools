@@ -9,7 +9,7 @@ using Action = Zeta.TreeSharp.Action;
 namespace QuestTools.ProfileTags
 {
     [XmlElement("QuestToolsSetVariable")]
-    public class QuestToolsVariableTag : ProfileBehavior, IAsyncProfileBehavior
+    public class QuestToolsVariableTag : ProfileBehavior, IEnhancedProfileBehavior
     {
         public QuestToolsVariableTag() { }
         private bool _isDone;
@@ -56,14 +56,14 @@ namespace QuestTools.ProfileTags
             base.ResetCachedDone();
         }
 
-        #region IAsyncProfileBehavior
+        #region IEnhancedProfileBehavior
 
-        public void AsyncUpdateBehavior()
+        public void Update()
         {
             UpdateBehavior();
         }
 
-        public void AsyncOnStart()
+        public void Start()
         {
             OnStart();
         }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using QuestTools.ProfileTags.Complex;
 using Zeta.Bot;
 using Zeta.Bot.Navigation;
 using Zeta.Bot.Profile;
@@ -10,13 +11,13 @@ using Zeta.TreeSharp;
 using Zeta.XmlEngine;
 using Action = Zeta.TreeSharp.Action;
 
-namespace QuestTools.ProfileTags.Complex
+namespace QuestTools.ProfileTags
 {
     /// <summary>
     /// Run a circle around the current location then return to starting point
     /// </summary>
     [XmlElement("ClearArea")]
-    public class ClearAreaTag : ProfileBehavior, IAsyncProfileBehavior
+    public class ClearAreaTag : ProfileBehavior, IEnhancedProfileBehavior
     {
         [XmlAttribute("radius")]
         public int Radius { get; set; }
@@ -129,14 +130,14 @@ namespace QuestTools.ProfileTags.Complex
             base.ResetCachedDone();
         }
 
-        #region IAsyncProfileBehavior
+        #region IEnhancedProfileBehavior
 
-        public void AsyncUpdateBehavior()
+        public void Update()
         {
             UpdateBehavior();
         }
 
-        public void AsyncOnStart()
+        public void Start()
         {
             OnStart();
         }

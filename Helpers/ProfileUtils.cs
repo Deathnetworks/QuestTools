@@ -1,6 +1,4 @@
-﻿using QuestTools.Helpers;
-using QuestTools.ProfileTags.Complex;
-using QuestTools.ProfileTags.Movement;
+﻿using QuestTools.ProfileTags.Complex;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +6,7 @@ using Zeta.Bot.Profile;
 using Zeta.Bot.Profile.Common;
 using Zeta.Bot.Profile.Composites;
 
-namespace QuestTools.ProfileTags.Beta
+namespace QuestTools.Helpers
 {
     internal class ProfileUtils
     {
@@ -21,7 +19,7 @@ namespace QuestTools.ProfileTags.Beta
             {
                 if (node is IfTag && type == typeof(IfTag))
                 {
-                    return new AsyncIfTag
+                    return new EnhancedIfTag
                     {
                         Body = (node as IfTag).Body,
                         Condition = (node as IfTag).Condition,
@@ -31,13 +29,18 @@ namespace QuestTools.ProfileTags.Beta
 
                 if (node is WhileTag && type == typeof(WhileTag))
                 {
-                    return new AsyncWhileTag
+                    return new EnhancedWhileTag
                     {
                         Body = (node as IfTag).Body,
                         Condition = (node as IfTag).Condition,
                         Conditional = (node as IfTag).Conditional,
-                    };                    
+                    };
                 }
+
+                //if (node is LogMessageTag && type == typeof(LogMessageTag))
+                //{
+                //    return (node as LogMessageTag).ToEnhanced();
+                //}
 
                 return node;
             });
@@ -47,38 +50,38 @@ namespace QuestTools.ProfileTags.Beta
         {
             RecurseBehaviors(tags, (behavior, i, type) =>
             {
-                if (behavior is IAsyncProfileBehavior)
+                if (behavior is IEnhancedProfileBehavior)
                     return behavior;
 
                 if (type == typeof(LoadProfileTag))
-                    return (behavior as LoadProfileTag).ToAsync();
+                    return (behavior as LoadProfileTag).ToEnhanced();
 
                 if (type == typeof(LeaveGameTag))
-                    return (behavior as LeaveGameTag).ToAsync();
+                    return (behavior as LeaveGameTag).ToEnhanced();
 
                 if (type == typeof(LogMessageTag))
-                    return (behavior as LogMessageTag).ToAsync();
+                    return (behavior as LogMessageTag).ToEnhanced();
 
                 if (type == typeof(WaitTimerTag))
-                    return (behavior as WaitTimerTag).ToAsync();
+                    return (behavior as WaitTimerTag).ToEnhanced();
 
                 if (type == typeof(UseWaypointTag))
-                    return (behavior as UseWaypointTag).ToAsync();
+                    return (behavior as UseWaypointTag).ToEnhanced();
 
                 if (type == typeof(ToggleTargetingTag))
-                    return (behavior as ToggleTargetingTag).ToAsync();
+                    return (behavior as ToggleTargetingTag).ToEnhanced();
 
                 if (type == typeof(IfTag))
-                    return (behavior as IfTag).ToAsync();
+                    return (behavior as IfTag).ToEnhanced();
 
                 if (type == typeof(WhileTag))
-                    return (behavior as WhileTag).ToAsync();
+                    return (behavior as WhileTag).ToEnhanced();
 
                 if (type == typeof(UseObjectTag))
-                    return (behavior as UseObjectTag).ToAsync();
+                    return (behavior as UseObjectTag).ToEnhanced();
 
                 if (type == typeof(UsePowerTag))
-                    return (behavior as UsePowerTag).ToAsync();
+                    return (behavior as UsePowerTag).ToEnhanced();
 
                 return behavior;
             });

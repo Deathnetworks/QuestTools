@@ -9,7 +9,7 @@ namespace QuestTools.ProfileTags
     // TrinityMaxDeaths tells Trinity to handle deaths and exit game after X deaths
     [XmlElement("TrinityMaxDeaths")]
     [XmlElement("MaxDeaths")]
-    public class MaxDeathsTag : ProfileBehavior, IAsyncProfileBehavior
+    public class MaxDeathsTag : ProfileBehavior, IEnhancedProfileBehavior
     {
         public MaxDeathsTag() { }
         private bool _isDone;
@@ -46,14 +46,14 @@ namespace QuestTools.ProfileTags
             base.ResetCachedDone();
         }
 
-        #region IAsyncProfileBehavior
+        #region IEnhancedProfileBehavior
 
-        public void AsyncUpdateBehavior()
+        public void Update()
         {
             UpdateBehavior();
         }
 
-        public void AsyncOnStart()
+        public void Start()
         {
             OnStart();
         }

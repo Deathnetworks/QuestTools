@@ -23,7 +23,7 @@ namespace QuestTools.ProfileTags.Movement
     /// </summary>
     [XmlElement("TrinityMoveTo")]
     [XmlElement("SafeMoveTo")]
-    public class SafeMoveToTag : ProfileBehavior, IAsyncProfileBehavior
+    public class SafeMoveToTag : ProfileBehavior, IEnhancedProfileBehavior
     {
         public SafeMoveToTag() { }
 
@@ -208,14 +208,14 @@ namespace QuestTools.ProfileTags.Movement
             _tagStartTime = DateTime.MinValue;
         }
 
-        #region IAsyncProfileBehavior
+        #region IEnhancedProfileBehavior
 
-        public void AsyncUpdateBehavior()
+        public void Update()
         {
             UpdateBehavior();
         }
 
-        public void AsyncOnStart()
+        public void Start()
         {
             OnStart();
         }

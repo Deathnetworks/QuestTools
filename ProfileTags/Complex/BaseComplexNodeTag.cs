@@ -8,7 +8,7 @@ using Zeta.Bot.Profile.Composites;
 
 namespace QuestTools.ProfileTags
 {
-    public abstract class BaseComplexNodeTag : ComplexNodeTag, IAsyncProfileBehavior
+    public abstract class BaseComplexNodeTag : ComplexNodeTag, IEnhancedProfileBehavior
     {
         private bool? _ComplexDoneCheck;
         private bool? _AlreadyCompleted;
@@ -81,14 +81,14 @@ namespace QuestTools.ProfileTags
             _AlreadyCompleted = null;
         }
 
-        #region IAsyncProfileBehavior
+        #region IEnhancedProfileBehavior
 
-        public void AsyncUpdateBehavior()
+        public void Update()
         {
             UpdateBehavior();
         }
 
-        public void AsyncOnStart()
+        public void Start()
         {
             OnStart();
         }
