@@ -1,8 +1,10 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Data;
 using Buddy.Coroutines;
+using QuestTools.ProfileTags.Complex;
 using Zeta.Bot;
 using Zeta.Bot.Coroutines;
 using Zeta.Bot.Profile;
@@ -18,7 +20,7 @@ using Zeta.XmlEngine;
 namespace QuestTools.ProfileTags
 {
     [XmlElement("GetItemFromStash")]
-    public class GetItemFromStashTag : ProfileBehavior
+    public class GetItemFromStashTag : ProfileBehavior, IEnhancedProfileBehavior
     {
         private const int SharedStashSNO = 130400;
 
@@ -29,6 +31,7 @@ namespace QuestTools.ProfileTags
         public int ActorId { get; set; }
 
         [XmlAttribute("stackCount")]
+        [DefaultValue(1)]
         public int StackCount { get; set; }
 
         [XmlAttribute("greaterRiftKey")]
@@ -84,7 +87,7 @@ namespace QuestTools.ProfileTags
                 return i => (
                     i.GameBalanceId == GameBalanceId ||
                     i.ActorSNO == ActorId ||
-                    (GreaterRiftKey && (i.GetAttribute<int>(ActorAttributeType.TieredLootRunKeyLevel) > -1 &&
+                    (GreaterRiftKey && (i.GetAttribute<int>(ActorAttributeType.TieredLootRunKeyLevel) > 0 &&
                     (QuestToolsSettings.Instance.UseHighestKeystone || i.GetAttribute<int>(ActorAttributeType.TieredLootRunKeyLevel) <= QuestToolsSettings.Instance.MaxGreaterRiftKey)))
                     );
             }
@@ -95,7 +98,7 @@ namespace QuestTools.ProfileTags
             // Validate parameters
             if (GameBalanceId == 0 && ActorId == 0 && !GreaterRiftKey)
             {
-                Logger.LogError("GetItemFromStash: invalid parameters. Please specify at least gameBalanceId=\"\" or actorId=\"\" with valid ID numbers or set greaterRiftKey=\"True\"");
+                Logger.Error("GetItemFromStash: invalid parameters. Please specify at least gameBalanceId=\"\" or actorId=\"\" with valid ID numbers or set greaterRiftKey=\"True\"");
                 _isDone = true;
                 return true;
             }
@@ -105,7 +108,7 @@ namespace QuestTools.ProfileTags
             // Check to see if we already have the stack in our backpack
             if (StackCount != 0 && backPackCount >= StackCount)
             {
-                Logger.Log("Already have {0} items in our backpack (GameBalanceId={1} ActorSNO={2})", backPackCount, GameBalanceId, ActorId);
+                Logger.Log("Already have {0} items in our backpack (GameBalanceId={1} ActorSNO={2} GreaterRiftKey={3})", backPackCount, GameBalanceId, ActorId, GreaterRiftKey);
                 _isDone = true;
                 return true;
             }
@@ -120,7 +123,7 @@ namespace QuestTools.ProfileTags
 
             if (StashLocation.Distance2D(ZetaDia.Me.Position) <= 10f && SharedStash == null)
             {
-                Logger.LogError("Shared Stash actor is null!");
+                Logger.Error("Shared Stash actor is null!");
             }
 
             // Open Stash
@@ -141,12 +144,12 @@ namespace QuestTools.ProfileTags
                 bool invalidGameBalanceId = false, invalidActorId = false;
                 if (GameBalanceId != 0 && itemList.All(item => item.GameBalanceId != GameBalanceId))
                 {
-                    Logger.LogError("Unable to find item in stash with GameBalanceId {0}", GameBalanceId);
+                    Logger.Error("Unable to find item in stash with GameBalanceId {0}", GameBalanceId);
                     invalidGameBalanceId = true;
                 }
                 if (ActorId != 0 && itemList.All(item => item.ActorSNO != ActorId))
                 {
-                    Logger.LogError("Unable to find item in stash with ActorSNO {0}", ActorId);
+                    Logger.Error("Unable to find item in stash with ActorSNO {0}", ActorId);
                     invalidActorId = true;
                 }
                 if (firstItem == null || (invalidGameBalanceId && invalidActorId))
@@ -166,7 +169,27 @@ namespace QuestTools.ProfileTags
 
                 while (StackCount == 0 || StackCount > backPackCount)
                 {
-                    var item = ZetaDia.Me.Inventory.StashItems.Where(ItemMatcherFunc).OrderByDescending(i => i.ItemStackQuantity).FirstOrDefault();
+                    bool highestFirst = QuestToolsSettings.Instance.UseHighestKeystone;
+
+                    var itemsList = ZetaDia.Me.Inventory.StashItems.Where(ItemMatcherFunc).ToList();
+
+                    ACDItem item;
+                    if (GreaterRiftKey && highestFirst)
+                    {
+                        item = itemsList.OrderByDescending(i => i.TieredLootRunKeyLevel)
+                            .ThenBy(i => i.ItemStackQuantity)
+                            .FirstOrDefault();
+                    }
+                    else if (GreaterRiftKey && !highestFirst)
+                    {
+                        item = itemsList.OrderBy(i => i.TieredLootRunKeyLevel)
+                            .ThenBy(i => i.ItemStackQuantity)
+                            .FirstOrDefault();
+                    }
+                    else
+                    {
+                        item = itemsList.OrderByDescending(i => i.ItemStackQuantity).FirstOrDefault();
+                    }
                     if (item == null)
                         break;
                     Logger.Debug("Withdrawing item {0} from stash {0}", item.Name);
@@ -196,5 +219,24 @@ namespace QuestTools.ProfileTags
             _isDone = false;
             base.ResetCachedDone();
         }
+
+        #region IEnhancedProfileBehavior
+
+        public void Update()
+        {
+            UpdateBehavior();
+    }
+
+        public void Start()
+        {
+            OnStart();
+}
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
     }
 }

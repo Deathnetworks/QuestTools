@@ -25,8 +25,8 @@ namespace QuestTools
 
             string msg = "[QuestTools][" + type.Name + "] " + string.Format(message, args);
 
-            //if (_lastLogMessage == msg)
-            //    return;
+            if (_lastLogMessage == msg)
+                return;
 
             _lastLogMessage = msg;
             Logging.Info(msg);
@@ -43,8 +43,38 @@ namespace QuestTools
 
             string msg = string.Format("[{0}] " + message, type.Name);
 
-            //if (_lastLogMessage == msg)
-            //    return;
+            if (_lastLogMessage == msg)
+                return;
+
+            _lastLogMessage = msg;
+            Logging.Info(msg);
+        }
+
+        /// <summary>
+        /// Log without the Plugin Identifier
+        /// </summary>
+        public static void Raw(string message)
+        {
+            var frame = new StackFrame(1);
+            var method = frame.GetMethod();
+            var type = method.DeclaringType;
+
+            string msg = string.Format(message, type.Name);
+
+            _lastLogMessage = msg;
+            Logging.Info(msg);
+        }
+
+        /// <summary>
+        /// Log without the Plugin Identifier
+        /// </summary>
+        public static void Raw(string message, params object[] args)
+        {
+            var frame = new StackFrame(1);
+            var method = frame.GetMethod();
+            var type = method.DeclaringType;
+
+            string msg = string.Format(message, args);
 
             _lastLogMessage = msg;
             Logging.Info(msg);
@@ -63,8 +93,8 @@ namespace QuestTools
 
             string msg = "[QuestTools][" + type.Name + "] " + string.Format(message, args);
 
-            //if (_lastLogMessage == msg)
-            //    return;
+            if (_lastLogMessage == msg)
+                return;
 
             _lastLogMessage = msg;
             Logging.Warn(msg);
@@ -81,14 +111,14 @@ namespace QuestTools
 
             string msg = string.Format("[{0}] " + message, type.Name);
 
-            //if (_lastLogMessage == msg)
-            //    return;
+            if (_lastLogMessage == msg)
+                return;
 
             _lastLogMessage = msg;
             Logging.Warn(msg);
         }
 
-        public static void LogError(string message)
+        public static void Error(string message)
         {
             StackFrame frame = new StackFrame(1);
             var method = frame.GetMethod();
@@ -103,7 +133,7 @@ namespace QuestTools
             Logging.Error(msg);
         }
 
-        public static void LogError(string message, params object[] args)
+        public static void Error(string message, params object[] args)
         {
             StackFrame frame = new StackFrame(1);
             var method = frame.GetMethod();
@@ -111,8 +141,8 @@ namespace QuestTools
 
             string msg = string.Format("[{0}] " + string.Format(message, args), type.Name);
 
-            //if (_lastLogMessage == msg)
-            //    return;
+            if (_lastLogMessage == msg)
+                return;
 
             _lastLogMessage = msg;
             Logging.Error(msg);
@@ -178,8 +208,8 @@ namespace QuestTools
 
             string msg = string.Format("[{0}] " + string.Format(message, args), type.Name);
 
-            //if (_lastLogMessage == msg)
-            //    return;
+            if (_lastLogMessage == msg)
+                return;
 
             _lastLogMessage = msg;
             Logging.Debug(msg);
@@ -198,8 +228,8 @@ namespace QuestTools
 
             string msg = string.Format("[{0}] " + message, type.Name);
 
-            //if (_lastLogMessage == msg)
-            //    return;
+            if (_lastLogMessage == msg)
+                return;
 
             _lastLogMessage = msg;
             Logging.Debug(msg);

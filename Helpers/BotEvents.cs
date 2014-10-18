@@ -29,6 +29,7 @@ namespace QuestTools.Helpers
             GameEvents.OnWorldChanged += GameEvents_OnWorldChanged;
             ProfileManager.OnProfileLoaded += ProfileManager_OnProfileLoaded;
             BotBehaviorQueue.WireUp();
+            CustomConditions.Initialize();
         }
 
         internal static void UnWire()
@@ -106,9 +107,7 @@ namespace QuestTools.Helpers
         private static void ProfileManager_OnProfileLoaded(object sender, EventArgs e)
         {
             ProfileHistory.Add(ProfileManager.CurrentProfile);
-
-            if(QuestToolsSettings.Instance.EnableBetaFeatures)
-                ProfileUtils.ReplaceDefaultTags();
+            ProfileUtils.ReplaceDefaultTags();
         }
     }
 

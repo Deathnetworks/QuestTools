@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using QuestTools.ProfileTags;
 using QuestTools.ProfileTags.Complex;
+using QuestTools.ProfileTags.Movement;
 using Zeta.Bot.Profile;
 using Zeta.Game;
 using Zeta.Game.Internals;
@@ -78,7 +79,7 @@ namespace QuestTools.Helpers
 
                 var endTrialSequence = new List<ProfileBehavior>
                 {
-                    new AsyncSafeMoveTo
+                    new SafeMoveToTag()
                     {
                         PathPrecision = 5,
                         PathPointLimit = 250,
@@ -86,8 +87,8 @@ namespace QuestTools.Helpers
                         Y = 237,
                         Z = -11
                     },
-                    new AsyncTownPortalTag(),
-                    new AsyncCompositeTag()
+                    new TownPortalTag(),
+                    new CompositeTag()
                     {
                         IsDoneDelegate = ret => Zeta.Bot.ConditionParser.IsActiveQuestAndStep(405695,9),
                         BehaviorDelegate = new Action(ret =>

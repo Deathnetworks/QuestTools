@@ -1,11 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using QuestTools.ProfileTags.Complex;
+using Zeta.Bot;
 using Zeta.Bot.Profile;
 using Zeta.Bot.Profile.Composites;
 
 namespace QuestTools.ProfileTags
 {
-    public abstract class BaseComplexNodeTag : ComplexNodeTag
+    public abstract class BaseComplexNodeTag : ComplexNodeTag, IEnhancedProfileBehavior
     {
         private bool? _ComplexDoneCheck;
         private bool? _AlreadyCompleted;
@@ -23,15 +26,22 @@ namespace QuestTools.ProfileTags
             }
         }
 
+        private readonly HashSet<Guid> _seenGuids = new HashSet<Guid>();
+
         public override bool IsDone
         {
             get
             {
-                // Make sure we've not already completed this tag
                 if (_AlreadyCompleted.GetValueOrDefault(false))
-                {
                     return true;
+
+                var b = ProfileManager.CurrentProfileBehavior;
+                if (Body.Contains(b) && !_seenGuids.Contains(b.Behavior.Guid))
+                {
+                    OnChildStart();
+                    _seenGuids.Add(b.Behavior.Guid);
                 }
+
                 if (!ComplexDoneCheck.HasValue)
                 {
                     ComplexDoneCheck = new bool?(GetConditionExec());
@@ -40,6 +50,7 @@ namespace QuestTools.ProfileTags
                 {
                     return true;
                 }
+
                 if (_BehaviorProcess == null)
                 {
                     _BehaviorProcess = new Func<ProfileBehavior, bool>(p => p.IsDone);
@@ -47,6 +58,7 @@ namespace QuestTools.ProfileTags
                 bool allChildrenDone = Body.All<ProfileBehavior>(_BehaviorProcess);
                 if (allChildrenDone)
                 {
+                    OnChildrenDone();
                     _AlreadyCompleted = true;
                 }
                 return allChildrenDone;
@@ -55,6 +67,10 @@ namespace QuestTools.ProfileTags
 
         public abstract bool GetConditionExec();
 
+        public virtual void OnChildStart() { }
+
+        public virtual void OnChildrenDone() { }
+
         public override void ResetCachedDone()
         {
             foreach (ProfileBehavior behavior in Body)
@@ -62,6 +78,27 @@ namespace QuestTools.ProfileTags
                 behavior.ResetCachedDone();
             }
             ComplexDoneCheck = null;
+            _AlreadyCompleted = null;
         }
+
+        #region IEnhancedProfileBehavior
+
+        public void Update()
+        {
+            UpdateBehavior();
+        }
+
+        public void Start()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            ComplexDoneCheck = false;
+            _AlreadyCompleted = true;
+        }
+
+        #endregion
     }
 }

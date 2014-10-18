@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using QuestTools.ProfileTags.Complex;
 using Zeta.Bot.Profile;
 using Zeta.Game;
 using Zeta.Game.Internals.SNO;
@@ -14,7 +15,7 @@ namespace QuestTools.ProfileTags.Beta
     /// XML tag for a profile to START a timer
     /// </summary>
     [XmlElement("StartTimer")]
-    public class StartTimerTag : ProfileBehavior
+    public class StartTimerTag : ProfileBehavior, IEnhancedProfileBehavior
     {
         public StartTimerTag() { }
         private bool _isDone;
@@ -55,5 +56,24 @@ namespace QuestTools.ProfileTags.Beta
             _isDone = false;
             base.ResetCachedDone();
         }
+
+        #region IEnhancedProfileBehavior
+
+        public void Update()
+        {
+            UpdateBehavior();
+        }
+
+        public void Start()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
     }
 }

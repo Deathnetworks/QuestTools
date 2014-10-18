@@ -78,7 +78,7 @@ namespace QuestTools.UI
             }
             catch (Exception ex)
             {
-                Logger.LogError("Error opening QuestTools Config Window: {0}", ex);
+                Logger.Error("Error opening QuestTools Config Window: {0}", ex);
             }
             return _configWindow;
         }

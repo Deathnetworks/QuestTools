@@ -13,7 +13,7 @@ namespace QuestTools.Helpers
         // Trinity_635346394618921335.dll
         private const string AssemblyName = "Trinity";
         // namespace Trinity, public class Trinity
-        private const string MainClass = "Trinity.Trinity";
+        private const string MainClass = "Trinity.Combat.Abilities.CombatBase";
 
         private static Assembly _mainAssembly;
         private static Dictionary<Tuple<string, Type>, PropertyInfo> _propertyInfoDictionary = new Dictionary<Tuple<string, Type>, PropertyInfo>();
@@ -38,19 +38,56 @@ namespace QuestTools.Helpers
             set { _typeDictionary = value; }
         }
 
+        public static Type GetTrinityType()
+        {
+            Type trinityType;
+            if (!SetType("Trinity.Trinity", out trinityType))
+            {
+                Logger.Error("Unable to get Trinity Type!");
+            }
+            return trinityType;
+        }
+
+        public static object GetStaticPropertyFromType(Type type, string propertyName)
+        {
+            PropertyInfo propertyInfo = type.GetProperty(propertyName, BindingFlags.Static | BindingFlags.Public);
+            object property = propertyInfo.GetValue(null, null);
+            if (property == null)
+            {
+                Logger.Error("Unable to get Static Property {0} from Type {1}", propertyName, type);
+            }
+            return property;
+        }
+
+        public static object GetInstancePropertyFromObject(object source, string propertyName)
+        {
+            PropertyInfo propertyInfo = source.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
+            object property = propertyInfo.GetValue(source, null);
+            if (property == null)
+            {
+                Logger.Error("Unable to get Instance Property {0} from source object {1}", propertyName, source.GetType());
+            }
+            return property;
+        }
+
+        public static PropertyInfo GetInstancePropertyInfoFromObject(object source, string propertyName)
+        {
+            return source.GetType().GetProperty(propertyName, BindingFlags.Instance | BindingFlags.Public);
+        }
+
         /// <summary>
         /// Sets a property with a given value
         /// </summary>
-        /// <param name="typeName">The Type Name</param>
+        /// <param name="fullName">The Full Type name (Namespace.Namespace.Class), e.g. Trinity.Combat.Abilities.CombatBase</param>
         /// <param name="memberName">The Member Name</param>
         /// <param name="value">The Value</param>
         /// <returns>If the Property was successfully set</returns>
-        internal static bool SetProperty(string typeName, string memberName, object value)
+        public static bool SetProperty(string fullTypeName, string memberName, object value)
         {
             try
             {
                 Type targetType;
-                if (!SetType(typeName, out targetType))
+                if (!SetType(fullTypeName, out targetType))
                 {
                     // Type or Assembly not found
                     return false;
@@ -89,7 +126,7 @@ namespace QuestTools.Helpers
             }
             catch (Exception ex)
             {
-                Logger.Log("Error Setting Property {0} from Type {1} - {2}", memberName, typeName, ex.Message);
+                Logger.Log("Error Setting Property {0} from Type {1} - {2}", memberName, fullTypeName, ex.Message);
             }
             return false;
         }
@@ -97,16 +134,16 @@ namespace QuestTools.Helpers
         /// <summary>
         /// Sets a Field with a given value
         /// </summary>
-        /// <param name="typeName">The Type name</param>
+        /// <param name="fullTypeName">The Full Type name (Namespace.Namespace.Class), e.g. Trinity.Combat.Abilities.CombatBase</param>
         /// <param name="memberName">The Member name</param>
         /// <param name="value">The value</param>
         /// <returns>If the Field was successfully set</returns>
-        internal static bool SetField(string typeName, string memberName, object value)
+        public static bool SetField(string fullTypeName, string memberName, object value)
         {
             try
             {
                 Type targetType;
-                if (!SetType(typeName, out targetType))
+                if (!SetType(fullTypeName, out targetType))
                 {
                     return false;
                 }
@@ -129,15 +166,13 @@ namespace QuestTools.Helpers
                     else
                         _fieldInfoDictionary.Add(key, fieldInfo);
 
-                    _fieldInfoDictionary.Add(new Tuple<string, Type>(memberName, targetType), fieldInfo);
-
                     fieldInfo.SetValue(null, value);
                     return true;
                 }
             }
             catch (Exception ex)
             {
-                Logger.Log("Error Setting Field {0} from Type {1} - {2}", memberName, typeName, ex.Message);
+                Logger.Log("Error Setting Field {0} from Type {1} - {2}", memberName, fullTypeName, ex.Message);
             }
             return false;
         }
@@ -145,17 +180,17 @@ namespace QuestTools.Helpers
         /// <summary>
         /// Gets a value from a Field
         /// </summary>
-        /// <param name="typeName">The Type Name</param>
+        /// <param name="fullName">The Full Type name (Namespace.Namespace.Class), e.g. Trinity.Combat.Abilities.CombatBase</param>
         /// <param name="memberName">The Member Name</param>
         /// <param name="value">The Value</param>
         /// <returns>If the field was successfully returned</returns>
-        internal static bool GetField(string typeName, string memberName, out object value)
+        public static bool GetField(string fullTypeName, string memberName, out object value)
         {
             value = null;
             try
             {
                 Type targetType;
-                if (!SetType(typeName, out targetType))
+                if (!SetType(fullTypeName, out targetType))
                 {
                     return false;
                 }
@@ -180,7 +215,7 @@ namespace QuestTools.Helpers
             }
             catch (Exception ex)
             {
-                Logger.Log("Error reading Property {0} from Type {1} - {2}", memberName, typeName, ex.Message);
+                Logger.Log("Error reading Property {0} from Type {1} - {2}", memberName, fullTypeName, ex.Message);
                 return false;
             }
             return false;
@@ -189,17 +224,17 @@ namespace QuestTools.Helpers
         /// <summary>
         /// Gets a value from a Property
         /// </summary>
-        /// <param name="typeName">The Type Name</param>
+        /// <param name="fullName">The Full Type name (Namespace.Namespace.Class), e.g. Trinity.Combat.Abilities.CombatBase</param>
         /// <param name="memberName">The Member Name</param>
         /// <param name="value">The value to set</param>
         /// <returns>If the Property was successfully returned</returns>
-        internal static bool GetProperty(string typeName, string memberName, out object value)
+        public static bool GetProperty(string fullTypeName, string memberName, out object value)
         {
             value = null;
             try
             {
                 Type targetType;
-                if (!SetType(typeName, out targetType))
+                if (!SetType(fullTypeName, out targetType))
                 {
                     return false;
                 }
@@ -218,13 +253,13 @@ namespace QuestTools.Helpers
                 if (propertyInfo != null)
                 {
                     _propertyInfoDictionary.Add(new Tuple<string, Type>(memberName, targetType), propertyInfo);
-                    propertyInfo.GetValue(null, null);
+                    value = propertyInfo.GetValue(null, null);
                     return true;
                 }
             }
             catch (Exception ex)
             {
-                Logger.Log("Error reading Property {0} from Type {1} - {2}", memberName, typeName, ex.Message);
+                Logger.Log("Error reading Property {0} from Type {1} - {2}", memberName, fullTypeName, ex.Message);
                 return false;
             }
             return false;
@@ -233,10 +268,10 @@ namespace QuestTools.Helpers
         /// <summary>
         /// Caches the given type by name
         /// </summary>
-        /// <param name="name">The Type name</param>
+        /// <param name="fullName">The Full Type name (Namespace.Namespace.Class), e.g. Trinity.Combat.Abilities.CombatBase</param>
         /// <param name="result">The Type</param>
         /// <returns>If the type was found</returns>
-        private static bool SetType(string name, out Type result)
+        public static bool SetType(string fullName, out Type result)
         {
             result = null;
             try
@@ -248,22 +283,21 @@ namespace QuestTools.Helpers
                     return false;
                 }
 
-                if (TypeDictionary.TryGetValue(name, out result) && result != null)
+                if (TypeDictionary.TryGetValue(fullName, out result) && result != null)
                     return true;
+                result = _mainAssembly.GetType(fullName);
 
-                result = _mainAssembly.GetType(name);
-
-                if (TypeDictionary.ContainsKey(name))
-                    TypeDictionary[name] = result;
+                if (TypeDictionary.ContainsKey(fullName))
+                    TypeDictionary[fullName] = result;
                 else
-                    TypeDictionary.Add(name, result);
+                    TypeDictionary.Add(fullName, result);
                 
                 return true;
 
             }
             catch (Exception ex)
             {
-                Logger.Log("Unable to read type {0} from Assembly: {2}", name, ex.Message);
+                Logger.Log("Unable to read type {0} from Assembly: {2}", fullName, ex.Message);
                 return false;
             }
         }
@@ -271,19 +305,23 @@ namespace QuestTools.Helpers
         /// <summary>
         /// Caches the Assembly
         /// </summary>
-        private static void SetAssembly()
+        public static void SetAssembly()
         {
             try
             {
                 if (_mainAssembly != null)
                     return;
-
-                foreach (var asm in AppDomain.CurrentDomain.GetAssemblies().Where(x => x.GetName().Name.StartsWith(AssemblyName)).Where(asm => asm != null))
+                var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(x => x.GetName().Name.StartsWith(AssemblyName + "_")).Where(asm => asm != null);
+                foreach (var asm in assemblies)
                 {
                     try
                     {
-                        asm.GetType(MainClass);
-                        _mainAssembly = asm;
+                        var mainType = asm.GetType(MainClass);
+                        if (mainType != null)
+                        {
+                            _mainAssembly = asm;
+                            break;
+                        }
                     }
                     catch
                     {

@@ -25,7 +25,7 @@ namespace QuestTools
     }
 
     [XmlElement("QuestToolsSettings")]
-    class QuestToolsSettings : XmlSettings
+    public class QuestToolsSettings : XmlSettings
     {
         private bool _debugEnabled;
         private bool _allowProfileReloading;
@@ -178,24 +178,6 @@ namespace QuestTools
                     return;
                 _allowProfileRestarts = value;
                 OnPropertyChanged("AllowProfileRestarts");
-            }
-        }
-
-        [XmlElement("EnableBetaFeatures")]
-        [DefaultValue(false)]
-        [Setting]
-        public bool EnableBetaFeatures
-        {
-            get
-            {
-                return _enableBetaFeatures;
-            }
-            set
-            {
-                if (_enableBetaFeatures == value)
-                    return;
-                _enableBetaFeatures = value;
-                OnPropertyChanged("EnableBetaFeatures");
             }
         }
 

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using QuestTools.Helpers;
+using QuestTools.ProfileTags.Complex;
 using Zeta.Bot;
 using Zeta.Bot.Coroutines;
 using Zeta.Bot.Profile;
@@ -15,7 +16,7 @@ using Action = Zeta.TreeSharp.Action;
 namespace QuestTools.ProfileTags
 {
     [XmlElement("ResumeUseTownPortal")]
-    public class ResumeUseTownPortalTag : ProfileBehavior
+    public class ResumeUseTownPortalTag : ProfileBehavior, IEnhancedProfileBehavior
     {
         public ResumeUseTownPortalTag() { }
 
@@ -97,5 +98,24 @@ namespace QuestTools.ProfileTags
             _isDone = false;
             base.ResetCachedDone();
         }
+
+        #region IEnhancedProfileBehavior
+
+        public void Update()
+        {
+            UpdateBehavior();
+        }
+
+        public void Start()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
     }
 }
