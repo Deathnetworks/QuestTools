@@ -279,7 +279,7 @@ namespace QuestTools.ProfileTags.Movement
                 }
             }
 
-            if (Actor == null)
+            if (Actor == null || !Actor.IsValid)
                 return true;
 
             if (((!IsPortal && _completedInteractions >= InteractAttempts && InteractAttempts > 0) || (IsPortal && WorldHasChanged()) || AnimationMatch()))

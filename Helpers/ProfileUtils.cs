@@ -16,7 +16,7 @@ namespace QuestTools.Helpers
         public static void ReplaceDefaultTags()
         {
             RecurseBehaviors(Zeta.Bot.ProfileManager.CurrentProfile.Order, (node, i, type) =>
-            {
+            { 
                 if (node is IfTag && type == typeof(IfTag))
                 {
                     return new EnhancedIfTag
@@ -36,11 +36,6 @@ namespace QuestTools.Helpers
                         Conditional = (node as IfTag).Conditional,
                     };
                 }
-
-                //if (node is LogMessageTag && type == typeof(LogMessageTag))
-                //{
-                //    return (node as LogMessageTag).ToEnhanced();
-                //}
 
                 return node;
             });
@@ -96,22 +91,31 @@ namespace QuestTools.Helpers
         /// </summary>
         public static void RecurseBehaviors(IList<ProfileBehavior> nodes, TagProcessingDelegate replacementDelegate, int depth = 0, int maxDepth = 20)
         {
+            if (nodes == null || !nodes.Any())
+                return;
+
+            if (replacementDelegate == null)
+                return;
+
             if (depth == maxDepth)
             {
                 Logger.Debug("MaxDepth ({0}) reached on ProfileUtils.ReplaceBehaviors()", maxDepth);
                 return;
             }
 
-            if (nodes == null || !nodes.Any())
-                return;
-
             for (var i = 0; i < nodes.Count(); i++)
             {
+                if (nodes[i] == null)
+                    continue;
+
                 var node = nodes[i];
                 var type = node.GetType();
 
-                if (replacementDelegate != null)
-                    nodes[i] = replacementDelegate.Invoke(node, i, type);
+                
+                nodes[i] = replacementDelegate.Invoke(node, i, type);
+
+                if(nodes[i] == null)
+                    continue;
 
                 var newType = nodes[i].GetType();
 

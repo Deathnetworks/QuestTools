@@ -95,11 +95,12 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Helpers\ActorHistory.cs" />
+    <Compile Include="Helpers\ConvertExtensions.cs" />
     <Compile Include="Helpers\FileManager.cs" />
     <Compile Include="Helpers\Keys.cs" />
     <Compile Include="Helpers\ProfileHistory.cs" />
     <Compile Include="Helpers\RiftTrial.cs" />
-    <Compile Include="Helpers\Behaviors.cs">
+    <Compile Include="Helpers\Common.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="Helpers\ProfileExtensions.cs">
@@ -117,7 +118,7 @@
     </Compile>
     <Compile Include="ProfileTags\Beta\Experiments\ClearObstacleTag.cs" />
     <Compile Include="ProfileTags\Beta\Experiments\ActionTag.cs" />
-    <Compile Include="Helpers\Conditions.cs" />
+    <Compile Include="Helpers\CustomConditions.cs" />
     <Compile Include="ProfileTags\Beta\Experiments\RandomMoveTag.cs" />
     <Compile Include="ProfileTags\CombatSettingTag.cs" />
     <Compile Include="ProfileTags\Complex\IEnhancedProfileBehavior.cs">

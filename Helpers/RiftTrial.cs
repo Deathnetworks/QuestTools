@@ -90,8 +90,8 @@ namespace QuestTools.Helpers
                     new TownPortalTag(),
                     new CompositeTag()
                     {
-                        IsDoneDelegate = ret => Zeta.Bot.ConditionParser.IsActiveQuestAndStep(405695,9),
-                        BehaviorDelegate = new Action(ret =>
+                        IsDoneWhen = ret => Zeta.Bot.ConditionParser.IsActiveQuestAndStep(405695,9),
+                        Composite = new Action(ret =>
                         {
                             Logger.Log("Waiting for Trial to Finish...");
                             return RunStatus.Success;

@@ -12,8 +12,8 @@ namespace QuestTools.ProfileTags.Complex
     /// <summary>
     /// Give commands for the bot to do unusual stuff
     /// </summary>
-    [XmlElement("Action")]
-    public class ActionTag : ProfileBehavior, IEnhancedProfileBehavior
+    [XmlElement("Command")]
+    public class CommandTag : ProfileBehavior, IEnhancedProfileBehavior
     {
         private bool _isDone;
 

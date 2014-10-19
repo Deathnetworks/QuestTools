@@ -126,7 +126,13 @@ namespace QuestTools
         public static bool KeyBelowLowerQuartile(int actorId)
         {
             return Keys.GetKeyCount(actorId) < Keys.LowerQuartile;
-        }           
+        }
+
+        public static bool UsedOnce(string id)
+        {
+            return UseOnceTag.UseOnceIDs.Contains(id);
+        }
+
 
     }
 }

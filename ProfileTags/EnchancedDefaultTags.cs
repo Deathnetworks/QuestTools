@@ -5,17 +5,25 @@ using Zeta.Bot.Profile;
 using Zeta.Bot.Profile.Common;
 using Zeta.Bot.Profile.Composites;
 using Zeta.Common;
+using Zeta.Game;
 using Zeta.TreeSharp;
 using Action = Zeta.TreeSharp.Action;
 
 
 namespace QuestTools.ProfileTags.Complex
 {
-    public class CompositeTag : ProfileBehavior, IEnhancedProfileBehavior
+    public class ActionTag : ProfileBehavior, IEnhancedProfileBehavior
     {
-        public CompositeTag()
+        /// <summary>
+        /// Action is a method with return type bool, false will loop, true will end.
+        /// </summary>
+        public Common.BoolDelegate Action;
+
+        public Common.BoolDelegate IsDoneWhen;
+
+        public ActionTag(Common.BoolDelegate action = null)
         {
-            QuestId = QuestId <= 0 ? 1 : QuestId;            
+            if(action != null) Action = action;
         }
 
         private bool _isDone;
@@ -23,16 +31,110 @@ namespace QuestTools.ProfileTags.Complex
         {
             get
             {
-                var delegateIsDone = IsDoneDelegate != null && IsDoneDelegate.Invoke(null);
-                return !IsActiveQuestStep || _isDone || delegateIsDone;
+                var delegateIsDone = IsDoneWhen != null && IsDoneWhen.Invoke(null);
+
+                if(delegateIsDone)
+                    Logger.Verbose("IsDoneWhen returned true, setting done");
+
+                return _isDone || delegateIsDone;
             }
         }
 
-        public Behaviors.IsDoneCondition IsDoneDelegate;
-        public Composite BehaviorDelegate { get; set; }
         protected override Composite CreateBehavior()
         {
-            return BehaviorDelegate;
+            return new Action(ret =>
+            {
+                if(IsDone)
+                    return RunStatus.Success;
+
+                if (Action != null)
+                {
+                    if (Action.Invoke(null))
+                    {
+                        _isDone = true;
+                        return RunStatus.Success;
+                    }
+                    return RunStatus.Running;                    
+                }
+                return RunStatus.Success;
+            });
+        }
+
+        #region IEnhancedProfileBehavior
+
+        public void Update()
+        {
+            UpdateBehavior();
+        }
+
+        public void Start()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
+    }
+
+    public class CompositeTag : ProfileBehavior, IEnhancedProfileBehavior
+    {
+        public Common.BoolDelegate IsDoneWhen;
+
+        /// <summary>
+        /// new CompositeTag(ret => MyComposite);
+        /// </summary>
+        public CompositeTag(Common.CompositeDelegate compositeDelegate = null)
+        {
+            if (compositeDelegate != null) //Composite = compositeDelegate.Invoke(null);
+                CompositeDelegate = compositeDelegate;
+        }
+
+        /// <summary>
+        /// If set, IsDone when this status is returned;
+        /// </summary>
+        public RunStatus? DoneStatus;
+
+        private bool _isDone;
+        public override bool IsDone
+        {
+            get
+            {
+                var delegateIsDone = IsDoneWhen != null && IsDoneWhen.Invoke(null);
+
+                if (delegateIsDone)
+                    Logger.Verbose("IsDoneWhen returned true, setting done");
+
+                bool doneByStatus = false;
+                if (DoneStatus.HasValue)
+                {
+                    doneByStatus = Composite.LastStatus == DoneStatus;                            
+                    if(doneByStatus)
+                        Logger.Verbose("Status {0} was returned, setting done", Composite.LastStatus); 
+                }
+
+                return _isDone || delegateIsDone || doneByStatus;
+            }
+        }
+
+        public Common.CompositeDelegate CompositeDelegate;
+
+        private Composite _composite;
+        public Composite Composite
+        {
+            get
+            {
+                return CompositeDelegate != null ? CompositeDelegate.Invoke(null) : _composite;
+            }
+            set { _composite = value; }
+        }
+
+        protected override Composite CreateBehavior()
+        {
+            return Composite;
         }
 
         #region IEnhancedProfileBehavior
@@ -123,11 +225,6 @@ namespace QuestTools.ProfileTags.Complex
 
     public class EnhancedLogMessageTag : LogMessageTag, IEnhancedProfileBehavior
     {
-        public EnhancedLogMessageTag()
-        {
-            QuestId = QuestId <= 0 ? 1 : QuestId;
-        }
-
         private bool _isDone;
         public override bool IsDone
         {
@@ -159,12 +256,19 @@ namespace QuestTools.ProfileTags.Complex
         public EnhancedUseWaypointTag()
         {
             QuestId = QuestId <= 0 ? 1 : QuestId;
+            Logger.Log("QuestId={0} base.IsDone={1}", QuestId, base.IsDone);
+            
         }
 
         private bool _isDone;
         public override bool IsDone
         {
-            get { return !IsActiveQuestStep || _isDone || base.IsDone; }
+            get
+            {
+                Logger.Log("IsDone QuestId={0} base.IsDone={1} _isDone={2}", QuestId, base.IsDone, _isDone);
+                return _isDone || base.IsDone; 
+                
+            }
         }
 
         #region IEnhancedProfileBehavior
@@ -304,7 +408,7 @@ namespace QuestTools.ProfileTags.Complex
         protected override Composite CreateBehavior()
         {
             _isDone = true;
-            return Behaviors.ExecuteReturnAlwaysSuccess(
+            return Common.ExecuteReturnAlwaysSuccess(
                 ret => !_isDone,
                 ret => new Action(r => base.OnStart())
             );
@@ -336,31 +440,50 @@ namespace QuestTools.ProfileTags.Complex
         private bool _firstRun = true;
         public bool ContinuouslyRecheck;
 
+        public Common.BoolDelegate IsDoneDelegate;
+
+        // This constructor is just for convienience when adding directly to BotBehaviorQueue
+        // new EnhancedIfTag(ret => c#condition, List<ProfileBehavior>)
+        public EnhancedIfTag(Common.BoolDelegate isDoneDelegate = null, params ProfileBehavior[] children)
+        {
+            if (isDoneDelegate != null)
+            {
+                IsDoneDelegate = isDoneDelegate;
+                Condition = "True";
+            }
+ 
+            if(children!=null && children.Any())
+                Body = children.ToList();
+        }
+
         public override bool IsDone
         {
             get
-            {
+            {               
                 if (_isDone)
                     return true;
+
+                // Check Condition
+                if (_firstRun || ContinuouslyRecheck)
+                {
+                    var delegateExec = IsDoneDelegate == null || IsDoneDelegate.Invoke(null);
+
+                    if (!delegateExec || !GetConditionExec())
+                    {
+                        Logger.Verbose("IF tag condition is FALSE - {0}", Condition);
+
+                        _isDone = true;
+                        Body.ForEach(b => b.SetChildrenDone());
+                        return true;
+                    }
+                    _firstRun = false;
+                }
 
                 // End if children are finished
                 if (Body.All(p => p.IsDone))
                 {
                     _isDone = true;
                     return true;
-                }
-
-                // Check Condition
-                if (_firstRun || ContinuouslyRecheck)
-                {
-                    // End if condition is false
-                    if (!GetConditionExec())
-                    {
-                        _isDone = true;
-                        Body.ForEach(b => b.SetChildrenDone());
-                        return true;
-                    }
-                    _firstRun = false;
                 }
 
                 return false;
@@ -370,6 +493,11 @@ namespace QuestTools.ProfileTags.Complex
         public new bool GetConditionExec()
         {
             return ScriptManager.GetCondition(Condition).Invoke();
+        }
+
+        protected override Composite CreateBehavior()
+        {
+            return new Action(ret => RunStatus.Success);
         }
 
         public override void ResetCachedDone()
@@ -411,8 +539,23 @@ namespace QuestTools.ProfileTags.Complex
     {
         private bool _isDone;
         private bool _firstRun = true;
-
         public bool ContinuouslyRecheck;
+
+        public Common.BoolDelegate IsDoneDelegate;
+
+        // This constructor is just for convienience when adding directly to BotBehaviorQueue
+        // new EnhancedWhileTag(ret => c#condition, List<ProfileBehavior>)
+        public EnhancedWhileTag(Common.BoolDelegate isDoneDelegate = null, params ProfileBehavior[] children)
+        {
+            if (isDoneDelegate != null)
+            {
+                IsDoneDelegate = isDoneDelegate;
+                Condition = "True";
+            }
+ 
+            if(children!=null && children.Any())
+                Body = children.ToList();
+        }
 
         public override bool IsDone
         {
@@ -421,32 +564,34 @@ namespace QuestTools.ProfileTags.Complex
                 if (_isDone)
                     return true;
 
-                // End if children are finished && condition is false, otherwise re-run them all
-                if (Body.All(p => p.IsDone))
-                {
-                    if (GetConditionExec())
-                    {
-                        _isDone = false;                        
-                        Body.ForEach(b => b.ResetCachedDone());
-                        return false;
-                    }
-                  
-                    _isDone = true;
-                    return true;                  
-                }
-
- 
                 // Check Condition
                 if (_firstRun || ContinuouslyRecheck)
                 {
-                    // End if condition is false
-                    if (!GetConditionExec())
+                    var delegateExec = IsDoneDelegate == null || IsDoneDelegate.Invoke(null);
+
+                    if (!delegateExec || !GetConditionExec())
                     {
+                        Logger.Verbose("IF tag condition is FALSE - {0}", Condition);
+
                         _isDone = true;
                         Body.ForEach(b => b.SetChildrenDone());
                         return true;
                     }
                     _firstRun = false;
+                }
+
+                // End if children are finished && condition is false, otherwise re-run them all
+                if (Body.All(p => p.IsDone))
+                {
+                    if (GetConditionExec())
+                    {
+                        _isDone = false;
+                        Body.ForEach(b => b.ResetCachedDone());
+                        return false;
+                    }
+
+                    _isDone = true;
+                    return true;
                 }
 
                 return false;
@@ -456,6 +601,11 @@ namespace QuestTools.ProfileTags.Complex
         public new bool GetConditionExec()
         {
             return ScriptManager.GetCondition(Condition).Invoke();
+        }
+
+        protected override Composite CreateBehavior()
+        {
+            return new Action(ret => RunStatus.Success);
         }
 
         public override void ResetCachedDone()

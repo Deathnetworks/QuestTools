@@ -95,10 +95,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Helpers\ActorHistory.cs" />
-    <Compile Include="Helpers\Behaviors.cs" />
     <Compile Include="Helpers\BotBehaviorQueue.cs" />
     <Compile Include="Helpers\BotEvents.cs" />
     <Compile Include="Helpers\ChangeMonitor.cs" />
+    <Compile Include="Helpers\Common.cs" />
     <Compile Include="Helpers\ConvertExtensions.cs" />
     <Compile Include="Helpers\CustomConditions.cs" />
     <Compile Include="Helpers\DataDictionary.cs" />
