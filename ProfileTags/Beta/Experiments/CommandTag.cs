@@ -57,14 +57,14 @@ namespace QuestTools.ProfileTags.Complex
                         if (Enum.TryParse(Value, true, out difficulty))
                         {
                             Logger.Warn("Profile '{0}' changed difficulty to {1}. {2}", profileName, difficulty, Reason);
-                            CharacterSettings.Instance.GameDifficulty = GameDifficulty.Hard;
+                            CharacterSettings.Instance.GameDifficulty = difficulty;
                         }
                         break;
 
                     case CommandType.StopBot:
 
                         Logger.Warn("Profile '{0}' requested the bot be stopped. {1}", profileName, Reason);
-                        BotMain.Stop(true);
+                        BotMain.Stop();
                         break;
 
                     case CommandType.LogSpecial:

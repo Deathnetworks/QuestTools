@@ -1,6 +1,8 @@
-﻿using QuestTools.Helpers;
+﻿using System;
+using QuestTools.Helpers;
 using QuestTools.ProfileTags;
 using System.Linq;
+using Zeta.Bot.Settings;
 using Zeta.Common;
 using Zeta.Game;
 using Zeta.Game.Internals.Actors;
@@ -15,39 +17,67 @@ namespace QuestTools
             ScriptManager.RegisterShortcutsDefinitions((typeof(CustomConditions)));
         }
         
-        public static int CurrentWave()
+        public static bool CurrentWave(int waveNumber)
         {
-            return RiftTrial.CurrentWave;
+            return RiftTrial.CurrentWave == waveNumber;
         }
         
-        public static string CurrentSceneName()
+        public static bool CurrentSceneName(string sceneName)
         {
-            return ZetaDia.Me.CurrentScene.Name;          
+            return ZetaDia.Me.CurrentScene.Name.ToLowerInvariant() == sceneName.ToLowerInvariant();          
         }
 
-        public static string CurrentDifficulty()
+        public static bool CurrentDifficulty(string difficulty)
         {
-            return ZetaDia.Service.Hero.CurrentDifficulty.ToString();
+            GameDifficulty d;
+            return Enum.TryParse(difficulty, true, out d) && CharacterSettings.Instance.GameDifficulty == d;
         }
 
-        public static string CurrentClass()
+        public static bool CurrentDifficultyLessThan(string difficulty)
         {
-            return ZetaDia.Service.Hero.Class.ToString();
+            GameDifficulty d;
+            if (Enum.TryParse(difficulty, true, out d))
+            {
+                var currentIndex = (int) CharacterSettings.Instance.GameDifficulty;
+                var testIndex = (int) d;
+
+                return currentIndex < testIndex;
+            }
+            return false;
         }
 
-        public static int CurrentHeroLevel()
+        public static bool CurrentDifficultyGreaterThan(string difficulty)
         {
-            return ZetaDia.Service.Hero.Level;
+            GameDifficulty d;
+            if (Enum.TryParse(difficulty, true, out d))
+            {
+                var currentIndex = (int)CharacterSettings.Instance.GameDifficulty;
+                var testIndex = (int)d;
+
+                return currentIndex > testIndex;
+            }
+            return false;
         }
 
-        public static int HighestKeyCountId()
+        public static bool CurrentClass(string actorClass)
         {
-            return !Keys.IsAllSameCount ? Keys.HighestKeyId : 0;
+            ActorClass a;
+            return Enum.TryParse(actorClass, true, out a) && ZetaDia.Service.Hero.Class == a;
         }
 
-        public static int LowestKeyCountId()
+        public static bool CurrentHeroLevel(int level)
         {
-            return !Keys.IsAllSameCount ? Keys.LowestKeyId : 0;
+            return ZetaDia.Service.Hero.Level == level;
+        }
+
+        public static bool HighestKeyCountId(int id)
+        {
+            return !Keys.IsAllSameCount && Keys.HighestKeyId == id;
+        }
+
+        public static bool LowestKeyCountId(int id)
+        {
+            return !Keys.IsAllSameCount && Keys.LowestKeyId == id;
         }
 
         public static int ItemCount(int actorId)
@@ -56,6 +86,16 @@ namespace QuestTools
                 .Concat(ZetaDia.Me.Inventory.Backpack.Where(item => actorId == item.ActorSNO)).ToList();
 
             return items.Select(i => i.ItemStackQuantity).Aggregate((a, b) => a + b);
+        }
+
+        public static bool ItemCountGreaterThan(int actorId, int amount)
+        {
+            return ItemCount(actorId) > amount;
+        }
+
+        public static bool ItemCountLessThan(int actorId, int amount)
+        {
+            return ItemCount(actorId) < amount;
         }
 
         public static bool ActorAnimationCountReached(int actorId, string animationName, int count)
