@@ -122,7 +122,7 @@ namespace QuestTools.Helpers
                 }
 
                 // Handle continuing an in-progress Node
-                Logger.Log("Contining: {0}", _active.ActiveNode.GetType());
+                LogBehavior(_active);
                 return _active.ActiveNode.Behavior;
             }
         }

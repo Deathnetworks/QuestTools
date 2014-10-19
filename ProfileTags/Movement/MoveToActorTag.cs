@@ -402,7 +402,7 @@ namespace QuestTools.ProfileTags.Movement
 
         private async Task<bool> InteractRoutine()
         {
-            if (Player.IsPlayerValid() && Actor.IsValid)
+            if (Player.IsPlayerValid() && Actor!=null && Actor.IsValid)
             {
 
                 if (TargetIsDungeonStone && (GameUI.IsElementVisible(GameUI.GenericOK) || GameUI.IsElementVisible(UIElements.ConfirmationDialogOkButton)))
