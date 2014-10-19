@@ -379,7 +379,13 @@ namespace QuestTools.Helpers
             get { return _nodes; }
             set
             {
-                Id = value.Aggregate(0, (current, node) => current ^ node.GetHashCode() ^ Name.GetHashCode());
+                var hash = value.Aggregate(0, (current, node) => current ^ node.GetHashCode());
+
+                if (Name != null)
+                    hash = hash ^ Name.GetHashCode();
+
+                Id = hash;
+
                 _nodes = value;
             }
         }
