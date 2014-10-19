@@ -15,44 +15,39 @@ namespace QuestTools
             ScriptManager.RegisterShortcutsDefinitions((typeof(CustomConditions)));
         }
         
-        public static int CurrentWave
+        public static int CurrentWave()
         {
-            get { return RiftTrial.CurrentWave; }
+            return RiftTrial.CurrentWave;
         }
         
-        public static string CurrentSceneName
+        public static string CurrentSceneName()
         {
-            get { return ZetaDia.Me.CurrentScene.Name; }            
+            return ZetaDia.Me.CurrentScene.Name;          
         }
 
-        public static string CurrentDifficulty
+        public static string CurrentDifficulty()
         {
-            get { return ZetaDia.Service.Hero.CurrentDifficulty.ToString(); }
+            return ZetaDia.Service.Hero.CurrentDifficulty.ToString();
         }
 
-        public static string CurrentClass
+        public static string CurrentClass()
         {
-            get { return ZetaDia.Service.Hero.Class.ToString(); }
+            return ZetaDia.Service.Hero.Class.ToString();
         }
 
-        public static int CurrentHeroLevel
+        public static int CurrentHeroLevel()
         {
-            get { return ZetaDia.Service.Hero.Level; }
+            return ZetaDia.Service.Hero.Level;
         }
 
-        public static int HighestKeyCountId
+        public static int HighestKeyCountId()
         {
-            get { return !Keys.IsAllSameCount ? Keys.HighestKeyId : 0; }
+            return !Keys.IsAllSameCount ? Keys.HighestKeyId : 0;
         }
 
-        public static int LowestKeyCountId
+        public static int LowestKeyCountId()
         {
-            get { return !Keys.IsAllSameCount ? Keys.LowestKeyId : 0; }
-        }
-
-        public static bool IsInGame
-        {
-            get { return ZetaDia.IsInGame; }
+            return !Keys.IsAllSameCount ? Keys.LowestKeyId : 0;
         }
 
         public static int ItemCount(int actorId)
