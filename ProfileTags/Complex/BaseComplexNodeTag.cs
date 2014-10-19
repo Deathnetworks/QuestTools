@@ -1,14 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using QuestTools.ProfileTags.Complex;
 using Zeta.Bot;
 using Zeta.Bot.Profile;
 using Zeta.Bot.Profile.Composites;
 
 namespace QuestTools.ProfileTags
 {
-    public abstract class BaseComplexNodeTag : ComplexNodeTag, IEnhancedProfileBehavior
+    public abstract class BaseComplexNodeTag : ComplexNodeTag
     {
         private bool? _ComplexDoneCheck;
         private bool? _AlreadyCompleted;
@@ -78,27 +77,6 @@ namespace QuestTools.ProfileTags
                 behavior.ResetCachedDone();
             }
             ComplexDoneCheck = null;
-            _AlreadyCompleted = null;
         }
-
-        #region IEnhancedProfileBehavior
-
-        public void Update()
-        {
-            UpdateBehavior();
-        }
-
-        public void Start()
-        {
-            OnStart();
-        }
-
-        public void Done()
-        {
-            ComplexDoneCheck = false;
-            _AlreadyCompleted = true;
-        }
-
-        #endregion
     }
 }

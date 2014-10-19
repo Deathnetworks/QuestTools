@@ -1,6 +1,14 @@
-﻿using QuestTools.ProfileTags.Complex;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Diagnostics.Eventing.Reader;
 using System.Linq;
+using System.Runtime.Remoting;
+using System.Runtime.Remoting.Contexts;
+using System.Windows.Documents;
+using System.Windows.Navigation;
+using QuestTools.ProfileTags;
+using QuestTools.ProfileTags.Beta;
+using QuestTools.ProfileTags.Complex;
+using QuestTools.ProfileTags.Movement;
 using Zeta.Bot.Profile;
 using Zeta.Bot.Profile.Common;
 using Zeta.Bot.Profile.Composites;
@@ -8,7 +16,7 @@ using Zeta.TreeSharp;
 
 namespace QuestTools.Helpers
 {
-    public static class ProfileExtensions
+    public static class AsyncExtensions
     {
 
         public static List<ProfileBehavior> GetChildren(this ProfileBehavior behavior)
@@ -25,22 +33,22 @@ namespace QuestTools.Helpers
         {
             behavior.GetChildren().ForEach(b =>
             {
-                if (b is IEnhancedProfileBehavior)
-                    (b as IEnhancedProfileBehavior).Done();                
+                if (b is IAsyncProfileBehavior)
+                    (b as IAsyncProfileBehavior).Done();                
             });
         }
 
         /// <summary>
-        /// Prepare IEnhancedProfileBehavior to be executed as TreeSharp Composite
+        /// Prepare IAsyncProfileBehavior to be executed as TreeSharp Composite
         /// </summary>
         /// <param name="behavior"></param>
         /// <returns></returns>
-        private static Composite RunEnhanced(this IEnhancedProfileBehavior behavior)
+        private static Composite RunAsync(this IAsyncProfileBehavior behavior)
         {
             if (!(behavior is ProfileBehavior)) 
                 return new Action(ret => RunStatus.Failure);
 
-            behavior.Update();
+            behavior.AsyncUpdateBehavior();
 
             if ((behavior as ProfileBehavior).QuestId == 0)
                 (behavior as ProfileBehavior).QuestId = 1;
@@ -50,7 +58,7 @@ namespace QuestTools.Helpers
             
             (behavior as ProfileBehavior).ResetCachedDone();
 
-            behavior.Start();
+            behavior.AsyncOnStart();
 
             return (behavior as ProfileBehavior).Behavior;
         }
@@ -64,40 +72,40 @@ namespace QuestTools.Helpers
         {
             var type = behavior.GetType();            
 
-            if (behavior is IEnhancedProfileBehavior)
-                return (behavior as IEnhancedProfileBehavior).RunEnhanced();
+            if (behavior is IAsyncProfileBehavior)
+                return (behavior as IAsyncProfileBehavior).RunAsync();
 
             if (type == typeof(LoadProfileTag))
-                return (behavior as LoadProfileTag).ToEnhanced().RunEnhanced();
+                return (behavior as LoadProfileTag).ToAsync().RunAsync();
 
             if (type == typeof(LeaveGameTag))
-                return (behavior as LeaveGameTag).ToEnhanced().RunEnhanced();
+                return (behavior as LeaveGameTag).ToAsync().RunAsync();
 
             if (type == typeof(LogMessageTag))
-                return (behavior as LogMessageTag).ToEnhanced().RunEnhanced();
+                return (behavior as LogMessageTag).ToAsync().RunAsync();
 
             if (type == typeof(WaitTimerTag))
-                return (behavior as WaitTimerTag).ToEnhanced().RunEnhanced();
+                return (behavior as WaitTimerTag).ToAsync().RunAsync();
 
             if (type == typeof(UseWaypointTag))
-                return (behavior as UseWaypointTag).ToEnhanced().RunEnhanced();
+                return (behavior as UseWaypointTag).ToAsync().RunAsync();
 
             if (type == typeof(ToggleTargetingTag))
-                return (behavior as ToggleTargetingTag).ToEnhanced().RunEnhanced();
+                return (behavior as ToggleTargetingTag).ToAsync().RunAsync();
 
             if (type == typeof(IfTag))
-                return (behavior as IfTag).ToEnhanced().RunEnhanced();
+                return (behavior as IfTag).ToAsync().RunAsync();
 
             if (type == typeof(WhileTag))
-                return (behavior as WhileTag).ToEnhanced().RunEnhanced();
+                return (behavior as WhileTag).ToAsync().RunAsync();
 
             if (type == typeof(UseObjectTag))
-                return (behavior as UseObjectTag).ToEnhanced().RunEnhanced();
+                return (behavior as UseObjectTag).ToAsync().RunAsync();
 
             if (type == typeof(UsePowerTag))
-                return (behavior as UsePowerTag).ToEnhanced().RunEnhanced();
+                return (behavior as UsePowerTag).ToAsync().RunAsync();
             
-            Logger.Warn("You attempted to run a tag ({0}) that can't be converted to IEnhancedProfileBehavior ", behavior.GetType());
+            Logger.Warn("You attempted to run a tag ({0}) that can't be converted to IAsyncProfileBehavior ", behavior.GetType());
 
             return new Action(ret => RunStatus.Failure);           
         }
@@ -111,9 +119,9 @@ namespace QuestTools.Helpers
             b.QuestName = a.QuestName;
         }
 
-        internal static EnhancedLoadProfileTag ToEnhanced(this LoadProfileTag tag)
+        internal static AsyncLoadProfileTag ToAsync(this LoadProfileTag tag)
         {
-            var asyncVersion = new EnhancedLoadProfileTag();
+            var asyncVersion = new AsyncLoadProfileTag();
             tag.CopyTo(asyncVersion);
             asyncVersion.Profile = tag.Profile;
             asyncVersion.LeaveGame = tag.LeaveGame;
@@ -123,34 +131,34 @@ namespace QuestTools.Helpers
             return asyncVersion;
         }
 
-        internal static EnhancedLeaveGameTag ToEnhanced(this LeaveGameTag tag)
+        internal static AsyncLeaveGameTag ToAsync(this LeaveGameTag tag)
         {
-            var asyncVersion = new EnhancedLeaveGameTag();
+            var asyncVersion = new AsyncLeaveGameTag();
             tag.CopyTo(asyncVersion);
             asyncVersion.Reason = tag.Reason;
             asyncVersion.StayInParty = tag.StayInParty;
             return asyncVersion;
         }
 
-        internal static EnhancedLogMessageTag ToEnhanced(this LogMessageTag tag)
+        internal static AsyncLogMessageTag ToAsync(this LogMessageTag tag)
         {
-            var asyncVersion = new EnhancedLogMessageTag();
+            var asyncVersion = new AsyncLogMessageTag();
             tag.CopyTo(asyncVersion);
             asyncVersion.Output = tag.Output;
             return asyncVersion;
         }
 
-        internal static EnhancedWaitTimerTag ToEnhanced(this WaitTimerTag tag)
+        internal static AsyncWaitTimerTag ToAsync(this WaitTimerTag tag)
         {
-            var asyncVersion = new EnhancedWaitTimerTag();
+            var asyncVersion = new AsyncWaitTimerTag();
             tag.CopyTo(asyncVersion);
             asyncVersion.WaitTime = tag.WaitTime;
             return asyncVersion;
         }
 
-        internal static EnhancedUseWaypointTag ToEnhanced(this UseWaypointTag tag)
+        internal static AsyncUseWaypointTag ToAsync(this UseWaypointTag tag)
         {
-            var asyncVersion = new EnhancedUseWaypointTag();
+            var asyncVersion = new AsyncUseWaypointTag();
             tag.CopyTo(asyncVersion);
             asyncVersion.X = tag.X;
             asyncVersion.Y = tag.Y;
@@ -159,9 +167,9 @@ namespace QuestTools.Helpers
             return asyncVersion;
         }
 
-        internal static EnhancedToggleTargetingTag ToEnhanced(this ToggleTargetingTag tag)
+        internal static AsyncToggleTargetingTag ToAsync(this ToggleTargetingTag tag)
         {
-            var asyncVersion = new EnhancedToggleTargetingTag();
+            var asyncVersion = new AsyncToggleTargetingTag();
             tag.CopyTo(asyncVersion);
             asyncVersion.Combat = tag.Combat;
             asyncVersion.KillRadius = tag.KillRadius;
@@ -170,9 +178,9 @@ namespace QuestTools.Helpers
             return asyncVersion;
         }
 
-        internal static EnhancedIfTag ToEnhanced(this IfTag tag)
+        internal static AsyncIfTag ToAsync(this IfTag tag)
         {
-            var asyncVersion = new EnhancedIfTag();
+            var asyncVersion = new AsyncIfTag();
             asyncVersion.Body = tag.Body;
             asyncVersion.Condition = tag.Condition;
             asyncVersion.Conditional = tag.Conditional;
@@ -180,9 +188,9 @@ namespace QuestTools.Helpers
             return asyncVersion;
         }
 
-        internal static EnhancedWhileTag ToEnhanced(this WhileTag tag)
+        internal static AsyncWhileTag ToAsync(this WhileTag tag)
         {
-            var asyncVersion = new EnhancedWhileTag();
+            var asyncVersion = new AsyncWhileTag();
             asyncVersion.Body = tag.Body;
             asyncVersion.Condition = tag.Condition;
             asyncVersion.Conditional = tag.Conditional;
@@ -190,9 +198,9 @@ namespace QuestTools.Helpers
             return asyncVersion;
         }
 
-        internal static EnhancedUseObjectTag ToEnhanced(this UseObjectTag tag)
+        internal static AsyncUseObjectTag ToAsync(this UseObjectTag tag)
         {
-            var asyncVersion = new EnhancedUseObjectTag();
+            var asyncVersion = new AsyncUseObjectTag();
             asyncVersion.ActorId = tag.ActorId;
             asyncVersion.Hotspots = tag.Hotspots;
             asyncVersion.IsPortal = tag.IsPortal;
@@ -204,9 +212,9 @@ namespace QuestTools.Helpers
             return asyncVersion;
         }
 
-        internal static EnhancedUsePowerTag ToEnhanced(this UsePowerTag tag)
+        internal static AsyncUsePowerTag ToAsync(this UsePowerTag tag)
         {
-            var asyncVersion = new EnhancedUsePowerTag();
+            var asyncVersion = new AsyncUsePowerTag();
             asyncVersion.SNOPower = tag.SNOPower;
             asyncVersion.X = tag.X;
             asyncVersion.Y = tag.Y;

@@ -10,7 +10,7 @@ namespace QuestTools.ProfileTags
     /// </summary>
     [XmlElement("UseReset")]
     [XmlElement("TrinityUseReset")]
-    public class UseResetTag : ProfileBehavior, IEnhancedProfileBehavior
+    public class UseResetTag : ProfileBehavior, IAsyncProfileBehavior
     {
         public UseResetTag() { }
         private bool _isDone = false;
@@ -41,14 +41,14 @@ namespace QuestTools.ProfileTags
             base.ResetCachedDone();
         }
 
-        #region IEnhancedProfileBehavior
+        #region IAsyncProfileBehavior
 
-        public void Update()
+        public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
         }
 
-        public void Start()
+        public void AsyncOnStart()
         {
             OnStart();
         }

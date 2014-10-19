@@ -18,7 +18,7 @@ namespace QuestTools.ProfileTags
     /// Reloads the current profile, and optionally restarts the act quest if the profile has been reloaded too many times.
     /// </summary>
     [XmlElement("ReloadProfile")]
-    public class ReloadProfileTag : ProfileBehavior, IEnhancedProfileBehavior
+    public class ReloadProfileTag : ProfileBehavior, IAsyncProfileBehavior
     {
         public ReloadProfileTag() { }
         private bool _isDone;
@@ -166,14 +166,14 @@ namespace QuestTools.ProfileTags
                 );
         }
 
-        #region IEnhancedProfileBehavior
+        #region IAsyncProfileBehavior
 
-        public void Update()
+        public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
         }
 
-        public void Start()
+        public void AsyncOnStart()
         {
             OnStart();
         }

@@ -1,17 +1,25 @@
-﻿using QuestTools.Helpers;
+﻿using System;
+using QuestTools.Helpers;
+using QuestTools.ProfileTags.Beta;
 using System.Collections.Generic;
 using System.Linq;
+using QuestTools.ProfileTags.Movement;
+using Zeta.Bot;
 using Zeta.Bot.Profile;
 using Zeta.Bot.Profile.Common;
 using Zeta.Bot.Profile.Composites;
-using Zeta.Common;
+using Zeta.Game;
+using Zeta.Game.Internals.Actors;
 using Zeta.TreeSharp;
+using Zeta.XmlEngine;
 using Action = Zeta.TreeSharp.Action;
+using ConditionParser = QuestTools.Helpers.ConditionParser;
 
 
 namespace QuestTools.ProfileTags.Complex
 {
-    public class CompositeTag : ProfileBehavior, IEnhancedProfileBehavior
+
+    public class CompositeTag : ProfileBehavior, IAsyncProfileBehavior
     {
         public CompositeTag()
         {
@@ -28,21 +36,21 @@ namespace QuestTools.ProfileTags.Complex
             }
         }
 
-        public Behaviors.IsDoneCondition IsDoneDelegate;
+        public AsyncCommonBehaviors.IsDoneCondition IsDoneDelegate;
         public Composite BehaviorDelegate { get; set; }
         protected override Composite CreateBehavior()
         {
             return BehaviorDelegate;
         }
 
-        #region IEnhancedProfileBehavior
+        #region IAsyncProfileBehavior
 
-        public void Update()
+        public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
         }
 
-        public void Start()
+        public void AsyncOnStart()
         {
             OnStart();
         }
@@ -55,9 +63,9 @@ namespace QuestTools.ProfileTags.Complex
         #endregion
     }
 
-    public class EnhancedLeaveGameTag : LeaveGameTag, IEnhancedProfileBehavior
+    public class AsyncLeaveGameTag : LeaveGameTag, IAsyncProfileBehavior
     {
-        public EnhancedLeaveGameTag()
+        public AsyncLeaveGameTag()
         {
             QuestId = QuestId <= 0 ? 1 : QuestId;
         }
@@ -68,14 +76,14 @@ namespace QuestTools.ProfileTags.Complex
             get { return !IsActiveQuestStep || _isDone || base.IsDone; }
         }
 
-        #region IEnhancedProfileBehavior
+        #region IAsyncProfileBehavior
 
-        public void Update()
+        public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
         }
 
-        public void Start()
+        public void AsyncOnStart()
         {
             OnStart();
         }
@@ -88,9 +96,9 @@ namespace QuestTools.ProfileTags.Complex
         #endregion     
     }
 
-    public class EnhancedLoadProfileTag : LoadProfileTag, IEnhancedProfileBehavior
+    public class AsyncLoadProfileTag : LoadProfileTag, IAsyncProfileBehavior
     {
-        public EnhancedLoadProfileTag()
+        public AsyncLoadProfileTag()
         {
             QuestId = QuestId <= 0 ? 1 : QuestId;
         }
@@ -101,14 +109,14 @@ namespace QuestTools.ProfileTags.Complex
             get { return !IsActiveQuestStep || _isDone || base.IsDone; }
         }
 
-        #region IEnhancedProfileBehavior
+        #region IAsyncProfileBehavior
 
-        public void Update()
+        public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
         }
 
-        public void Start()
+        public void AsyncOnStart()
         {
             OnStart();
         }
@@ -121,9 +129,108 @@ namespace QuestTools.ProfileTags.Complex
         #endregion
     }
 
-    public class EnhancedLogMessageTag : LogMessageTag, IEnhancedProfileBehavior
+    public class AsyncLogMessageTag : LogMessageTag, IAsyncProfileBehavior
     {
-        public EnhancedLogMessageTag()
+        public AsyncLogMessageTag()
+        {
+            QuestId = QuestId <= 0 ? 1 : QuestId;
+        }
+
+        private bool _isDone;
+        public override bool IsDone
+        {
+            get { return !IsActiveQuestStep || _isDone || base.IsDone; }
+        }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
+    }
+
+    public class AsyncUseWaypointTag : UseWaypointTag, IAsyncProfileBehavior
+    {
+        public AsyncUseWaypointTag()
+        {
+            QuestId = QuestId <= 0 ? 1 : QuestId;
+        }
+
+        private bool _isDone;
+        public override bool IsDone
+        {
+            get { return !IsActiveQuestStep || _isDone || base.IsDone; }
+        }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
+    }
+
+    public class AsyncWaitTimerTag : WaitTimerTag, IAsyncProfileBehavior
+    {
+        public AsyncWaitTimerTag()
+        {
+            QuestId = QuestId <= 0 ? 1 : QuestId;
+        }
+
+        private bool _isDone;
+        public override bool IsDone
+        {
+            get { return !IsActiveQuestStep || _isDone || base.IsDone; }
+        }
+
+        #region IAsyncProfileBehavior
+
+        public void AsyncUpdateBehavior()
+        {
+            UpdateBehavior();
+        }
+
+        public void AsyncOnStart()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
+    }
+
+    public class AsyncUseObjectTag : UseObjectTag, IAsyncProfileBehavior
+    {
+        public AsyncUseObjectTag()
         {
             QuestId = QuestId <= 0 ? 1 : QuestId;
         }
@@ -134,14 +241,14 @@ namespace QuestTools.ProfileTags.Complex
             get { return _isDone || base.IsDone; }
         }
 
-        #region IEnhancedProfileBehavior
+        #region IAsyncProfileBehavior
 
-        public void Update()
+        public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
         }
 
-        public void Start()
+        public void AsyncOnStart()
         {
             OnStart();
         }
@@ -154,75 +261,9 @@ namespace QuestTools.ProfileTags.Complex
         #endregion
     }
 
-    public class EnhancedUseWaypointTag : UseWaypointTag, IEnhancedProfileBehavior
+    public class AsyncUsePowerTag : UsePowerTag, IAsyncProfileBehavior
     {
-        public EnhancedUseWaypointTag()
-        {
-            QuestId = QuestId <= 0 ? 1 : QuestId;
-        }
-
-        private bool _isDone;
-        public override bool IsDone
-        {
-            get { return !IsActiveQuestStep || _isDone || base.IsDone; }
-        }
-
-        #region IEnhancedProfileBehavior
-
-        public void Update()
-        {
-            UpdateBehavior();
-        }
-
-        public void Start()
-        {
-            OnStart();
-        }
-
-        public void Done()
-        {
-            _isDone = true;
-        }
-
-        #endregion
-    }
-
-    public class EnhancedWaitTimerTag : WaitTimerTag, IEnhancedProfileBehavior
-    {
-        public EnhancedWaitTimerTag()
-        {
-            QuestId = QuestId <= 0 ? 1 : QuestId;
-        }
-
-        private bool _isDone;
-        public override bool IsDone
-        {
-            get { return !IsActiveQuestStep || _isDone || base.IsDone; }
-        }
-
-        #region IEnhancedProfileBehavior
-
-        public void Update()
-        {
-            UpdateBehavior();
-        }
-
-        public void Start()
-        {
-            OnStart();
-        }
-
-        public void Done()
-        {
-            _isDone = true;
-        }
-
-        #endregion
-    }
-
-    public class EnhancedUseObjectTag : UseObjectTag, IEnhancedProfileBehavior
-    {
-        public EnhancedUseObjectTag()
+        public AsyncUsePowerTag()
         {
             QuestId = QuestId <= 0 ? 1 : QuestId;
         }
@@ -233,14 +274,14 @@ namespace QuestTools.ProfileTags.Complex
             get { return _isDone || base.IsDone; }
         }
 
-        #region IEnhancedProfileBehavior
+        #region IAsyncProfileBehavior
 
-        public void Update()
+        public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
         }
 
-        public void Start()
+        public void AsyncOnStart()
         {
             OnStart();
         }
@@ -253,42 +294,9 @@ namespace QuestTools.ProfileTags.Complex
         #endregion
     }
 
-    public class EnhancedUsePowerTag : UsePowerTag, IEnhancedProfileBehavior
+    public class AsyncToggleTargetingTag : ToggleTargetingTag, IAsyncProfileBehavior
     {
-        public EnhancedUsePowerTag()
-        {
-            QuestId = QuestId <= 0 ? 1 : QuestId;
-        }
-
-        private bool _isDone;
-        public override bool IsDone
-        {
-            get { return _isDone || base.IsDone; }
-        }
-
-        #region IEnhancedProfileBehavior
-
-        public void Update()
-        {
-            UpdateBehavior();
-        }
-
-        public void Start()
-        {
-            OnStart();
-        }
-
-        public void Done()
-        {
-            _isDone = true;
-        }
-
-        #endregion
-    }
-
-    public class EnhancedToggleTargetingTag : ToggleTargetingTag, IEnhancedProfileBehavior
-    {
-        public EnhancedToggleTargetingTag()
+        public AsyncToggleTargetingTag()
         {
             QuestId = QuestId <= 0 ? 1 : QuestId;
         }
@@ -299,25 +307,27 @@ namespace QuestTools.ProfileTags.Complex
             get { return !IsActiveQuestStep || _isDone || base.IsDone; }
         }
 
-        public override void OnStart() { }
+        public override void OnStart()
+        {
+        }
 
         protected override Composite CreateBehavior()
         {
             _isDone = true;
-            return Behaviors.ExecuteReturnAlwaysSuccess(
+            return AsyncCommonBehaviors.ExecuteReturnAlwaysSuccess(
                 ret => !_isDone,
                 ret => new Action(r => base.OnStart())
             );
         }
 
-        #region IEnhancedProfileBehavior
+        #region IAsyncProfileBehavior
 
-        public void Update()
+        public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
         }
 
-        public void Start()
+        public void AsyncOnStart()
         {
             OnStart();
         }
@@ -330,18 +340,33 @@ namespace QuestTools.ProfileTags.Complex
         #endregion
     }
 
-    public class EnhancedIfTag : IfTag, IEnhancedProfileBehavior
+
+    [XmlElement("AsyncIf")]
+    public class AsyncIfTag : IfTag, IAsyncProfileBehavior
     {
+        public AsyncIfTag()
+        {
+            QuestId = QuestId <= 0 ? 1 : QuestId;
+        }
+
         private bool _isDone;
+        private bool _initialized;
         private bool _firstRun = true;
-        public bool ContinuouslyRecheck;
+
+        public bool ShouldRecheckCondition;
 
         public override bool IsDone
         {
             get
             {
+                // If a QuestId is specified, it has to match
+                if (QuestId > 1 && !IsActiveQuestStep)
+                    return true;
+
                 if (_isDone)
                     return true;
+
+                Logger.Verbose("Children Finished? {0}", Body.All(p => p.IsDone));
 
                 // End if children are finished
                 if (Body.All(p => p.IsDone))
@@ -350,14 +375,15 @@ namespace QuestTools.ProfileTags.Complex
                     return true;
                 }
 
+                Logger.Verbose("Should Check Condition? {0}", _firstRun || ShouldRecheckCondition);
+
                 // Check Condition
-                if (_firstRun || ContinuouslyRecheck)
+                if (_firstRun || ShouldRecheckCondition)
                 {
                     // End if condition is false
                     if (!GetConditionExec())
                     {
                         _isDone = true;
-                        Body.ForEach(b => b.SetChildrenDone());
                         return true;
                     }
                     _firstRun = false;
@@ -367,9 +393,20 @@ namespace QuestTools.ProfileTags.Complex
             }
         }
 
+        private void Initialize()
+        {
+            _parsedConditions = ConditionParser.Parse(Condition);
+            _initialized = true;
+        }
+
+        private List<Expression> _parsedConditions = new List<Expression>();
+
         public new bool GetConditionExec()
         {
-            return ScriptManager.GetCondition(Condition).Invoke();
+            if (!_initialized)
+                Initialize();
+
+            return ConditionParser.Evaluate(_parsedConditions);
         }
 
         public override void ResetCachedDone()
@@ -379,14 +416,14 @@ namespace QuestTools.ProfileTags.Complex
             base.ResetCachedDone();
         }
 
-        #region IEnhancedProfileBehavior : INodeContainer
+        #region IAsyncProfileBehavior : INodeContainer
 
-        public void Update()
+        public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
         }
 
-        public void Start()
+        public void AsyncOnStart()
         {
             OnStart();
         }
@@ -407,19 +444,32 @@ namespace QuestTools.ProfileTags.Complex
 
     }
 
-    public class EnhancedWhileTag : WhileTag, IEnhancedProfileBehavior
+    [XmlElement("AsyncWhile")]
+    public class AsyncWhileTag : WhileTag, IAsyncProfileBehavior
     {
+        public AsyncWhileTag()
+        {
+            QuestId = QuestId <= 0 ? 1 : QuestId;
+        }
+
         private bool _isDone;
+        private bool _initialized;
         private bool _firstRun = true;
 
-        public bool ContinuouslyRecheck;
+        public bool ShouldRecheckCondition;
 
         public override bool IsDone
         {
             get
-            {               
+            {
+                // If a QuestId is specified, it has to match
+                if (QuestId > 1 && !IsActiveQuestStep)
+                    return true;
+
                 if (_isDone)
                     return true;
+
+                Logger.Verbose("Children Finished? {0}", Body.All(p => p.IsDone));
 
                 // End if children are finished && condition is false, otherwise re-run them all
                 if (Body.All(p => p.IsDone))
@@ -427,23 +477,23 @@ namespace QuestTools.ProfileTags.Complex
                     if (GetConditionExec())
                     {
                         _isDone = false;                        
-                        Body.ForEach(b => b.ResetCachedDone());
-                        return false;
+                        Body.ForEach(b => b.Run());
+                        return true;
                     }
                   
                     _isDone = true;
                     return true;                  
                 }
 
- 
+                Logger.Verbose("Should Check Condition? {0}", _firstRun || ShouldRecheckCondition);
+
                 // Check Condition
-                if (_firstRun || ContinuouslyRecheck)
+                if (_firstRun || ShouldRecheckCondition)
                 {
                     // End if condition is false
                     if (!GetConditionExec())
                     {
                         _isDone = true;
-                        Body.ForEach(b => b.SetChildrenDone());
                         return true;
                     }
                     _firstRun = false;
@@ -453,9 +503,20 @@ namespace QuestTools.ProfileTags.Complex
             }
         }
 
+        private void Initialize()
+        {
+            _parsedConditions = ConditionParser.Parse(Condition);
+            _initialized = true;
+        }
+
+        private List<Expression> _parsedConditions = new List<Expression>();
+
         public new bool GetConditionExec()
         {
-            return ScriptManager.GetCondition(Condition).Invoke();
+            if (!_initialized)
+                Initialize();
+
+            return ConditionParser.Evaluate(_parsedConditions);
         }
 
         public override void ResetCachedDone()
@@ -465,14 +526,14 @@ namespace QuestTools.ProfileTags.Complex
             base.ResetCachedDone();
         }
 
-        #region IEnhancedProfileBehavior : INodeContainer
+        #region IAsyncProfileBehavior : INodeContainer
 
-        public void Update()
+        public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
         }
 
-        public void Start()
+        public void AsyncOnStart()
         {
             OnStart();
         }

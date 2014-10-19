@@ -20,7 +20,7 @@ using Zeta.XmlEngine;
 namespace QuestTools.ProfileTags.Movement
 {
     [XmlElement("MoveToActor")]
-    public class MoveToActorTag : ProfileBehavior, IEnhancedProfileBehavior
+    public class MoveToActorTag : ProfileBehavior, IAsyncProfileBehavior
     {
         public MoveToActorTag() { }
 
@@ -229,7 +229,7 @@ namespace QuestTools.ProfileTags.Movement
             if (Actor == null && Position == Vector3.Zero && !WorldHasChanged())
             {
                 var lastSeenPosition = ActorHistory.GetActorPosition(ActorId);
-                if (lastSeenPosition != Vector3.Zero)
+                if (lastSeenPosition != Vector3.Zero && QuestToolsSettings.Instance.EnableBetaFeatures)
                 {
                     Warn("Can't find actor! using last known position {0} Distance={1}",
                         lastSeenPosition.ToString(),
@@ -710,14 +710,14 @@ namespace QuestTools.ProfileTags.Movement
             base.ResetCachedDone();
         }
 
-        #region IEnhancedProfileBehavior
+        #region IAsyncProfileBehavior
 
-        public void Update()
+        public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
         }
 
-        public void Start()
+        public void AsyncOnStart()
         {
             OnStart();
         }

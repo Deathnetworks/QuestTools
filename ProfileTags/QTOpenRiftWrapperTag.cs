@@ -13,7 +13,7 @@ using Zeta.XmlEngine;
 namespace QuestTools.ProfileTags
 {
     [XmlElement("QTOpenRiftWrapper")]
-    public class QTOpenRiftWrapperTag : OpenRiftTag, IEnhancedProfileBehavior
+    public class QTOpenRiftWrapperTag : OpenRiftTag, IAsyncProfileBehavior
     {
         const int RiftPortalSno = 345935; 
 
@@ -168,14 +168,14 @@ namespace QuestTools.ProfileTags
             }
         }
 
-        #region IEnhancedProfileBehavior
+        #region IAsyncProfileBehavior
 
-        public void Update()
+        public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
     }
 
-        public void Start()
+        public void AsyncOnStart()
         {
             OnStart();
 }

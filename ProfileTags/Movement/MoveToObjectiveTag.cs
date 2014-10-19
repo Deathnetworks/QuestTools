@@ -18,7 +18,7 @@ using Action = Zeta.TreeSharp.Action;
 namespace QuestTools.ProfileTags.Movement
 {
     [XmlElement("MoveToObjective")]
-    public class MoveToObjectiveTag : ProfileBehavior, IEnhancedProfileBehavior
+    public class MoveToObjectiveTag : ProfileBehavior, IAsyncProfileBehavior
     {
         public MoveToObjectiveTag() { }
         private bool _isDone;
@@ -489,14 +489,14 @@ namespace QuestTools.ProfileTags.Movement
             base.ResetCachedDone();
         }
 
-        #region IEnhancedProfileBehavior
+        #region IAsyncProfileBehavior
 
-        public void Update()
+        public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
         }
 
-        public void Start()
+        public void AsyncOnStart()
         {
             OnStart();
         }

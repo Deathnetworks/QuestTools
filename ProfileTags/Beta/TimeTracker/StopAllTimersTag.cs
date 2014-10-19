@@ -14,7 +14,7 @@ namespace QuestTools.ProfileTags.Beta
     /// Stops all timers.
     /// </summary>
     [XmlElement("StopAllTimers")]
-    public class StopAllTimersTag : ProfileBehavior, IEnhancedProfileBehavior
+    public class StopAllTimersTag : ProfileBehavior, IAsyncProfileBehavior
     {
         private bool _isDone;
         public override bool IsDone { get { return _isDone; } }
@@ -33,14 +33,14 @@ namespace QuestTools.ProfileTags.Beta
             base.ResetCachedDone();
         }
 
-        #region IEnhancedProfileBehavior
+        #region IAsyncProfileBehavior
 
-        public void Update()
+        public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
         }
 
-        public void Start()
+        public void AsyncOnStart()
         {
             OnStart();
         }

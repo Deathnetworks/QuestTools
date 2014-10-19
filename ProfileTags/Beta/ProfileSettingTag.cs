@@ -8,7 +8,7 @@ using Zeta.XmlEngine;
 namespace QuestTools.ProfileTags
 {
     [XmlElement("ProfileSetting")]
-    public class ProfileSettingTag : ProfileBehavior, IEnhancedProfileBehavior
+    public class ProfileSettingTag : ProfileBehavior, IAsyncProfileBehavior
     { 
         private bool _isDone; 
         public override bool IsDone 
@@ -49,14 +49,14 @@ namespace QuestTools.ProfileTags
             }); 
         }
 
-        #region IEnhancedProfileBehavior
+        #region IAsyncProfileBehavior
 
-        public void Update()
+        public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
         }
 
-        public void Start()
+        public void AsyncOnStart()
         {
             OnStart();
         }

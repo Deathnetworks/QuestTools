@@ -14,7 +14,7 @@ namespace QuestTools.ProfileTags
     // TrinityTownRun forces a town-run request
     [XmlElement("TrinityTownPortal")]
     [XmlElement("TownPortal")]
-    public class TownPortalTag : ProfileBehavior, IEnhancedProfileBehavior
+    public class TownPortalTag : ProfileBehavior, IAsyncProfileBehavior
     {
         public static int DefaultWaitTime = -1;
 
@@ -182,14 +182,14 @@ namespace QuestTools.ProfileTags
             base.ResetCachedDone();
         }
 
-        #region IEnhancedProfileBehavior
+        #region IAsyncProfileBehavior
 
-        public void Update()
+        public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
         }
 
-        public void Start()
+        public void AsyncOnStart()
         {
             OnStart();
         }

@@ -15,7 +15,7 @@ namespace QuestTools.ProfileTags.Beta
     /// XML tag for a profile to START a timer
     /// </summary>
     [XmlElement("StartTimer")]
-    public class StartTimerTag : ProfileBehavior, IEnhancedProfileBehavior
+    public class StartTimerTag : ProfileBehavior, IAsyncProfileBehavior
     {
         public StartTimerTag() { }
         private bool _isDone;
@@ -57,14 +57,14 @@ namespace QuestTools.ProfileTags.Beta
             base.ResetCachedDone();
         }
 
-        #region IEnhancedProfileBehavior
+        #region IAsyncProfileBehavior
 
-        public void Update()
+        public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
         }
 
-        public void Start()
+        public void AsyncOnStart()
         {
             OnStart();
         }

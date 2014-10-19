@@ -17,7 +17,7 @@ namespace QuestTools.ProfileTags.Movement
 {
     [XmlElement("MoveToScene")]
     [XmlElement("TrinityMoveToScene")]
-    public class MoveToSceneTag : ProfileBehavior, IEnhancedProfileBehavior
+    public class MoveToSceneTag : ProfileBehavior, IAsyncProfileBehavior
     {
         /// <summary>
         /// The Scene SNOId
@@ -349,14 +349,14 @@ namespace QuestTools.ProfileTags.Movement
             base.ResetCachedDone();
         }
 
-        #region IEnhancedProfileBehavior
+        #region IAsyncProfileBehavior
 
-        public void Update()
+        public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
         }
 
-        public void Start()
+        public void AsyncOnStart()
         {
             OnStart();
         }

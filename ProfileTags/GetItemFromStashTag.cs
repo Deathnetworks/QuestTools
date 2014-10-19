@@ -20,7 +20,7 @@ using Zeta.XmlEngine;
 namespace QuestTools.ProfileTags
 {
     [XmlElement("GetItemFromStash")]
-    public class GetItemFromStashTag : ProfileBehavior, IEnhancedProfileBehavior
+    public class GetItemFromStashTag : ProfileBehavior, IAsyncProfileBehavior
     {
         private const int SharedStashSNO = 130400;
 
@@ -220,14 +220,14 @@ namespace QuestTools.ProfileTags
             base.ResetCachedDone();
         }
 
-        #region IEnhancedProfileBehavior
+        #region IAsyncProfileBehavior
 
-        public void Update()
+        public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
     }
 
-        public void Start()
+        public void AsyncOnStart()
         {
             OnStart();
 }

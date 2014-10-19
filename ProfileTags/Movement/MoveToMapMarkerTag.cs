@@ -18,7 +18,7 @@ using Action = Zeta.TreeSharp.Action;
 namespace QuestTools.ProfileTags.Movement
 {
     [XmlElement("MoveToMapMarker")]
-    public class MoveToMapMarkerTag : ProfileBehavior, IEnhancedProfileBehavior
+    public class MoveToMapMarkerTag : ProfileBehavior, IAsyncProfileBehavior
     {
         public MoveToMapMarkerTag() { }
         private bool _isDone;
@@ -628,14 +628,14 @@ namespace QuestTools.ProfileTags.Movement
             base.ResetCachedDone();
         }
 
-        #region IEnhancedProfileBehavior
+        #region IAsyncProfileBehavior
 
-        public void Update()
+        public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
         }
 
-        public void Start()
+        public void AsyncOnStart()
         {
             OnStart();
         }

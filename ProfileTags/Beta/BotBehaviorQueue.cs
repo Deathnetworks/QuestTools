@@ -1,12 +1,16 @@
 ﻿using System;
+using System.Windows;
+using Org.BouncyCastle.Security;
+using QuestTools.ProfileTags.Complex;
 using System.Collections.Generic;
 using System.Linq;
-using QuestTools.ProfileTags.Complex;
 using Zeta.Bot;
 using Zeta.Bot.Logic;
 using Zeta.Bot.Profile;
+using Zeta.Bot.Profile.Common;
 using Zeta.Common;
 using Zeta.Game;
+using Zeta.Game.Internals.Actors;
 using Zeta.TreeSharp;
 using Action = Zeta.TreeSharp.Action;
 
@@ -15,62 +19,28 @@ namespace QuestTools.Helpers
     public static class BotBehaviorQueue
     {
         public delegate bool ShouldRunCondition(List<ProfileBehavior> profileBehaviors);
-        private const int MinimumCheckInterval = 50;
-        public static HashSet<KeyValuePair<List<ProfileBehavior>, ShouldRunCondition>> ProfileBehaviorQueue = new HashSet<KeyValuePair<List<ProfileBehavior>, ShouldRunCondition>>();
+
+        public static HashSet<KeyValuePair<List<ProfileBehavior>, ShouldRunCondition>> ProfileBehaviorQueue = new HashSet<KeyValuePair<List<ProfileBehavior>, ShouldRunCondition>>(); 
         public static bool IsInitialized;
         public static bool HooksInserted;
-        private static bool _wired;
+
         private static Composite _activeBehavior;
         private static ProfileBehavior _activeProfileBehavior;
-        private static readonly List<ProfileBehavior> NodesToExecute = new List<ProfileBehavior>();
-        private static Decorator _hook;
+        private static List<ProfileBehavior> _nodesToExecute = new List<ProfileBehavior>();
+        private static Decorator _hook; 
+        private static bool _wired;
+        private static bool QueueIsInactive;
         private static DateTime _lastCheckedConditionsTime = DateTime.MinValue;
-        private static readonly Dictionary<ShouldRunCondition, string> ConditionNames = new Dictionary<ShouldRunCondition, string>();
-
-        /// <summary>
-        /// Check to see if there is anything in the queue that needs to be run
-        /// Return of false will prevent treewalker from executing behaviors via Decorator in BotBehaviorMasterHookComposite
-        /// </summary>
-        private static bool IsDone
-        {
-            get
-            {
-                if (QuestTools.EnableDebugLogging)
-                    LogBehavior(_activeProfileBehavior);
-
-                if (IsCurrentNodeFinished)
-                    UpdateHookContents();
-
-                if (_activeProfileBehavior is IEnhancedProfileBehavior)
-                    BotMain.StatusText = _activeProfileBehavior.StatusText;
-
-                if (IsQueueActive) return false;
-
-                if (_activeProfileBehavior != null && QuestTools.EnableDebugLogging)
-                    Log("Finished Running Behaviors");
-
-                _activeProfileBehavior = null;
-                UpdateHookContents();
-
-                return true;
-            }
-        }
-
-        public static bool IsQueueActive
-        {
-            get { return NodesToExecute.Any() || (_activeProfileBehavior != null && !_activeProfileBehavior.IsDone); }
-        }
-
-        public static bool IsCurrentNodeFinished
-        {
-            get { return NodesToExecute.Any() && (_activeProfileBehavior == null || _activeProfileBehavior.IsDone); }
-        }
+        private static int _conditionCount;
+        private static Dictionary<ShouldRunCondition, string> _conditionNames = new Dictionary<ShouldRunCondition, string>();
+        
+        private const int MinimumCheckInterval = 50;
 
         public static void Initailize()
         {
             WireUp();
-
-            if (!HooksInserted)
+            
+            if(!HooksInserted)
                 InsertHooks();
 
             IsInitialized = true;
@@ -112,7 +82,7 @@ namespace QuestTools.Helpers
 
         private static void OnSchedulingHandler(object sender, EventArgs eventArgs)
         {
-            if (!BotMain.IsRunning || !ZetaDia.IsInGame || ZetaDia.IsLoadingWorld || ZetaDia.Me == null || !ZetaDia.Me.IsValid || ZetaDia.IsPlayingCutscene)
+            if (!BotMain.IsRunning || !ZetaDia.IsInGame || ZetaDia.IsLoadingWorld || ZetaDia.Me == null || !ZetaDia.Me.IsValid ||  ZetaDia.IsPlayingCutscene)
                 return;
 
             if (DateTime.UtcNow.Subtract(_lastCheckedConditionsTime).TotalMilliseconds < MinimumCheckInterval)
@@ -122,6 +92,8 @@ namespace QuestTools.Helpers
 
             CheckConditions();
         }
+
+        private static bool hasTriggered;
 
         public static void UnWire()
         {
@@ -145,11 +117,13 @@ namespace QuestTools.Helpers
         }
 
         /// <summary>
-        /// BotBehaviorMasterHookComposite remains in BotBehavior at all times,
+        /// BotBehaviorMasterHookComposite remains in BotBehavior at all times, 
         /// but the behaviors within it are switched out when UpdateHookContents() is called
         /// </summary>
         private static void UpdateHookContents()
         {
+            //Logger.Debug("Updating BotBehaviorQueue");
+
             var groupCompositeParent = _hook.DecoratedChild as PrioritySelector;
 
             if (groupCompositeParent == null)
@@ -172,42 +146,93 @@ namespace QuestTools.Helpers
         /// <param name="condition">bool delegate is invoked every tick to check if the attached profileBehaviors should be run</param>
         public static void Queue(IEnumerable<ProfileBehavior> profileBehaviors, ShouldRunCondition condition, string name = "")
         {
-            if (!IsInitialized)
+            if(!IsInitialized)
                 Initailize();
 
             var behaviorsList = profileBehaviors.ToList();
+
+            behaviorsList.ForEach(b =>
+            {
+                if (b.QuestId == 0)
+                    b.QuestId = 1;
+                if (b.StepId == 0)
+                    b.StepId = 1;
+            });
+
             var pair = new KeyValuePair<List<ProfileBehavior>, ShouldRunCondition>(behaviorsList, condition);
 
             ProfileBehaviorQueue.Add(pair);
 
             if (!string.IsNullOrEmpty(name))
-                ConditionNames.Add(condition, name);
+                _conditionNames.Add(condition,name);
         }
 
+        /// <summary>
+        /// Adds some ProfileBehaviors to the BotBehaviorQueue
+        /// </summary>
+        /// <param name="profileBehaviors">List of ProfileBehaviors that should be executed when condition is satisfied</param>
         public static void Queue(IEnumerable<ProfileBehavior> profileBehaviors, string name = "")
         {
             Queue(profileBehaviors, ret => true, name);
         }
+
+        /// <summary>
+        /// Adds some ProfileBehaviors to the BotBehaviorQueue
+        /// </summary>
         public static void Queue(ProfileBehavior behavior, string name = "")
         {
-            Queue(new List<ProfileBehavior> {behavior}, ret => true, name);
-        }
-
-        public static void Queue(ProfileBehavior profileBehavior, ShouldRunCondition condition)
-        {
-            Queue(new List<ProfileBehavior> {profileBehavior}, condition);
+            Queue(new List<ProfileBehavior> { behavior } , ret => true, name);
         }
 
         /// <summary>
-        ///     Parent Composite that gets injected to BotBehavior hook
+        /// Adds a ProfileBehavior to the BotBehaviorQueue
+        /// </summary>
+        /// <param name="profileBehavior">List of ProfileBehaviors that should be executed when condition is satisfied</param>
+        /// <param name="condition">bool delegate is invoked every tick to check if the attached profileBehaviors should be run</param>
+        public static void Queue(ProfileBehavior profileBehavior, ShouldRunCondition condition)
+        {
+            Queue(new List<ProfileBehavior> { profileBehavior }, condition);
+        }
+
+        ///// <summary>
+        ///// Adds a ProfileBehavior to the BotBehaviorQueue
+        ///// </summary>
+        ///// <param name="profileBehavior">List of ProfileBehaviors that should be executed when condition is satisfied</param>
+        //public static void Queue(ProfileBehavior profileBehavior, string name="")
+        //{
+        //    Queue(new List<ProfileBehavior> { profileBehavior }, ret => true, name);
+        //}
+
+        ///// <summary>
+        ///// Experimental
+        ///// </summary>
+        //public static void Queue(Composite behavior, ShouldRunCondition condition)
+        //{
+        //    var profileBehavior = new AsyncEmptyProfileBehavior()
+        //    {
+        //        BehaviorDelegate = behavior
+        //    };
+        //    Queue(new List<ProfileBehavior> { profileBehavior }, condition);
+        //}
+
+        ///// <summary>
+        ///// Experimental
+        ///// </summary>
+        //public static void Queue(Composite behavior)
+        //{
+        //    Queue(behavior, ret => true);
+        //}
+
+        /// <summary>
+        /// Parent Composite that gets injected to BotBehavior hook
         /// </summary>
         private static Decorator BotBehaviorMasterHookComposite()
         {
             return new Decorator(ret => !IsDone,
                 new PrioritySelector(
                     new Sequence(DefaultAction())
-                    )
-                );
+                )
+            );
         }
 
         private static Composite DefaultAction()
@@ -216,17 +241,42 @@ namespace QuestTools.Helpers
         }
 
         /// <summary>
-        ///     Grabs the next ProfileBehavior from the queue and prepares it to be run
+        /// Grabs the next ProfileBehavior from the queue and prepares it to be run
         /// </summary>
         private static IEnumerable<Composite> GetNodeComposites()
         {
-            if (NodesToExecute.Any())
+            if (_nodesToExecute.Any())
             {
-                _activeProfileBehavior = NodesToExecute.First();
-                NodesToExecute.Remove(_activeProfileBehavior);
-                _activeProfileBehavior.Run();
-                _activeBehavior = _activeProfileBehavior.Behavior;
+                QueueIsInactive = false;
 
+                //Logger.Log("NodeToExecute Count={0}",_nodesToExecute.Count);
+
+                _activeProfileBehavior = _nodesToExecute.First();
+
+                _nodesToExecute.Remove(_activeProfileBehavior);
+
+                //if (_activeProfileBehavior is IAsyncProfileBehavior)
+                //{
+                //    //(_activeProfileBehavior as IAsyncProfileBehavior).ReadyToRun = true;
+
+                //    //// Properly populate the .Behavior field of a ProfileBehavior
+                //    //if (_activeProfileBehavior.Behavior == null)
+                //    //    (_activeProfileBehavior as IAsyncProfileBehavior).AsyncUpdateBehavior();
+
+                //    //// Reset everything back through to the base
+                //    //_activeProfileBehavior.ResetCachedDone();
+
+                    
+                //}
+                //else
+                //{
+                //    Logger.Warn("Tag {0} is not yet supported by BotBehaviorQueue", _activeProfileBehavior.GetType());
+                //}
+
+                _activeProfileBehavior.Run();
+
+                _activeBehavior = _activeProfileBehavior.Behavior;
+                
                 if (QuestTools.EnableDebugLogging)
                     LogBehavior(_activeProfileBehavior);
 
@@ -234,15 +284,60 @@ namespace QuestTools.Helpers
                 {
                     _activeBehavior
                 };
+
             }
 
-            return new[] {DefaultAction()};
+            return new [] { DefaultAction() };
+
+        }
+
+        /// <summary>
+        /// Check to see if there is anything in the queue that needs to be run
+        /// Return of false will prevent treewalker from executing behaviors via Decorator in BotBehaviorMasterHookComposite
+        /// </summary>
+        private static bool IsDone
+        {
+            get
+            {
+                if (QuestTools.EnableDebugLogging)
+                    LogBehavior(_activeProfileBehavior);
+                
+                if (IsCurrentNodeFinished)
+                    UpdateHookContents();
+
+                if (_activeProfileBehavior is IAsyncProfileBehavior)
+                {
+                    BotMain.StatusText = _activeProfileBehavior.StatusText;
+                    //(_activeProfileBehavior as IAsyncProfileBehavior).Tick();
+                }
+
+                if (IsQueueActive) return false;
+
+                if(_activeProfileBehavior!=null && QuestTools.EnableDebugLogging)
+                    Log("Finished Running Behaviors");
+
+                _activeProfileBehavior = null;
+                QueueIsInactive = true;
+                UpdateHookContents();
+
+                return true;
+            }
+        }
+
+        public static bool IsQueueActive
+        {
+            get { return _nodesToExecute.Any() || (_activeProfileBehavior != null && !_activeProfileBehavior.IsDone);  }
+        }
+
+        public static bool IsCurrentNodeFinished
+        {
+            get { return _nodesToExecute.Any() && (_activeProfileBehavior == null || _activeProfileBehavior.IsDone); }
         }
 
         // Avoid reflection derp [QuestTools][<>c__DisplayClass17] showing up in log message
         private static void Log(string message, params object[] args)
         {
-            Logger.Log(message, args);
+            Logger.Log(message,args);
         }
 
         private static void LogBehavior(ProfileBehavior profileBehavior)
@@ -253,9 +348,9 @@ namespace QuestTools.Helpers
                     profileBehavior.GetType(),
                     profileBehavior.IsDone,
                     profileBehavior.IsDoneCache,
-                    profileBehavior.Behavior != null ? profileBehavior.Behavior.LastStatus.ToString() : "null"
+                    profileBehavior.Behavior!=null ? profileBehavior.Behavior.LastStatus.ToString() : "null"
                     );
-            }
+            }            
         }
 
         /// <summary>
@@ -265,6 +360,13 @@ namespace QuestTools.Helpers
         private static void CheckConditions()
         {
             var unreadyProfileBehaviors = new HashSet<KeyValuePair<List<ProfileBehavior>, ShouldRunCondition>>();
+
+            if (QuestTools.EnableDebugLogging && ProfileBehaviorQueue.Any() && _conditionCount != ProfileBehaviorQueue.Count)
+            {
+                //Logger.Log("{0} Conditions will be monitored...", ProfileBehaviorQueue.Count);
+                _conditionCount = ProfileBehaviorQueue.Count;
+            }
+                
 
             ProfileBehaviorQueue.ForEach(pair =>
             {
@@ -276,28 +378,35 @@ namespace QuestTools.Helpers
                     if (QuestTools.EnableDebugLogging)
                     {
                         string name;
-                        ConditionNames.TryGetValue(condition, out name);
+                        _conditionNames.TryGetValue(condition, out name);
                         Log("{1} Success! Running {0} Behaviors", nodes.Count, (!string.IsNullOrEmpty(name)) ? name : "Unnamed");
                     }
 
-                    nodes.ForEach(NodesToExecute.Add);
+                    nodes.ForEach(_nodesToExecute.Add);
                 }
                 else
-                {
+                {                    
+                    //Logger.Debug("Condition Failed!");
                     unreadyProfileBehaviors.Add(pair);
                 }
             });
 
             ProfileBehaviorQueue = unreadyProfileBehaviors;
+     
         }
 
         public static void Reset()
         {
+            if (QuestTools.EnableDebugLogging)
+                Logger.Debug("Resetting BotBehaviorQueue");
+
             ProfileBehaviorQueue.Clear();
-            NodesToExecute.Clear();
+            _nodesToExecute.Clear();
+            QueueIsInactive = true;
             _activeProfileBehavior = null;
             _activeBehavior = null;
-            ConditionNames.Clear();
+            _conditionNames.Clear();
         }
+
     }
 }

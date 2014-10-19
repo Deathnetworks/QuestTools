@@ -22,7 +22,7 @@ using Zeta.XmlEngine;
 namespace QuestTools.ProfileTags
 {
     [XmlElement("CompleteGreaterRift")]
-    public class CompleteGreaterRiftTag : ProfileBehavior, IEnhancedProfileBehavior
+    public class CompleteGreaterRiftTag : ProfileBehavior, IAsyncProfileBehavior
     {
         private bool _isDone;
         private bool _isGemsOnly;
@@ -248,14 +248,14 @@ namespace QuestTools.ProfileTags
             base.ResetCachedDone();
         }
 
-        #region IEnhancedProfileBehavior
+        #region IAsyncProfileBehavior
 
-        public void Update()
+        public void AsyncUpdateBehavior()
         {
             UpdateBehavior();
         }
 
-        public void Start()
+        public void AsyncOnStart()
         {
             OnStart();
         }

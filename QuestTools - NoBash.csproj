@@ -71,7 +71,7 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Demonbuddy, Version=1.1.2154.488, Culture=neutral, PublicKeyToken=eff32ccf253d66d4, processorArchitecture=x86">
+    <Reference Include="Demonbuddy, Version=1.0.1560.323, Culture=neutral, PublicKeyToken=eff32ccf253d66d4, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Demonbuddy.exe</HintPath>
     </Reference>
@@ -99,40 +99,52 @@
     <Compile Include="Helpers\Keys.cs" />
     <Compile Include="Helpers\ProfileHistory.cs" />
     <Compile Include="Helpers\RiftTrial.cs" />
-    <Compile Include="Helpers\Behaviors.cs">
+    <Compile Include="ProfileTags\Beta\AsyncCommonBehaviors.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Helpers\ProfileExtensions.cs">
+    <Compile Include="ProfileTags\Beta\AsyncExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ProfileTags\Beta\Experiments\GoblinPortals.cs" />
-    <Compile Include="ProfileTags\EnchancedDefaultTags.cs">
+    <Compile Include="ProfileTags\Beta\AsyncProfileWrappers.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Helpers\BotBehaviorQueue.cs">
+    <Compile Include="ProfileTags\Beta\BotBehaviorQueue.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ProfileTags\ClearAreaTag.cs">
+    <Compile Include="ProfileTags\Beta\ClearAreaTag.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ProfileTags\Beta\Experiments\ClearObstacleTag.cs" />
-    <Compile Include="ProfileTags\Beta\Experiments\ActionTag.cs" />
-    <Compile Include="Helpers\Conditions.cs" />
-    <Compile Include="ProfileTags\Beta\Experiments\RandomMoveTag.cs" />
-    <Compile Include="ProfileTags\CombatSettingTag.cs" />
-    <Compile Include="ProfileTags\Complex\IEnhancedProfileBehavior.cs">
+    <Compile Include="ProfileTags\Beta\ConditionParser.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ProfileTags\LoadLastProfileTag.cs">
+    <Compile Include="ProfileTags\Beta\Conditions.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ProfileTags\ProfileSettingTag.cs">
+    <Compile Include="ProfileTags\Beta\ConvertExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Helpers\ProfileUtils.cs">
+    <Compile Include="ProfileTags\Beta\ClearObstacleTag.cs" />
+    <Compile Include="ProfileTags\Beta\ActionTag.cs" />
+    <Compile Include="ProfileTags\Beta\RandomMoveTag.cs" />
+    <Compile Include="ProfileTags\Beta\Expression.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ProfileTags\Complex\ShuffleTag.cs">
+    <Compile Include="ProfileTags\Beta\IAsyncProfileBehavior.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ProfileTags\Beta\LoadLastProfileTag.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ProfileTags\Beta\LoggingController.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ProfileTags\Beta\ProfileSettingTag.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ProfileTags\Beta\ProfileUtils.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ProfileTags\Beta\ShuffleTag.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ProfileTags\Beta\TimeTracker\StartTimerTag.cs">
@@ -150,7 +162,10 @@
     <Compile Include="ProfileTags\Beta\TimeTracker\Timing.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ProfileTags\Complex\WhenTag.cs">
+    <Compile Include="ProfileTags\Beta\Tokenizer.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="ProfileTags\Beta\WhenTag.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ProfileTags\CompleteGreaterRiftTag.cs" />
