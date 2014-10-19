@@ -106,6 +106,7 @@ namespace QuestTools.Helpers
 
         private static void ProfileManager_OnProfileLoaded(object sender, EventArgs e)
         {
+            ProfileUtils.LoadAdditionalGameParams();
             ProfileHistory.Add(ProfileManager.CurrentProfile);
             ProfileUtils.ReplaceDefaultTags();
         }

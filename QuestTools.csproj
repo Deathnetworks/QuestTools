@@ -118,8 +118,8 @@
     <Compile Include="Helpers\StringUtils.cs" />
     <Compile Include="Helpers\TrinityApi.cs" />
     <Compile Include="Helpers\ZetaCacheHelper.cs" />
-    <Compile Include="ProfileTags\Beta\Experiments\ActionTag.cs" />
     <Compile Include="ProfileTags\Beta\Experiments\ClearObstacleTag.cs" />
+    <Compile Include="ProfileTags\Beta\Experiments\CommandTag.cs" />
     <Compile Include="ProfileTags\Beta\Experiments\GoblinPortals.cs" />
     <Compile Include="ProfileTags\Beta\Experiments\RandomMoveTag.cs" />
     <Compile Include="ProfileTags\Beta\TimeTracker\StartTimerTag.cs" />

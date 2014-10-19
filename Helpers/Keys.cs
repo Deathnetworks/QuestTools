@@ -145,6 +145,8 @@ namespace QuestTools.Helpers
 
         public static void PrintKeyCounts()
         {
+            Update();
+
             Logger.Log(string.Format(
 
                 "Counts: " +

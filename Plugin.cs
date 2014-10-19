@@ -2,9 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Windows;
+using System.Windows.Controls;
+using Demonbuddy;
 using QuestTools.Helpers;
 using QuestTools.UI;
 using Zeta.Common.Plugins;
+using TabControl = System.Windows.Controls.TabControl;
 
 namespace QuestTools
 {
@@ -67,7 +71,27 @@ namespace QuestTools
 
         public void OnInitialize()
         {
+            Application.Current.Dispatcher.Invoke(FixSettingsButton);
+        }
 
+        public void FixSettingsButton()
+        {
+            var mainWindow = Application.Current.MainWindow as MainWindow;
+
+            if (mainWindow == null)
+                return;
+
+            var settingsButton = mainWindow.FindName("btnSettings") as SplitButton;
+
+            if (settingsButton == null)
+                return;
+
+            var botSettingsButton = settingsButton.ButtonMenuItemsSource.First() as MenuItem;
+
+            if (botSettingsButton == null)
+                return;
+
+            settingsButton.Click += (sender, args) => botSettingsButton.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
         }
 
         public bool Equals(IPlugin other) { return (other.Name == Name) && (other.Version == Version); }

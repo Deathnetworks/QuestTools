@@ -1,15 +1,44 @@
-﻿using QuestTools.ProfileTags.Complex;
+﻿using System.Collections;
+using System.Xml.Linq;
+using System.Xml.XPath;
+using log4net.Core;
+using QuestTools.ProfileTags.Complex;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Zeta.Bot;
 using Zeta.Bot.Profile;
 using Zeta.Bot.Profile.Common;
 using Zeta.Bot.Profile.Composites;
+using Zeta.Bot.Settings;
+using Zeta.Game;
 
 namespace QuestTools.Helpers
 {
     internal class ProfileUtils
     {
+        public static void LoadAdditionalGameParams()
+        {           
+            // Only worry about GameParams if we're about to start a new game
+            if (ZetaDia.IsInGame || ProfileManager.CurrentProfile == null)
+                return;
+           
+            var document = ProfileManager.CurrentProfile.Element;
+
+            // Set Difficulty
+            var difficultyAttribute = ((IEnumerable)document.XPathEvaluate("/GameParams[1]/@difficulty")).Cast<XAttribute>().ToList().FirstOrDefault();
+            if (difficultyAttribute != null)
+            {
+                var difficulty = difficultyAttribute.Value.ChangeType<GameDifficulty>();
+                if (difficulty != CharacterSettings.Instance.GameDifficulty)
+                {
+                    Logger.Log("Difficulty changed to " + difficulty + " by profile: " + ProfileManager.CurrentProfile.Name);                      
+                    CharacterSettings.Instance.GameDifficulty = difficulty;
+                }              
+            }
+
+        }
+
         /// <summary>
         /// Replace some default DemonBuddy tags with enhanced Questtools versions
         /// </summary>
