@@ -16,7 +16,7 @@ namespace QuestTools.ProfileTags.Complex
         public override bool GetConditionExec()
         {
             if (QuestTools.EnableDebugLogging)
-                Logger.Log("Async Initializing '{0}' with condition={1}", Name, Condition);
+                Logger.Log("Initializing '{0}' with condition={1}", Name, Condition);
 
             ProfileUtils.AsyncReplaceTags(Body);
 

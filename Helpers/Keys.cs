@@ -100,7 +100,7 @@ namespace QuestTools.Helpers
 
         public static bool Update()
         {
-            if (!(DateTime.UtcNow.Subtract(_lastCheckedKeys).TotalSeconds > 10)) 
+            if (DateTime.UtcNow.Subtract(_lastCheckedKeys).TotalSeconds < 10) 
                 return false;
 
             KeyCounts[0] = 0;
@@ -139,8 +139,8 @@ namespace QuestTools.Helpers
         public static double GetKeyCount(int actorId)
         {
             Update();
-            var keyIdIndex = Array.IndexOf(KeyIds, actorId);
-            return keyIdIndex > 0 ? KeyCounts[keyIdIndex] : 0;
+            var keyIdIndex = Array.IndexOf(KeyIds, actorId);   
+            return KeyCounts.ElementAtOrDefault(keyIdIndex);      
         }
 
         public static void PrintKeyCounts()
