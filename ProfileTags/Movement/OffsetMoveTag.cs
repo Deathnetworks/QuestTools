@@ -21,7 +21,7 @@ namespace QuestTools.ProfileTags.Movement
     /// </summary>
     [XmlElement("OffsetMove")]
     [XmlElement("TrinityOffsetMove")]
-    public class OffsetMoveTag : ProfileBehavior, IAsyncProfileBehavior
+    public class OffsetMoveTag : ProfileBehavior, IEnhancedProfileBehavior
     {
         public OffsetMoveTag() { }
 
@@ -114,14 +114,14 @@ namespace QuestTools.ProfileTags.Movement
             base.ResetCachedDone();
         }
 
-        #region IAsyncProfileBehavior
+        #region IEnhancedProfileBehavior
 
-        public void AsyncUpdateBehavior()
+        public void Update()
         {
             UpdateBehavior();
         }
 
-        public void AsyncOnStart()
+        public void Start()
         {
             OnStart();
         }

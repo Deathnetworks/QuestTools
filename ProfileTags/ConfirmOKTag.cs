@@ -8,7 +8,7 @@ using Action = Zeta.TreeSharp.Action;
 namespace QuestTools.ProfileTags
 {
     [XmlElement("ConfirmOK")]
-    class ConfirmOkTag : ProfileBehavior, IAsyncProfileBehavior
+    class ConfirmOkTag : ProfileBehavior, IEnhancedProfileBehavior
     {
         public ConfirmOkTag() { }
 
@@ -46,14 +46,14 @@ namespace QuestTools.ProfileTags
             base.ResetCachedDone();
         }
 
-        #region IAsyncProfileBehavior
+        #region IEnhancedProfileBehavior
 
-        public void AsyncUpdateBehavior()
+        public void Update()
         {
             UpdateBehavior();
         }
 
-        public void AsyncOnStart()
+        public void Start()
         {
             OnStart();
         }

@@ -10,7 +10,7 @@ namespace QuestTools.ProfileTags
     /// </summary>                    
     [XmlElement("UseStop")]
     [XmlElement("TrinityUseStop")]
-    public class UseStopTag : ProfileBehavior, IAsyncProfileBehavior
+    public class UseStopTag : ProfileBehavior, IEnhancedProfileBehavior
     {
         public UseStopTag() { }
         private bool _isDone = false;
@@ -46,14 +46,14 @@ namespace QuestTools.ProfileTags
             base.ResetCachedDone();
         }
 
-        #region IAsyncProfileBehavior
+        #region IEnhancedProfileBehavior
 
-        public void AsyncUpdateBehavior()
+        public void Update()
         {
             UpdateBehavior();
         }
 
-        public void AsyncOnStart()
+        public void Start()
         {
             OnStart();
         }

@@ -16,7 +16,7 @@ using Action = Zeta.TreeSharp.Action;
 namespace QuestTools.ProfileTags
 {
     [XmlElement("ResumeUseTownPortal")]
-    public class ResumeUseTownPortalTag : ProfileBehavior, IAsyncProfileBehavior
+    public class ResumeUseTownPortalTag : ProfileBehavior, IEnhancedProfileBehavior
     {
         public ResumeUseTownPortalTag() { }
 
@@ -99,14 +99,14 @@ namespace QuestTools.ProfileTags
             base.ResetCachedDone();
         }
 
-        #region IAsyncProfileBehavior
+        #region IEnhancedProfileBehavior
 
-        public void AsyncUpdateBehavior()
+        public void Update()
         {
             UpdateBehavior();
         }
 
-        public void AsyncOnStart()
+        public void Start()
         {
             OnStart();
         }

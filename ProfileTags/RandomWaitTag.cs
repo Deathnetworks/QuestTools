@@ -11,7 +11,7 @@ namespace QuestTools.ProfileTags
     // * TrinityUseReset - Resets a UseOnce tag as if it has never been used
     [XmlElement("TrinityRandomWait")]
     [XmlElement("RandomWait")]
-    public class RandomWaitTag : ProfileBehavior, IAsyncProfileBehavior
+    public class RandomWaitTag : ProfileBehavior, IEnhancedProfileBehavior
     {
         public RandomWaitTag() { }
         private bool _isDone;
@@ -63,14 +63,14 @@ namespace QuestTools.ProfileTags
             base.ResetCachedDone();
         }
 
-        #region IAsyncProfileBehavior
+        #region IEnhancedProfileBehavior
 
-        public void AsyncUpdateBehavior()
+        public void Update()
         {
             UpdateBehavior();
         }
 
-        public void AsyncOnStart()
+        public void Start()
         {
             OnStart();
         }

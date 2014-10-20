@@ -33,7 +33,7 @@ namespace QuestTools.ProfileTags
     /// </summary>
     [XmlElement("TrinityExploreDungeon")]
     [XmlElement("ExploreDungeon")]
-    public class ExploreDungeonTag : ProfileBehavior, IAsyncProfileBehavior
+    public class ExploreDungeonTag : ProfileBehavior, IEnhancedProfileBehavior
     {
         public ExploreDungeonTag() { }
 
@@ -1934,14 +1934,14 @@ namespace QuestTools.ProfileTags
             }
         }
 
-        #region IAsyncProfileBehavior
+        #region IEnhancedProfileBehavior
 
-        public void AsyncUpdateBehavior()
+        public void Update()
         {
             UpdateBehavior();
         }
 
-        public void AsyncOnStart()
+        public void Start()
         {
             OnStart();
         }

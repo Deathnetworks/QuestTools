@@ -120,30 +120,6 @@ namespace QuestTools.Helpers
             _lowerFence = _lowerQuartile - (1.5 * _interQuartileRange);
             _upperFence = _upperQuartile + (1.5 * _interQuartileRange);
 
-            Logger.Log(string.Format("Counts: " +
-                                    "\n           Act 1 => {0} " +
-                                    "\n           Act 2 => {1}" +
-                                    "\n           Act 3 => {2}" +
-                                    "\n           Act 4 => {3}",
-                KeyCounts[0],
-                KeyCounts[1],
-                KeyCounts[2],
-                KeyCounts[3]));
-
-            Logger.Log(string.Format("Stats:" +
-                                     "\n           LF => {0:0.#}" +
-                                     "\n           LQ => {1:0.#}" +
-                                     "\n           M => {2:0.#}" +
-                                     "\n           UQ => {3:0.#}" +
-                                     "\n           UF => {4:0.#}" +
-                                     "\n           IQR => {5:0.#}",
-                _lowerFence,
-                _lowerQuartile,
-                _median,
-                _upperQuartile,
-                _upperFence,
-                _interQuartileRange));
-
             return true;
         }
 
@@ -163,7 +139,7 @@ namespace QuestTools.Helpers
         public static double GetKeyCount(int actorId)
         {
             Update();
-            var keyIdIndex = Array.IndexOf(KeyIds, actorId);
+            var keyIdIndex = Array.IndexOf(KeyIds, actorId);   
             return KeyCounts.ElementAtOrDefault(keyIdIndex);      
         }
 
@@ -200,5 +176,7 @@ namespace QuestTools.Helpers
                 _upperQuartile,
                 _upperFence,
                 _interQuartileRange));            
+        }
+
     }
 }
