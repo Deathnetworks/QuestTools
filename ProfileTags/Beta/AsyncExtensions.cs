@@ -119,7 +119,7 @@ namespace QuestTools.Helpers
             b.QuestName = a.QuestName;
         }
 
-        internal static AsyncLoadProfileTag ToAsync(this LoadProfileTag tag)
+        public static EnhancedLoadProfileTag ToEnhanced(this LoadProfileTag tag)
         {
             var asyncVersion = new AsyncLoadProfileTag();
             tag.CopyTo(asyncVersion);
@@ -131,7 +131,7 @@ namespace QuestTools.Helpers
             return asyncVersion;
         }
 
-        internal static AsyncLeaveGameTag ToAsync(this LeaveGameTag tag)
+        public static EnhancedLeaveGameTag ToEnhanced(this LeaveGameTag tag)
         {
             var asyncVersion = new AsyncLeaveGameTag();
             tag.CopyTo(asyncVersion);
@@ -140,7 +140,7 @@ namespace QuestTools.Helpers
             return asyncVersion;
         }
 
-        internal static AsyncLogMessageTag ToAsync(this LogMessageTag tag)
+        public static EnhancedLogMessageTag ToEnhanced(this LogMessageTag tag)
         {
             var asyncVersion = new AsyncLogMessageTag();
             tag.CopyTo(asyncVersion);
@@ -148,7 +148,7 @@ namespace QuestTools.Helpers
             return asyncVersion;
         }
 
-        internal static AsyncWaitTimerTag ToAsync(this WaitTimerTag tag)
+        public static EnhancedWaitTimerTag ToEnhanced(this WaitTimerTag tag)
         {
             var asyncVersion = new AsyncWaitTimerTag();
             tag.CopyTo(asyncVersion);
@@ -156,7 +156,7 @@ namespace QuestTools.Helpers
             return asyncVersion;
         }
 
-        internal static AsyncUseWaypointTag ToAsync(this UseWaypointTag tag)
+        public static EnhancedUseWaypointTag ToEnhanced(this UseWaypointTag tag)
         {
             var asyncVersion = new AsyncUseWaypointTag();
             tag.CopyTo(asyncVersion);
@@ -167,7 +167,7 @@ namespace QuestTools.Helpers
             return asyncVersion;
         }
 
-        internal static AsyncToggleTargetingTag ToAsync(this ToggleTargetingTag tag)
+        public static EnhancedToggleTargetingTag ToEnhanced(this ToggleTargetingTag tag)
         {
             var asyncVersion = new AsyncToggleTargetingTag();
             tag.CopyTo(asyncVersion);
@@ -178,7 +178,7 @@ namespace QuestTools.Helpers
             return asyncVersion;
         }
 
-        internal static AsyncIfTag ToAsync(this IfTag tag)
+        public static EnhancedIfTag ToEnhanced(this IfTag tag)
         {
             var asyncVersion = new AsyncIfTag();
             asyncVersion.Body = tag.Body;
@@ -198,7 +198,7 @@ namespace QuestTools.Helpers
             return asyncVersion;
         }
 
-        internal static AsyncUseObjectTag ToAsync(this UseObjectTag tag)
+        public static EnhancedUseObjectTag ToEnhanced(this UseObjectTag tag)
         {
             var asyncVersion = new AsyncUseObjectTag();
             asyncVersion.ActorId = tag.ActorId;
@@ -212,7 +212,7 @@ namespace QuestTools.Helpers
             return asyncVersion;
         }
 
-        internal static AsyncUsePowerTag ToAsync(this UsePowerTag tag)
+        public static EnhancedUsePowerTag ToEnhanced(this UsePowerTag tag)
         {
             var asyncVersion = new AsyncUsePowerTag();
             asyncVersion.SNOPower = tag.SNOPower;

@@ -100,7 +100,7 @@ namespace QuestTools.Helpers
 
         public static bool Update()
         {
-            if (!(DateTime.UtcNow.Subtract(_lastCheckedKeys).TotalSeconds > 10)) 
+            if (DateTime.UtcNow.Subtract(_lastCheckedKeys).TotalSeconds < 10) 
                 return false;
 
             KeyCounts[0] = 0;
@@ -164,8 +164,41 @@ namespace QuestTools.Helpers
         {
             Update();
             var keyIdIndex = Array.IndexOf(KeyIds, actorId);
-            return keyIdIndex > 0 ? KeyCounts[keyIdIndex] : 0;
+            return KeyCounts.ElementAtOrDefault(keyIdIndex);      
         }
 
+        public static void PrintKeyCounts()
+        {
+            Update();
+
+            Logger.Log(string.Format(
+
+                "Counts: " +
+                "\n           Act 1 => {0} " +
+                "\n           Act 2 => {1}" +
+                "\n           Act 3 => {2}" +
+                "\n           Act 4 => {3}",
+
+                KeyCounts[0],
+                KeyCounts[1],
+                KeyCounts[2],
+                KeyCounts[3]));
+
+            Logger.Log(string.Format(
+                
+                "Stats:" +
+                "\n           LF => {0:0.#}" +
+                "\n           LQ => {1:0.#}" +
+                "\n           M => {2:0.#}" +
+                "\n           UQ => {3:0.#}" +
+                "\n           UF => {4:0.#}" +
+                "\n           IQR => {5:0.#}",
+
+                _lowerFence,
+                _lowerQuartile,
+                _median,
+                _upperQuartile,
+                _upperFence,
+                _interQuartileRange));            
     }
 }

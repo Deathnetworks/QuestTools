@@ -279,7 +279,7 @@ namespace QuestTools.ProfileTags.Movement
                 }
             }
 
-            if (Actor == null)
+            if (Actor == null || !Actor.IsValid)
                 return true;
 
             if (((!IsPortal && _completedInteractions >= InteractAttempts && InteractAttempts > 0) || (IsPortal && WorldHasChanged()) || AnimationMatch()))
@@ -402,7 +402,7 @@ namespace QuestTools.ProfileTags.Movement
 
         private async Task<bool> InteractRoutine()
         {
-            if (Player.IsPlayerValid() && Actor.IsValid)
+            if (Player.IsPlayerValid() && Actor!=null && Actor.IsValid)
             {
 
                 if (TargetIsDungeonStone && (GameUI.IsElementVisible(GameUI.GenericOK) || GameUI.IsElementVisible(UIElements.ConfirmationDialogOkButton)))

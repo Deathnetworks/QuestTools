@@ -35,6 +35,9 @@ namespace QuestTools.ProfileTags.Movement
         private Vector3 _navTarget;
         private DateTime _tagStartTime;
 
+        public delegate Vector3 PositionDelegate(object ret);
+        public PositionDelegate SetPositionOnStart;
+
         public override bool IsDone
         {
             get { return !IsActiveQuestStep || _isDone; }
@@ -61,6 +64,12 @@ namespace QuestTools.ProfileTags.Movement
         public Vector3 Position
         {
             get { return new Vector3(X, Y, Z); }
+            set
+            {
+                X = value.X;
+                Y = value.Y;
+                Z = value.Z;
+            }
         }
 
         /// <summary>
@@ -174,8 +183,11 @@ namespace QuestTools.ProfileTags.Movement
             _tagStartTime = DateTime.UtcNow;
 
             PositionCache.Cache.Clear();
-
             Navigator.Clear();
+
+            if (SetPositionOnStart != null)
+                Position = SetPositionOnStart.Invoke(null);
+
             Logger.Log("Initialized {0}", Status());
         }
 

@@ -71,7 +71,7 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Demonbuddy, Version=1.0.1560.323, Culture=neutral, PublicKeyToken=eff32ccf253d66d4, processorArchitecture=x86">
+    <Reference Include="Demonbuddy, Version=1.1.2154.488, Culture=neutral, PublicKeyToken=eff32ccf253d66d4, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Demonbuddy.exe</HintPath>
     </Reference>
@@ -95,56 +95,45 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Helpers\ActorHistory.cs" />
+    <Compile Include="Helpers\ConvertExtensions.cs" />
     <Compile Include="Helpers\FileManager.cs" />
     <Compile Include="Helpers\Keys.cs" />
     <Compile Include="Helpers\ProfileHistory.cs" />
     <Compile Include="Helpers\RiftTrial.cs" />
-    <Compile Include="ProfileTags\Beta\AsyncCommonBehaviors.cs">
+    <Compile Include="Helpers\Common.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ProfileTags\Beta\AsyncExtensions.cs">
+    <Compile Include="Helpers\ProfileExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ProfileTags\Beta\AsyncProfileWrappers.cs">
+    <Compile Include="ProfileTags\Beta\Experiments\GoblinPortals.cs" />
+    <Compile Include="ProfileTags\EnchancedDefaultTags.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ProfileTags\Beta\BotBehaviorQueue.cs">
+    <Compile Include="Helpers\BotBehaviorQueue.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ProfileTags\Beta\ClearAreaTag.cs">
+    <Compile Include="ProfileTags\ClearAreaTag.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ProfileTags\Beta\ConditionParser.cs">
+    <Compile Include="ProfileTags\Beta\Experiments\ClearObstacleTag.cs" />
+    <Compile Include="ProfileTags\Beta\Experiments\CommandTag.cs" />
+    <Compile Include="Helpers\CustomConditions.cs" />
+    <Compile Include="ProfileTags\Beta\Experiments\RandomMoveTag.cs" />
+    <Compile Include="ProfileTags\CombatSettingTag.cs" />
+    <Compile Include="ProfileTags\Complex\IEnhancedProfileBehavior.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ProfileTags\Beta\Conditions.cs">
+    <Compile Include="ProfileTags\LoadLastProfileTag.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ProfileTags\Beta\ConvertExtensions.cs">
+    <Compile Include="ProfileTags\ProfileSettingTag.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ProfileTags\Beta\ClearObstacleTag.cs" />
-    <Compile Include="ProfileTags\Beta\ActionTag.cs" />
-    <Compile Include="ProfileTags\Beta\RandomMoveTag.cs" />
-    <Compile Include="ProfileTags\Beta\Expression.cs">
+    <Compile Include="Helpers\ProfileUtils.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ProfileTags\Beta\IAsyncProfileBehavior.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ProfileTags\Beta\LoadLastProfileTag.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ProfileTags\Beta\LoggingController.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ProfileTags\Beta\ProfileSettingTag.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ProfileTags\Beta\ProfileUtils.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ProfileTags\Beta\ShuffleTag.cs">
+    <Compile Include="ProfileTags\Complex\ShuffleTag.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ProfileTags\Beta\TimeTracker\StartTimerTag.cs">
@@ -162,10 +151,7 @@
     <Compile Include="ProfileTags\Beta\TimeTracker\Timing.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="ProfileTags\Beta\Tokenizer.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="ProfileTags\Beta\WhenTag.cs">
+    <Compile Include="ProfileTags\Complex\WhenTag.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="ProfileTags\CompleteGreaterRiftTag.cs" />
