@@ -253,22 +253,10 @@ namespace QuestTools.ProfileTags.Complex
 
     public class EnhancedUseWaypointTag : UseWaypointTag, IEnhancedProfileBehavior
     {
-        public EnhancedUseWaypointTag()
-        {
-            QuestId = QuestId <= 0 ? 1 : QuestId;
-            Logger.Log("QuestId={0} base.IsDone={1}", QuestId, base.IsDone);
-            
-        }
-
         private bool _isDone;
         public override bool IsDone
         {
-            get
-            {
-                Logger.Log("IsDone QuestId={0} base.IsDone={1} _isDone={2}", QuestId, base.IsDone, _isDone);
-                return _isDone || base.IsDone; 
-                
-            }
+            get { return _isDone || base.IsDone; }
         }
 
         #region IEnhancedProfileBehavior
@@ -495,11 +483,6 @@ namespace QuestTools.ProfileTags.Complex
             return ScriptManager.GetCondition(Condition).Invoke();
         }
 
-        protected override Composite CreateBehavior()
-        {
-            return new Action(ret => RunStatus.Success);
-        }
-
         public override void ResetCachedDone()
         {
             _firstRun = true;
@@ -601,11 +584,6 @@ namespace QuestTools.ProfileTags.Complex
         public new bool GetConditionExec()
         {
             return ScriptManager.GetCondition(Condition).Invoke();
-        }
-
-        protected override Composite CreateBehavior()
-        {
-            return new Action(ret => RunStatus.Success);
         }
 
         public override void ResetCachedDone()

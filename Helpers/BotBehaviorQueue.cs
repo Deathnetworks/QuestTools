@@ -50,8 +50,6 @@ namespace QuestTools.Helpers
         {
             get { return _hooksInserted && _wired; }
         }
-        //    OnDone = me => Logger.Log("[{1}] Completed {0}", me.CompletedNodes, me.Name),
-        //    OnNodeDone = me => Logger.Log("[{0}] Complete {1}/{2}", me.Name, me.CompletedNodes, me.Nodes.Count),
 
         /// <summary>
         /// Selects a composite to be run
