@@ -107,6 +107,9 @@ namespace QuestTools.Helpers
                 if (type == typeof(UsePowerTag))
                     return (behavior as UsePowerTag).ToEnhanced();
 
+                if (type == typeof(WaitWhileTag))
+                    return (behavior as WaitWhileTag).ToEnhanced();
+
                 return behavior;
             });
         }

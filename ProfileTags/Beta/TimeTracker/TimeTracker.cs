@@ -30,7 +30,6 @@ namespace QuestTools.ProfileTags.Beta
             Initialized = true;            
         }
 
-
         /// <summary>
         /// Start listening to demonbuddy events.
         /// </summary>
@@ -114,7 +113,7 @@ namespace QuestTools.ProfileTags.Beta
             {
                 existingTimer.Start();
                 existingTimer.IsDirty = true;
-                Logger.Debug("Starting Timer (Existing) '{0}' Group:{1} {2} ({3})", timing.Name, timing.Group, timing.QuestName, timing.QuestId);
+                Logger.Debug("Starting Timer (Known) '{0}' Group:{1} {2} ({3})", timing.Name, timing.Group, timing.QuestName, timing.QuestId);
 
             }
         }
@@ -196,15 +195,15 @@ namespace QuestTools.ProfileTags.Beta
                         var t = new Timing
                         {
                             Name = tokens[0],
-                            QuestId = Int32.Parse(tokens[1]),
+                            QuestId = tokens[1].ChangeType<int>(),
                             QuestName = tokens[2],
-                            QuestIsBounty = Boolean.Parse(tokens[3]),
-                            MinTimeSeconds = Int32.Parse(tokens[5]),
-                            MaxTimeSeconds = Int32.Parse(tokens[6]),
-                            TimesTimed = Int32.Parse(tokens[7]),
-                            TotalTimeSeconds = Int32.Parse(tokens[8]),
+                            QuestIsBounty = tokens[3].ChangeType<Boolean>(),
+                            MinTimeSeconds = tokens[5].ChangeType<int>(),
+                            MaxTimeSeconds = tokens[6].ChangeType<int>(),
+                            TimesTimed = tokens[7].ChangeType<int>(),
+                            TotalTimeSeconds = tokens[8].ChangeType<int>(),
                             Group = tokens[9],
-                            FailedCount = Int32.Parse(tokens[10])
+                            FailedCount = tokens[10].ChangeType<int>(),
                         };
                         t.Print("Loaded: ");
                         output.Add(t);

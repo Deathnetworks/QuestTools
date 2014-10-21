@@ -101,10 +101,10 @@ namespace QuestTools.ProfileTags.Beta
             //var format = message + "Timer '{0}' Group:{11} {3} ({1}) took {10} seconds to complete (Max={5}, Min={6}, Avg={7} from {9} timings)";
 
             var format = (IsDirty)
-                ? message + ">> Dirty Timer '{0}' Group:{11} {3} ({1}) {10}(Max={5}, Min={6}, Avg={7} from {9} timings)"
-                : message + "Pass-Through '{0}' Group:{11} {3} ({1}) {10}(Max={5}, Min={6}, Avg={7} from {9} timings)";
+                ? message + ">> Modified '{0}' Group:{11} {3} ({1}) {10}(Max={5}, Min={6}, Avg={7} from {9} timings)"
+                : message + "'{0}' Group:{11} {3} ({1}) {10}(Max={5}, Min={6}, Avg={7} from {9} timings)";
 
-            Logger.Debug(format,
+            Logger.Log(format,
                 Name,
                 QuestId,
                 QuestIsBounty,

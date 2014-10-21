@@ -422,6 +422,34 @@ namespace QuestTools.ProfileTags.Complex
         #endregion
     }
 
+    public class EnhancedWaitWhileTag : WaitWhileTag, IEnhancedProfileBehavior
+    {
+        private bool _isDone;
+        public override bool IsDone
+        {
+            get { return _isDone || base.IsDone; }
+        }
+
+        #region IEnhancedProfileBehavior
+
+        public void Update()
+        {
+            UpdateBehavior();
+        }
+
+        public void Start()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
+    }
+
     public class EnhancedIfTag : IfTag, IEnhancedProfileBehavior
     {
         private bool _isDone;
