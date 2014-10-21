@@ -10,13 +10,30 @@ using ConditionParser = Zeta.Bot.ConditionParser;
 
 namespace QuestTools
 {
+
     public static class CustomConditions
     {
         public static void Initialize()
         {
             ScriptManager.RegisterShortcutsDefinitions((typeof(CustomConditions)));
         }
-        
+
+        public static bool IsCastingOrLoading()
+        {
+            return 
+
+                ZetaDia.Me != null && 
+                ZetaDia.Me.IsValid && 
+                ZetaDia.Me.CommonData != null && 
+                ZetaDia.Me.CommonData.IsValid &&
+                (
+                    ZetaDia.Me.CommonData.AnimationState == AnimationState.Casting || 
+                    ZetaDia.Me.CommonData.AnimationState == AnimationState.Channeling || 
+                    ZetaDia.Me.CommonData.AnimationState == AnimationState.Transform || 
+                    ZetaDia.Me.CommonData.AnimationState.ToString() == "13"
+                );
+        }   
+
         public static bool CurrentWave(int waveNumber)
         {
             return RiftTrial.CurrentWave == waveNumber;
