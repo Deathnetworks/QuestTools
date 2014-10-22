@@ -14,7 +14,7 @@ namespace QuestTools.ProfileTags.Complex
         public string Name { get; set; }
 
         [XmlAttribute("persist")]
-        public string Persist { get; set; }
+        public bool Persist { get; set; }
 
         public override bool GetConditionExec()
         {
@@ -28,7 +28,7 @@ namespace QuestTools.ProfileTags.Complex
                 Condition = ret => ScriptManager.GetCondition(Condition).Invoke(),
                 Name = Name,
                 Nodes = Body,
-                Persist = true
+                Persist = Persist
             });
 
             return false;
