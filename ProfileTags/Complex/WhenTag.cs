@@ -21,8 +21,6 @@ namespace QuestTools.ProfileTags.Complex
             if (QuestTools.EnableDebugLogging)
                 Logger.Log("Initializing '{0}' with condition={1}", Name, Condition);
 
-            ProfileUtils.AsyncReplaceTags(Body);
-
             BotBehaviorQueue.Queue(new QueueItem
             {
                 Condition = ret => ScriptManager.GetCondition(Condition).Invoke(),
