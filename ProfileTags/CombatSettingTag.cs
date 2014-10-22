@@ -49,13 +49,13 @@ namespace QuestTools.ProfileTags
         /// Turns on/off the killing of monsters
         /// </summary>
         [XmlAttribute("combat")]
-        public bool Combat { get; set; }
+        public string Combat { get; set; }
 
         /// <summary>
         /// Turns on/off the looting of items
         /// </summary>
         [XmlAttribute("looting")]
-        public bool Looting { get; set; }
+        public string Looting { get; set; }
 
         ///// <summary>
         ///// Gets or sets the avoidance of area effect spells
@@ -89,8 +89,8 @@ namespace QuestTools.ProfileTags
             //var avoidAoe = TrinityApi.GetInstancePropertyInfoFromObject(miscCombatSetting, "AvoidAOE");
 
             new ToggleTargetingTag {
-                Combat = Combat,
-                Looting = Looting,
+                Combat = string.IsNullOrEmpty(Combat) ? CombatTargeting.Instance.AllowedToKillMonsters : Combat.ChangeType<bool>(),
+                Looting = string.IsNullOrEmpty(Looting) ? LootTargeting.Instance.AllowedToLoot : Combat.ChangeType<bool>(),
                 }.OnStart();
 
             if (TrashPackSize > 0)

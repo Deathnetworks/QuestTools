@@ -582,8 +582,6 @@ namespace QuestTools.ProfileTags.Complex
 
                     if (!delegateExec || !GetConditionExec())
                     {
-                        Logger.Verbose("IF tag condition is FALSE - {0}", Condition);
-
                         _isDone = true;
                         Body.ForEach(b => b.SetChildrenDone());
                         return true;

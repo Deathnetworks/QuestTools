@@ -35,7 +35,7 @@ namespace QuestTools.ProfileTags
         public int Timeout { get; set; }
 
         private bool _isDone;
-        private List<Vector3> _points;
+        private List<Vector3> _points = new List<Vector3>();
         private DefaultNavigationProvider _navigator;
         private DateTime _startTime = DateTime.MaxValue;
 
