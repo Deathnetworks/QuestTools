@@ -27,6 +27,7 @@ namespace QuestTools
                 ZetaDia.Me.CommonData != null && 
                 ZetaDia.Me.CommonData.IsValid &&
                 (
+                    ZetaDia.IsLoadingWorld ||
                     ZetaDia.Me.CommonData.AnimationState == AnimationState.Casting || 
                     ZetaDia.Me.CommonData.AnimationState == AnimationState.Channeling || 
                     ZetaDia.Me.CommonData.AnimationState == AnimationState.Transform || 

@@ -5,6 +5,7 @@ using System.Linq;
 using Zeta.Bot;
 using Zeta.Bot.Logic;
 using Zeta.Bot.Profile;
+using Zeta.Bot.Profile.Common;
 using Zeta.Common;
 using Zeta.Game;
 using Zeta.TreeSharp;
@@ -266,12 +267,12 @@ namespace QuestTools.Helpers
         private static void OnStartHandler(IBot bot)
         {
             InsertHooks();
-            Reset();
+            Reset(true);
         }
 
         private static void OnGameChangedHandler(object sender, EventArgs eventArgs)
         {
-            Reset();
+            Reset(true);
         }
 
         private static void OnHooksClearedHandler(object sender, EventArgs eventArgs)
@@ -336,9 +337,13 @@ namespace QuestTools.Helpers
             }
         }
 
-        public static void Reset()
+        public static void Reset(bool forceClearAll = false)
         {
-            Q.Clear();
+            if (forceClearAll)
+                Q.Clear();
+            else
+                Q.RemoveAll(i => !i.Persist);
+
             _active = null;
         }
 
@@ -394,6 +399,8 @@ namespace QuestTools.Helpers
         }
 
         public bool ConditionPassed { get; set; }
+
+        public bool Persist { get; set; }
     }
 
     public class QueueItemEqualityComparer : IEqualityComparer<QueueItem>

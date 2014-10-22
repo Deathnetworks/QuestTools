@@ -13,6 +13,9 @@ namespace QuestTools.ProfileTags.Complex
         [XmlAttribute("name")]
         public string Name { get; set; }
 
+        [XmlAttribute("persist")]
+        public string Persist { get; set; }
+
         public override bool GetConditionExec()
         {
             if (QuestTools.EnableDebugLogging)
@@ -20,7 +23,13 @@ namespace QuestTools.ProfileTags.Complex
 
             ProfileUtils.AsyncReplaceTags(Body);
 
-            BotBehaviorQueue.Queue(Body, ret => ScriptManager.GetCondition(Condition).Invoke(), Name);
+            BotBehaviorQueue.Queue(new QueueItem
+            {
+                Condition = ret => ScriptManager.GetCondition(Condition).Invoke(),
+                Name = Name,
+                Nodes = Body,
+                Persist = true
+            });
 
             return false;
         }
