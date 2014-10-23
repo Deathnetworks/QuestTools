@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Resources;
 using Zeta.Bot;
 using Zeta.Bot.Logic;
 using Zeta.Bot.Profile;
@@ -162,7 +163,18 @@ namespace QuestTools.Helpers
                         return Loop;
                     }
 
-                    // 3.2.3 No parent, so just end the QueueItem 
+                    // 3.2.3 Shove it back at the bottom of the queue if it should be repeated
+                    if (_active.Repeat)
+                    {
+                        var temp = _active;
+                        _active.Reset();
+                        _active = null;
+                        Queue(temp);
+                        CheckConditions();
+                        return Loop;
+                    }
+
+                    // 3.2.4 No parent, No Repeat, so just end the QueueItem 
                     _active = null;
                     CheckConditions();
                     return Loop;
@@ -424,6 +436,8 @@ namespace QuestTools.Helpers
 
         public int ChildOf { get; set; }
 
+        public bool Repeat { get; set; }
+
         public List<ProfileBehavior> Nodes
         {
             get { return _nodes; }
@@ -443,6 +457,16 @@ namespace QuestTools.Helpers
         public override int GetHashCode()
         {
             return Id;
+        }
+
+        public void Reset()
+        {
+            ActiveNode = null;
+            ConditionPassed = false;
+            CompletedNodes = 0;
+            ChildOf = 0;
+            ParentOf = 0;
+            Nodes.ForEach(n => n.ResetCachedDone(true));
         }
     }
 

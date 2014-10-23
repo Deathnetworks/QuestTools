@@ -16,6 +16,9 @@ namespace QuestTools.ProfileTags.Complex
         [XmlAttribute("persist")]
         public bool Persist { get; set; }
 
+        [XmlAttribute("repeat")]
+        public bool Repeat { get; set; }
+
         public override bool GetConditionExec()
         {
             if (QuestTools.EnableDebugLogging)
@@ -26,7 +29,8 @@ namespace QuestTools.ProfileTags.Complex
                 Condition = ret => ScriptManager.GetCondition(Condition).Invoke(),
                 Name = Name,
                 Nodes = Body,
-                Persist = Persist
+                Persist = Persist,
+                Repeat = Repeat,
             });
 
             return false;
