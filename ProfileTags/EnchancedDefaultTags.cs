@@ -453,7 +453,6 @@ namespace QuestTools.ProfileTags.Complex
     public class EnhancedIfTag : IfTag, IEnhancedProfileBehavior
     {
         private bool _isDone;
-        private bool _firstRun = true;
         public bool ContinuouslyRecheck;
 
         public Common.BoolDelegate IsDoneDelegate;
@@ -474,46 +473,16 @@ namespace QuestTools.ProfileTags.Complex
 
         public override bool IsDone
         {
-            get
-            {               
-                if (_isDone)
-                    return true;
-
-                // Check Condition
-                if (_firstRun || ContinuouslyRecheck)
-                {
-                    var delegateExec = IsDoneDelegate == null || IsDoneDelegate.Invoke(null);
-
-                    if (!delegateExec || !GetConditionExec())
-                    {
-                        Logger.Verbose("IF tag condition is FALSE - {0}", Condition);
-
-                        _isDone = true;
-                        Body.ForEach(b => b.SetChildrenDone());
-                        return true;
-                    }
-                    _firstRun = false;
-                }
-
-                // End if children are finished
-                if (Body.All(p => p.IsDone))
-                {
-                    _isDone = true;
-                    return true;
-                }
-
-                return false;
-            }
+            get { return _isDone || base.IsDone; }
         }
 
         public new bool GetConditionExec()
         {
-            return ScriptManager.GetCondition(Condition).Invoke();
+            return IsDoneDelegate != null && IsDoneDelegate.Invoke(null) || ScriptManager.GetCondition(Condition).Invoke();
         }
 
         public override void ResetCachedDone()
         {
-            _firstRun = true;
             _isDone = false;
             base.ResetCachedDone();
         }
@@ -549,8 +518,6 @@ namespace QuestTools.ProfileTags.Complex
     public class EnhancedWhileTag : WhileTag, IEnhancedProfileBehavior
     {
         private bool _isDone;
-        private bool _firstRun = true;
-        public bool ContinuouslyRecheck;
 
         public Common.BoolDelegate IsDoneDelegate;
 
@@ -570,51 +537,16 @@ namespace QuestTools.ProfileTags.Complex
 
         public override bool IsDone
         {
-            get
-            {               
-                if (_isDone)
-                    return true;
-
-                // Check Condition
-                if (_firstRun || ContinuouslyRecheck)
-                {
-                    var delegateExec = IsDoneDelegate == null || IsDoneDelegate.Invoke(null);
-
-                    if (!delegateExec || !GetConditionExec())
-                    {
-                        _isDone = true;
-                        Body.ForEach(b => b.SetChildrenDone());
-                        return true;
-                    }
-                    _firstRun = false;
-                }
-
-                // End if children are finished && condition is false, otherwise re-run them all
-                if (Body.All(p => p.IsDone))
-                {
-                    if (GetConditionExec())
-                    {
-                        _isDone = false;
-                        Body.ForEach(b => b.ResetCachedDone());
-                        return false;
-                    }
-
-                    _isDone = true;
-                    return true;
-                }
-
-                return false;
-            }
+            get { return _isDone || base.IsDone; }
         }
 
         public new bool GetConditionExec()
         {
-            return ScriptManager.GetCondition(Condition).Invoke();
+            return IsDoneDelegate != null && IsDoneDelegate.Invoke(null) || ScriptManager.GetCondition(Condition).Invoke();
         }
 
         public override void ResetCachedDone()
         {
-            _firstRun = true;
             _isDone = false;
             base.ResetCachedDone();
         }
