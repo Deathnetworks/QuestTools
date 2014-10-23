@@ -45,26 +45,26 @@ namespace QuestTools.Helpers
         public static void ReplaceDefaultTags()
         {
             RecurseBehaviors(Zeta.Bot.ProfileManager.CurrentProfile.Order, (node, i, type) =>
-            { 
-                if (node is IfTag && type == typeof(IfTag))
-                {
-                    return new EnhancedIfTag
-                    {
-                        Body = (node as IfTag).Body,
-                        Condition = (node as IfTag).Condition,
-                        Conditional = (node as IfTag).Conditional,
-                    };
-                }
+            {
+                //if (node is IfTag && type == typeof(IfTag))
+                //{
+                //    return new EnhancedIfTag
+                //    {
+                //        Body = (node as IfTag).Body,
+                //        Condition = (node as IfTag).Condition,
+                //        Conditional = (node as IfTag).Conditional,
+                //    };
+                //}
 
-                if (node is WhileTag && type == typeof(WhileTag))
-                {
-                    return new EnhancedWhileTag
-                    {
-                        Body = (node as IfTag).Body,
-                        Condition = (node as IfTag).Condition,
-                        Conditional = (node as IfTag).Conditional,
-                    };
-                }
+                //if (node is WhileTag && type == typeof(WhileTag))
+                //{
+                //    return new EnhancedWhileTag
+                //    {
+                //        Body = (node as IfTag).Body,
+                //        Condition = (node as IfTag).Condition,
+                //        Conditional = (node as IfTag).Conditional,
+                //    };
+                //}
 
                 return node;
             });

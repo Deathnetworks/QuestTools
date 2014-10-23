@@ -116,15 +116,6 @@ namespace QuestTools
             return ItemCount(actorId) < amount;
         }
 
-        public static bool ActorAnimationCountReached(int actorId, string animationName, int count)
-        {
-            if (ActorHistory.GetActorAnimationCount(actorId, animationName) <= count) 
-                return false;
-
-            ActorHistory.UnitsWithAnimationTracking.Remove(actorId);
-            return true;
-        }
-
         public static string ProfileSetting(string key)
         {
             string value;

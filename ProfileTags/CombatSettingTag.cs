@@ -7,6 +7,7 @@ using QuestTools.ProfileTags.Complex;
 using Zeta.Bot;
 using Zeta.Bot.Profile;
 using Zeta.Bot.Profile.Common;
+using Zeta.Bot.Settings;
 using Zeta.TreeSharp;
 using Zeta.XmlEngine;
 
@@ -36,6 +37,7 @@ namespace QuestTools.ProfileTags
         /// </summary>
         /// <value>The non elite range.</value>
         [XmlAttribute("nonEliteRange")]
+        [XmlAttribute("killRadius")]
         public int NonEliteRange { get; set; }
 
         /// <summary>
@@ -56,6 +58,13 @@ namespace QuestTools.ProfileTags
         /// </summary>
         [XmlAttribute("looting")]
         public string Looting { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DB looting range
+        /// </summary>
+        /// <value>The looting range.</value>
+        [XmlAttribute("lootRadius")]
+        public int LootRadius { get; set; }
 
         ///// <summary>
         ///// Gets or sets the avoidance of area effect spells
@@ -91,7 +100,8 @@ namespace QuestTools.ProfileTags
             new ToggleTargetingTag {
                 Combat = string.IsNullOrEmpty(Combat) ? CombatTargeting.Instance.AllowedToKillMonsters : Combat.ChangeType<bool>(),
                 Looting = string.IsNullOrEmpty(Looting) ? LootTargeting.Instance.AllowedToLoot : Combat.ChangeType<bool>(),
-                }.OnStart();
+                LootRadius = LootRadius > 0 ? CharacterSettings.Instance.LootRadius : LootRadius,
+            }.OnStart();
 
             if (TrashPackSize > 0)
             {

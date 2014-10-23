@@ -57,7 +57,7 @@ namespace QuestTools.Helpers
         private static void CheckConditions()
         {
             if (Q.Any())
-                Logger.Debug("{0} in Queue", Q.Count);
+                Logger.Verbose("{0} in Queue", Q.Count);
 
             Q.ForEach(node =>
             {
@@ -103,7 +103,7 @@ namespace QuestTools.Helpers
 
                 // 1.2 Start the next QueueItem that has passed its condition
                 _active = Q.FirstOrDefault(n => n.ConditionPassed);
-                Logger.Debug("Starting QueueItem");
+                Logger.Verbose("Starting QueueItem");
                 if (_active != null)
                 {
                     Q.Remove(_active);
@@ -137,7 +137,7 @@ namespace QuestTools.Helpers
                 // 3.1 Handle ActiveNode has finished                
                 _active.CompletedNodes++;
                 _active.ActiveNode.OnDone();
-                Logger.Debug("[{0}] Complete {1}/{2}", _active.Name, _active.CompletedNodes, _active.Nodes.Count);
+                Logger.Verbose("[{0}] Complete {1}/{2}", _active.Name, _active.CompletedNodes, _active.Nodes.Count);
                 if (_active.OnNodeDone != null)
                     _active.OnNodeDone.Invoke(_active);
                 
@@ -147,13 +147,13 @@ namespace QuestTools.Helpers
                     // 3.2.1 Handle all nodes are finished
                     if (_active.OnDone != null)
                         _active.OnDone.Invoke(_active);                    
-                    Logger.Debug("[{1}] Completed {0}", _active.CompletedNodes, _active.Name);
+                    Logger.Verbose("[{1}] Completed {0}", _active.CompletedNodes, _active.Name);                    
 
                     // 3.2.2 Traverse Upwards
                     // If this QueueItem is a child, we need to continue with its parent
                     // Parent gets taken off the shelf (unpaused) and set as the new active Queueitem.
                     var parent = Shelf.FirstOrDefault(i => i.ParentOf == _active.Id);
-                    Logger.Debug("All Nodes Complete ParentId={0} ThisId={1}", parent != null ? parent.Id.ToString() : "Null", _active.Id );
+                    Logger.Verbose("All Nodes Complete ParentId={0} ThisId={1}", parent != null ? parent.Id.ToString() : "Null", _active.Id );
                     if (parent != null)
                     {
                         _active = parent;

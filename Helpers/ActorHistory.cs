@@ -68,26 +68,6 @@ namespace QuestTools.Helpers
             return Actors.TryGetValue(actorId, out cActor) && cActor.WorldId == ZetaDia.CurrentWorldId ? cActor.Position : Vector3.Zero;
         }
 
-        public static HashSet<int> UnitsWithAnimationTracking = new HashSet<int>();
-
-        public static int GetActorAnimationCount(int actorId, string animationName)
-        {
-            if (!UnitsWithAnimationTracking.Contains(actorId))
-                UnitsWithAnimationTracking.Add(actorId);
-
-            CachedActor cActor;           
-            if (Actors.TryGetValue(actorId, out cActor))
-            {
-                var anim = animationName.ChangeType<SNOAnim>();
-                int animCount;
-                if (anim != SNOAnim.Invalid && cActor.AnimationCount.TryGetValue(anim, out animCount))
-                {
-                    return animCount;
-                }
-            }
-            return 0;
-        }
-
         public static TimeSpan GetTimeSinceSeen(int actorId)
         {
             CachedActor cActor;
@@ -113,11 +93,12 @@ namespace QuestTools.Helpers
             try
             {
                 (from o in ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
-                 where (o.ActorType == ActorType.Gizmo || o is DiaUnit) && !(o is DiaPlayer)
+                 where (o is DiaGizmo || o is DiaUnit) && !(o is DiaPlayer)
                  select o).ToList().ForEach(UpdateActor);   
             }
-            catch (Exception)
+            catch (Exception ex)
             {
+                Logger.Debug("Exception in ActorHistory: {0}", ex.ToString());
             }
 
         }
@@ -127,33 +108,14 @@ namespace QuestTools.Helpers
             if (actor == null || !actor.IsValid)            
                 return;
 
-            var shouldTrackAnimations = actor.CommonData != null && actor.CommonData.IsValid && actor is DiaUnit && (actor as DiaUnit).IsHostile && actor.CommonData.CurrentAnimation != SNOAnim.Invalid;
-            //var shouldTrackAnimations = actor.CommonData != null && actor.CommonData.IsValid && actor is DiaUnit && actor.CommonData.CurrentAnimation != SNOAnim.Invalid;
-
             CachedActor cachedActor;
 
             if (Actors.TryGetValue(actor.ActorSNO, out cachedActor))
             {
-                //Logger.Log("Updating Existing Actor {0} ({0})", actor.Name, actor.ActorSNO);
                 cachedActor.Position = actor.Position;
                 cachedActor.WorldId = _currentWorldId;
                 cachedActor.LevelAreaId = _currentLevelAreaId;
                 cachedActor.LastSeen = DateTime.UtcNow;
-
-                if (UnitsWithAnimationTracking.Contains(actor.ActorSNO) && shouldTrackAnimations)
-                {
-                    int seenAnimCount;
-                    if (cachedActor.AnimationCount.TryGetValue(actor.CommonData.CurrentAnimation, out seenAnimCount))
-                    {
-                        //Logger.Log("Actor={0} {1} Animation Count={2}", actor.Name, actor.CommonData.CurrentAnimation, seenAnimCount + 1);
-                        cachedActor.AnimationCount[actor.CommonData.CurrentAnimation] = seenAnimCount + 1;
-                    }
-                    else
-                    {
-                        cachedActor.AnimationCount.Add(actor.CommonData.CurrentAnimation, 1);
-                    }                        
-                }
-
             }
             else
             {
@@ -163,10 +125,6 @@ namespace QuestTools.Helpers
                     WorldId = ZetaDia.CurrentWorldId,
                     LastSeen = DateTime.UtcNow
                 };
-
-                if (UnitsWithAnimationTracking.Contains(actor.ActorSNO) && shouldTrackAnimations)
-                    newActor.AnimationCount.Add(actor.CommonData.CurrentAnimation,1);
-
                 Actors.Add(actor.ActorSNO, newActor);
             }
 
