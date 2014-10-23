@@ -94,6 +94,12 @@ namespace QuestTools.ProfileTags
 
         private async Task<bool> GetItemFromStashRoutine()
         {
+            if (!ZetaDia.IsInGame) return false;
+            if (ZetaDia.IsLoadingWorld) return false;
+            if (!ZetaDia.IsInTown) { _isDone = true; return false; }
+            if (ZetaDia.Me == null) return false;
+            if (!ZetaDia.Me.IsValid) return false;
+
             // Validate parameters
             if (GameBalanceId == 0 && ActorId == 0 && !GreaterRiftKey)
             {
