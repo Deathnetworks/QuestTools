@@ -100,7 +100,8 @@ namespace QuestTools.ProfileTags
             new ToggleTargetingTag {
                 Combat = string.IsNullOrEmpty(Combat) ? CombatTargeting.Instance.AllowedToKillMonsters : Combat.ChangeType<bool>(),
                 Looting = string.IsNullOrEmpty(Looting) ? LootTargeting.Instance.AllowedToLoot : Combat.ChangeType<bool>(),
-                LootRadius = LootRadius > 0 ? CharacterSettings.Instance.LootRadius : LootRadius,
+                LootRadius = LootRadius > 0 ? LootRadius : CharacterSettings.Instance.LootRadius,
+                KillRadius = NonEliteRange > 0 ? NonEliteRange : CharacterSettings.Instance.KillRadius,
             }.OnStart();
 
             if (TrashPackSize > 0)
@@ -124,8 +125,6 @@ namespace QuestTools.ProfileTags
             //    Logger.Log("Setting Trinity Combat.Misc.AvoidAOE to {0}", AvoidAoe);
             //    avoidAoe.SetValue(miscCombatSetting, AvoidAoe);
             //}
-            
-            Logger.Log("IsDone={0}", _isDone);
 
             _isDone = true;
             return true;
