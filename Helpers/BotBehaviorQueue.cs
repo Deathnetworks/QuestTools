@@ -104,9 +104,10 @@ namespace QuestTools.Helpers
 
                 // 1.2 Start the next QueueItem that has passed its condition
                 _active = Q.FirstOrDefault(n => n.ConditionPassed);
-                Logger.Verbose("Starting QueueItem");
+                
                 if (_active != null)
                 {
+                    Logger.Verbose("Starting QueueItem");
                     Q.Remove(_active);
                     if (_active.OnStart != null)
                         _active.OnStart.Invoke(_active);
