@@ -10,13 +10,31 @@ using ConditionParser = Zeta.Bot.ConditionParser;
 
 namespace QuestTools
 {
+
     public static class CustomConditions
     {
         public static void Initialize()
         {
             ScriptManager.RegisterShortcutsDefinitions((typeof(CustomConditions)));
         }
-        
+
+        public static bool IsCastingOrLoading()
+        {
+            return 
+
+                ZetaDia.Me != null && 
+                ZetaDia.Me.IsValid && 
+                ZetaDia.Me.CommonData != null && 
+                ZetaDia.Me.CommonData.IsValid &&
+                (
+                    ZetaDia.IsLoadingWorld ||
+                    ZetaDia.Me.CommonData.AnimationState == AnimationState.Casting || 
+                    ZetaDia.Me.CommonData.AnimationState == AnimationState.Channeling || 
+                    ZetaDia.Me.CommonData.AnimationState == AnimationState.Transform || 
+                    ZetaDia.Me.CommonData.AnimationState.ToString() == "13"
+                );
+        }   
+
         public static bool CurrentWave(int waveNumber)
         {
             return RiftTrial.CurrentWave == waveNumber;
@@ -96,15 +114,6 @@ namespace QuestTools
         public static bool ItemCountLessThan(int actorId, int amount)
         {
             return ItemCount(actorId) < amount;
-        }
-
-        public static bool ActorAnimationCountReached(int actorId, string animationName, int count)
-        {
-            if (ActorHistory.GetActorAnimationCount(actorId, animationName) <= count) 
-                return false;
-
-            ActorHistory.UnitsWithAnimationTracking.Remove(actorId);
-            return true;
         }
 
         public static string ProfileSetting(string key)

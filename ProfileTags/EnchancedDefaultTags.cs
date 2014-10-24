@@ -253,22 +253,10 @@ namespace QuestTools.ProfileTags.Complex
 
     public class EnhancedUseWaypointTag : UseWaypointTag, IEnhancedProfileBehavior
     {
-        public EnhancedUseWaypointTag()
-        {
-            QuestId = QuestId <= 0 ? 1 : QuestId;
-            Logger.Log("QuestId={0} base.IsDone={1}", QuestId, base.IsDone);
-            
-        }
-
         private bool _isDone;
         public override bool IsDone
         {
-            get
-            {
-                Logger.Log("IsDone QuestId={0} base.IsDone={1} _isDone={2}", QuestId, base.IsDone, _isDone);
-                return _isDone || base.IsDone; 
-                
-            }
+            get { return _isDone || base.IsDone; }
         }
 
         #region IEnhancedProfileBehavior
@@ -434,10 +422,37 @@ namespace QuestTools.ProfileTags.Complex
         #endregion
     }
 
+    public class EnhancedWaitWhileTag : WaitWhileTag, IEnhancedProfileBehavior
+    {
+        private bool _isDone;
+        public override bool IsDone
+        {
+            get { return _isDone || base.IsDone; }
+        }
+
+        #region IEnhancedProfileBehavior
+
+        public void Update()
+        {
+            UpdateBehavior();
+        }
+
+        public void Start()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
+    }
+
     public class EnhancedIfTag : IfTag, IEnhancedProfileBehavior
     {
         private bool _isDone;
-        private bool _firstRun = true;
         public bool ContinuouslyRecheck;
 
         public Common.BoolDelegate IsDoneDelegate;
@@ -458,51 +473,16 @@ namespace QuestTools.ProfileTags.Complex
 
         public override bool IsDone
         {
-            get
-            {               
-                if (_isDone)
-                    return true;
-
-                // Check Condition
-                if (_firstRun || ContinuouslyRecheck)
-                {
-                    var delegateExec = IsDoneDelegate == null || IsDoneDelegate.Invoke(null);
-
-                    if (!delegateExec || !GetConditionExec())
-                    {
-                        Logger.Verbose("IF tag condition is FALSE - {0}", Condition);
-
-                        _isDone = true;
-                        Body.ForEach(b => b.SetChildrenDone());
-                        return true;
-                    }
-                    _firstRun = false;
-                }
-
-                // End if children are finished
-                if (Body.All(p => p.IsDone))
-                {
-                    _isDone = true;
-                    return true;
-                }
-
-                return false;
-            }
+            get { return _isDone || base.IsDone; }
         }
 
         public new bool GetConditionExec()
         {
-            return ScriptManager.GetCondition(Condition).Invoke();
-        }
-
-        protected override Composite CreateBehavior()
-        {
-            return new Action(ret => RunStatus.Success);
+            return IsDoneDelegate != null && IsDoneDelegate.Invoke(null) || ScriptManager.GetCondition(Condition).Invoke();
         }
 
         public override void ResetCachedDone()
         {
-            _firstRun = true;
             _isDone = false;
             base.ResetCachedDone();
         }
@@ -538,8 +518,6 @@ namespace QuestTools.ProfileTags.Complex
     public class EnhancedWhileTag : WhileTag, IEnhancedProfileBehavior
     {
         private bool _isDone;
-        private bool _firstRun = true;
-        public bool ContinuouslyRecheck;
 
         public Common.BoolDelegate IsDoneDelegate;
 
@@ -559,58 +537,16 @@ namespace QuestTools.ProfileTags.Complex
 
         public override bool IsDone
         {
-            get
-            {               
-                if (_isDone)
-                    return true;
-
-                // Check Condition
-                if (_firstRun || ContinuouslyRecheck)
-                {
-                    var delegateExec = IsDoneDelegate == null || IsDoneDelegate.Invoke(null);
-
-                    if (!delegateExec || !GetConditionExec())
-                    {
-                        Logger.Verbose("IF tag condition is FALSE - {0}", Condition);
-
-                        _isDone = true;
-                        Body.ForEach(b => b.SetChildrenDone());
-                        return true;
-                    }
-                    _firstRun = false;
-                }
-
-                // End if children are finished && condition is false, otherwise re-run them all
-                if (Body.All(p => p.IsDone))
-                {
-                    if (GetConditionExec())
-                    {
-                        _isDone = false;
-                        Body.ForEach(b => b.ResetCachedDone());
-                        return false;
-                    }
-
-                    _isDone = true;
-                    return true;
-                }
-
-                return false;
-            }
+            get { return _isDone || base.IsDone; }
         }
 
         public new bool GetConditionExec()
         {
-            return ScriptManager.GetCondition(Condition).Invoke();
-        }
-
-        protected override Composite CreateBehavior()
-        {
-            return new Action(ret => RunStatus.Success);
+            return IsDoneDelegate != null && IsDoneDelegate.Invoke(null) || ScriptManager.GetCondition(Condition).Invoke();
         }
 
         public override void ResetCachedDone()
         {
-            _firstRun = true;
             _isDone = false;
             base.ResetCachedDone();
         }

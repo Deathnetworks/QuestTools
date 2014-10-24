@@ -438,13 +438,10 @@ namespace QuestTools.UI
                     string questInfo;
                     string questHeader ;
 
-                    var locationInfo = string.Empty;
 
-                    if (!ZetaDia.WorldInfo.IsGenerated)
-                    {
-                        locationInfo = string.Format("x={0:0} y={1:0} z={2:0}",
-                            ZetaDia.Me.Position.X, ZetaDia.Me.Position.Y, ZetaDia.Me.Position.Z);
-                    }
+                    var locationInfo = string.Format("x={0:0} y={1:0} z={2:0}",
+                        ZetaDia.Me.Position.X, ZetaDia.Me.Position.Y, ZetaDia.Me.Position.Z);
+                
 
                     GetQuestInfoText(out questInfo, out questHeader, null, ZetaDia.Me.CurrentScene);
 
@@ -727,7 +724,7 @@ namespace QuestTools.UI
                                                      !o.Name.StartsWith("Start_Location") &&
                                                      !o.Name.Contains("Trigger") &&
                                                      !(o is DiaPlayer) &&
-                                                     (!(o is DiaUnit) || (o as DiaUnit).PetCreator == ZetaDia.Me.PetCreator) // Exclude pets;
+                                                     (!(o is DiaUnit) || ((o as DiaUnit).PetCreator !=null && (o as DiaUnit).PetCreator == ZetaDia.Me.PetCreator)) // Exclude pets;
                                                orderby o.Position.Distance(ZetaDia.Me.Position)
                                                select o).ToList();
 

@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Reflection;
 using System.Threading.Tasks;
+using System.Windows.Documents;
 using QuestTools.Helpers;
+using QuestTools.ProfileTags.Complex;
 using Zeta.Bot;
 using Zeta.Bot.Profile;
+using Zeta.Bot.Profile.Common;
+using Zeta.Bot.Settings;
 using Zeta.TreeSharp;
 using Zeta.XmlEngine;
 
@@ -13,7 +17,7 @@ namespace QuestTools.ProfileTags
     /// Class CombatSettingTag.
     /// </summary>
     [XmlElement("CombatSetting")]
-    class CombatSettingTag : ProfileBehavior
+    class CombatSettingTag : ProfileBehavior, IEnhancedProfileBehavior
     {
         private bool _isDone;
         public override bool IsDone
@@ -33,6 +37,7 @@ namespace QuestTools.ProfileTags
         /// </summary>
         /// <value>The non elite range.</value>
         [XmlAttribute("nonEliteRange")]
+        [XmlAttribute("killRadius")]
         public int NonEliteRange { get; set; }
 
         /// <summary>
@@ -41,6 +46,31 @@ namespace QuestTools.ProfileTags
         /// <value>The trash pack cluster radius.</value>
         [XmlAttribute("trashPackClusterRadius")]
         public float TrashPackClusterRadius { get; set; }
+
+        /// <summary>
+        /// Turns on/off the killing of monsters
+        /// </summary>
+        [XmlAttribute("combat")]
+        public string Combat { get; set; }
+
+        /// <summary>
+        /// Turns on/off the looting of items
+        /// </summary>
+        [XmlAttribute("looting")]
+        public string Looting { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DB looting range
+        /// </summary>
+        /// <value>The looting range.</value>
+        [XmlAttribute("lootRadius")]
+        public int LootRadius { get; set; }
+
+        ///// <summary>
+        ///// Gets or sets the avoidance of area effect spells
+        ///// </summary>
+        //[XmlAttribute("avoidance")]
+        //public bool AvoidAoe { get; set; }
 
         /// <summary>
         /// Creates the behavior.
@@ -65,6 +95,14 @@ namespace QuestTools.ProfileTags
             var nonEliteRange = TrinityApi.GetInstancePropertyInfoFromObject(miscCombatSetting, "NonEliteRange");
             var trashPackSize = TrinityApi.GetInstancePropertyInfoFromObject(miscCombatSetting, "TrashPackSize");
             var trashPackClusterRadius = TrinityApi.GetInstancePropertyInfoFromObject(miscCombatSetting, "TrashPackClusterRadius");
+            //var avoidAoe = TrinityApi.GetInstancePropertyInfoFromObject(miscCombatSetting, "AvoidAOE");
+
+            new ToggleTargetingTag {
+                Combat = string.IsNullOrEmpty(Combat) ? CombatTargeting.Instance.AllowedToKillMonsters : Combat.ChangeType<bool>(),
+                Looting = string.IsNullOrEmpty(Looting) ? LootTargeting.Instance.AllowedToLoot : Combat.ChangeType<bool>(),
+                LootRadius = LootRadius > 0 ? LootRadius : CharacterSettings.Instance.LootRadius,
+                KillRadius = NonEliteRange > 0 ? NonEliteRange : CharacterSettings.Instance.KillRadius,
+            }.OnStart();
 
             if (TrashPackSize > 0)
             {
@@ -81,9 +119,36 @@ namespace QuestTools.ProfileTags
                 Logger.Log("Setting Trinity Combat.Misc.TrashPackClusterRadius to {0}", TrashPackClusterRadius);
                 trashPackClusterRadius.SetValue(miscCombatSetting, TrashPackClusterRadius);
             }
+
+            //if (avoidAoe.GetValue(miscCombatSetting).ChangeType<bool>() != AvoidAoe)
+            //{
+            //    Logger.Log("Setting Trinity Combat.Misc.AvoidAOE to {0}", AvoidAoe);
+            //    avoidAoe.SetValue(miscCombatSetting, AvoidAoe);
+            //}
+
             _isDone = true;
             return true;
         }
+
+        #region IEnhancedProfileBehavior
+
+        public void Update()
+        {
+            UpdateBehavior();
+        }
+
+        public void Start()
+        {
+            OnStart();
+        }
+
+        public void Done()
+        {
+            _isDone = true;
+        }
+
+        #endregion
+
     }
 }
 

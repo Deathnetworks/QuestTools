@@ -96,6 +96,9 @@ namespace QuestTools.Helpers
 
             if (type == typeof(UsePowerTag))
                 return (behavior as UsePowerTag).ToEnhanced().RunEnhanced();
+
+            if (type == typeof(WaitWhileTag))
+                return (behavior as WaitWhileTag).ToEnhanced().RunEnhanced();
             
             Logger.Warn("You attempted to run a tag ({0}) that can't be converted to IEnhancedProfileBehavior ", behavior.GetType());
 
@@ -211,6 +214,15 @@ namespace QuestTools.Helpers
             asyncVersion.X = tag.X;
             asyncVersion.Y = tag.Y;
             asyncVersion.Z = tag.Z;
+            tag.CopyTo(asyncVersion);
+            return asyncVersion;
+        }
+
+        public static EnhancedWaitWhileTag ToEnhanced(this WaitWhileTag tag)
+        {
+            var asyncVersion = new EnhancedWaitWhileTag();
+            asyncVersion.Condition = tag.Condition;
+            asyncVersion.Conditional = tag.Conditional;
             tag.CopyTo(asyncVersion);
             return asyncVersion;
         }

@@ -1,7 +1,7 @@
-﻿using QuestTools.ProfileTags.Complex;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Resources;
 using Zeta.Bot;
 using Zeta.Bot.Logic;
 using Zeta.Bot.Profile;
@@ -27,6 +27,7 @@ namespace QuestTools.Helpers
         private static DateTime _lastCheckedConditionsTime = DateTime.MinValue;
         internal static QueueItemEqualityComparer QueueItemComparer = new QueueItemEqualityComparer();
         private static QueueItem _active;
+        public static List<QueueItem> Shelf = new List<QueueItem>();
 
         static BotBehaviorQueue()
         {
@@ -50,98 +51,6 @@ namespace QuestTools.Helpers
         {
             get { return _hooksInserted && _wired; }
         }
-        //    OnDone = me => Logger.Log("[{1}] Completed {0}", me.CompletedNodes, me.Name),
-        //    OnNodeDone = me => Logger.Log("[{0}] Complete {1}/{2}", me.Name, me.CompletedNodes, me.Nodes.Count),
-
-        /// <summary>
-        /// Selects a composite to be run
-        /// </summary>
-        private static Composite Next        
-        {
-            get
-            {                                
-                if (_active == null)
-                {
-                    if (!Q.Any())
-                        return Continue;
-
-                    // Handle start new QueueItem.
-                    _active = Q.FirstOrDefault(n => n.ConditionPassed);
-                    if (_active != null)
-                    {
-                        Q.Remove(_active);
-                        if (_active.OnStart != null)
-                            _active.OnStart.Invoke(_active);
-                        return Loop;
-                    }
-
-                    return Continue;
-                }
-
-                
-                if (_active.ActiveNode == null)
-                {
-                    // Handle starting first Node
-                    _active.ActiveNode = _active.Nodes.First();
-                    SetNodeToRun();
-                    if (_active.OnNodeStart != null)
-                        _active.OnNodeStart.Invoke(_active);
-                    return _active.ActiveNode.Behavior;
-                }
-
-                BotMain.StatusText = _active.ActiveNode.StatusText;
-
-                if (_active.ActiveNode.IsDone)
-                {
-                    // Handle ActiveNode has finished
-                    _active.CompletedNodes++;
-                    _active.ActiveNode.OnDone();
-                    Logger.Debug("[{0}] Complete {1}/{2}", _active.Name, _active.CompletedNodes, _active.Nodes.Count);
-                    if (_active.OnNodeDone != null)
-                        _active.OnNodeDone.Invoke(_active);
-
-                    // Handle all nodes are finished
-                    if (_active.IsComplete)
-                    {
-                        if (_active.OnDone != null)
-                            _active.OnDone.Invoke(_active);
-                        Logger.Debug("[{1}] Completed {0}", _active.CompletedNodes, _active.Name);
-                        _active = null;
-
-                        CheckConditions();
-                        return Loop;
-                    }
-
-                    // Handle start of next node
-                    var currentPosition = _active.Nodes.IndexOf(_active.ActiveNode);
-                    _active.ActiveNode = _active.Nodes.ElementAt(currentPosition + 1);
-                    SetNodeToRun();
-                    if (_active.OnNodeStart != null)
-                        _active.OnNodeStart.Invoke(_active);
-                    return _active.ActiveNode.Behavior;
-                }
-
-                // Handle continuing an in-progress Node
-                LogBehavior(_active);
-                return _active.ActiveNode.Behavior;
-            }
-        }
-
-        /// <summary>
-        /// Calls UpdateBehavior() and OnStart() so that profile runs in the tree properly
-        /// </summary>
-        private static void SetNodeToRun()
-        {
-            ProfileUtils.RecurseBehaviors(_active.ActiveNode.GetChildren(), (node, index, type) =>
-            {
-                if (node is IEnhancedProfileBehavior)
-                    (node as IEnhancedProfileBehavior).Update();
-
-                return node;
-            });
-
-            _active.ActiveNode.Run();
-        }
 
         /// <summary>
         /// Marks QueueItems as ready if their condition is True
@@ -149,7 +58,7 @@ namespace QuestTools.Helpers
         private static void CheckConditions()
         {
             if (Q.Any())
-                Logger.Debug("{0} in Queue", Q.Count);
+                Logger.Verbose("{0} in Queue", Q.Count);
 
             Q.ForEach(node =>
             {
@@ -172,11 +81,150 @@ namespace QuestTools.Helpers
             {
                 var child = _hook.DecoratedChild as PrioritySelector;
                 if (child != null)
-                    child.Children = new List<Composite> { Next };
+                    child.Children = new List<Composite> { Next() };
 
                 return true;
 
             }, new PrioritySelector());
+        }
+
+        /// <summary>
+        /// Selects a composite to be run
+        /// This is called every tick and returns a composite
+        /// Which composite is returned changes based on the QueueItem currently being processed.
+        /// </summary>
+        private static Composite Next()       
+        {   
+            // 1. No active node
+            if (_active == null)
+            {
+                // 1.1 Nothing in the Queue.
+                if (!Q.Any())
+                    return Continue;
+
+                // 1.2 Start the next QueueItem that has passed its condition
+                _active = Q.FirstOrDefault(n => n.ConditionPassed);
+                Logger.Verbose("Starting QueueItem");
+                if (_active != null)
+                {
+                    Q.Remove(_active);
+                    if (_active.OnStart != null)
+                        _active.OnStart.Invoke(_active);
+                    return Loop;
+                }
+
+                // 1.3 Nothing has passed condition yet.
+                return Continue;
+            }
+            
+            // 2. We're currently processing a QueueItem
+            // But havent started processing its nodes.
+            if (_active.ActiveNode == null)
+            {
+                // 2.1 Handle starting the first Node
+                _active.ActiveNode = _active.Nodes.First();
+                _active.ActiveNode.Run();
+                if (_active.OnNodeStart != null)
+                    _active.OnNodeStart.Invoke(_active);
+                return _active.ActiveNode.Behavior;
+            }
+            
+            BotMain.StatusText = _active.ActiveNode.StatusText;
+
+            // 3. We're currently processing a QueueItem
+            // And the current node is Done
+            if (_active.ActiveNode.IsDone)
+            {
+                // 3.1 Handle ActiveNode has finished                
+                _active.CompletedNodes++;
+                _active.ActiveNode.OnDone();
+                Logger.Verbose("[{0}] Complete {1}/{2}", _active.Name, _active.CompletedNodes, _active.Nodes.Count);
+                if (_active.OnNodeDone != null)
+                    _active.OnNodeDone.Invoke(_active);
+                
+                // 3.2 All nodes are finished, so the QueueItem is now Done.
+                if (_active.IsComplete)
+                {
+                    // 3.2.1 Handle all nodes are finished
+                    if (_active.OnDone != null)
+                        _active.OnDone.Invoke(_active);                    
+                    Logger.Verbose("[{1}] Completed {0}", _active.CompletedNodes, _active.Name);                    
+
+                    // 3.2.2 Traverse Upwards
+                    // If this QueueItem is a child, we need to continue with its parent
+                    // Parent gets taken off the shelf (unpaused) and set as the new active Queueitem.
+                    var parent = Shelf.FirstOrDefault(i => i.ParentOf == _active.Id);
+                    Logger.Verbose("All Nodes Complete ParentId={0} ThisId={1}", parent != null ? parent.Id.ToString() : "Null", _active.Id );
+                    if (parent != null)
+                    {
+                        _active = parent;
+                        Shelf.Remove(parent);
+                        Logger.Verbose("ShelfCount={0}", Shelf.Count);
+                        return Loop;
+                    }
+
+                    // 3.2.3 Shove it back at the bottom of the queue if it should be repeated
+                    if (_active.Repeat)
+                    {
+                        var temp = _active;
+                        _active.Reset();
+                        _active = null;
+                        Queue(temp);
+                        CheckConditions();
+                        return Loop;
+                    }
+
+                    // 3.2.4 No parent, No Repeat, so just end the QueueItem 
+                    _active = null;
+                    CheckConditions();
+                    return Loop;
+                }
+
+                // 3.3 Handle start of next node
+                var currentPosition = _active.Nodes.IndexOf(_active.ActiveNode);
+                _active.ActiveNode = _active.Nodes.ElementAt(currentPosition + 1);
+                _active.ActiveNode.Run();
+                if (_active.OnNodeStart != null)
+                    _active.OnNodeStart.Invoke(_active);
+                return _active.ActiveNode.Behavior;
+            }
+
+            // 4.1 Traverse Downwards
+            // We're currently processing a QueueItem
+            // And the current node is NOT Done
+            // And the current node has children
+            Logger.Verbose("ShelfCount={0}", Shelf.Count);
+            var children = _active.ActiveNode.GetChildren();
+            if (children.Count > 0)
+            {
+                Logger.Log("Processing {0} Children of '{1}' ({2})", children.Count, _active.Name, _active.Id);
+
+                // Copy QueueItem so we can resume it later.
+                var queueItemToShelve = _active;
+
+                // Wrap the children as a new QueueItem                
+                var childQueueItem = new QueueItem
+                {
+                    Name = string.Format("Children of {0}", _active.Name),
+                    Nodes = _active.ActiveNode.GetChildren()                    
+                };
+
+                // Store a references between parent and child
+                queueItemToShelve.ParentOf = childQueueItem.Id;
+                childQueueItem.ChildOf = _active.Id;
+
+                // Pause the active QueueItem by moving it to the shelf
+                Shelf.Add(queueItemToShelve);
+
+                // Start working on the children.
+                _active = childQueueItem;
+                return Loop;
+            }
+
+            // Handle continuing an in-progress Node
+            LogBehavior(_active);
+            return _active.ActiveNode.Behavior;
+        
         }
 
         private static Composite Continue
@@ -268,12 +316,12 @@ namespace QuestTools.Helpers
         private static void OnStartHandler(IBot bot)
         {
             InsertHooks();
-            Reset();
+            Reset(true);
         }
 
         private static void OnGameChangedHandler(object sender, EventArgs eventArgs)
         {
-            Reset();
+            Reset(true);
         }
 
         private static void OnHooksClearedHandler(object sender, EventArgs eventArgs)
@@ -338,9 +386,15 @@ namespace QuestTools.Helpers
             }
         }
 
-        public static void Reset()
+        public static void Reset(bool forceClearAll = false)
         {
-            Q.Clear();
+            if (forceClearAll)
+                Q.Clear();
+            else
+                Q.RemoveAll(i => !i.Persist);
+
+            Shelf.Clear();
+
             _active = null;
         }
 
@@ -374,6 +428,16 @@ namespace QuestTools.Helpers
 
         public QueueItemDelegate OnStart { get; set; }
 
+        public bool ConditionPassed { get; set; }
+
+        public bool Persist { get; set; }
+
+        public int ParentOf { get; set; }
+
+        public int ChildOf { get; set; }
+
+        public bool Repeat { get; set; }
+
         public List<ProfileBehavior> Nodes
         {
             get { return _nodes; }
@@ -395,7 +459,15 @@ namespace QuestTools.Helpers
             return Id;
         }
 
-        public bool ConditionPassed { get; set; }
+        public void Reset()
+        {
+            ActiveNode = null;
+            ConditionPassed = false;
+            CompletedNodes = 0;
+            ChildOf = 0;
+            ParentOf = 0;
+            Nodes.ForEach(n => n.ResetCachedDone(true));
+        }
     }
 
     public class QueueItemEqualityComparer : IEqualityComparer<QueueItem>

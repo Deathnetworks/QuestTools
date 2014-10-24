@@ -36,12 +36,12 @@ namespace QuestTools.ProfileTags
             return new ActionRunCoroutine(ret => CompleteGreaterRiftRoutine());
         }
 
-        public UIElement VendorDialog { get { return UIElement.FromHash(0x244BD04C84DF92F1); } }
-        public UIElement UpgradeKeystoneButton { get { return UIElement.FromHash(0x4BDE2D63B5C36134); } }
-        public UIElement UpgradeGemButton { get { return UIElement.FromHash(0x826E5716E8D4DD05); } }
-        public UIElement ContinueButton { get { return UIElement.FromHash(0x1A089FAFF3CB6576); } }
-        public UIElement UpgradeButton { get { return UIElement.FromHash(0xD365EA84F587D2FE); } }
-        public UIElement VendorCloseButton { get { return UIElement.FromHash(0xF98A8466DE237BD5); } }
+        public static UIElement VendorDialog { get { return UIElement.FromHash(0x244BD04C84DF92F1); } }
+        public static UIElement UpgradeKeystoneButton { get { return UIElement.FromHash(0x4BDE2D63B5C36134); } }
+        public static UIElement UpgradeGemButton { get { return UIElement.FromHash(0x826E5716E8D4DD05); } }
+        public static UIElement ContinueButton { get { return UIElement.FromHash(0x1A089FAFF3CB6576); } }
+        public static UIElement UpgradeButton { get { return UIElement.FromHash(0xD365EA84F587D2FE); } }
+        public static UIElement VendorCloseButton { get { return UIElement.FromHash(0xF98A8466DE237BD5); } }
 
         public async Task<bool> CompleteGreaterRiftRoutine()
         {

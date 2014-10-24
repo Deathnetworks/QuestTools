@@ -218,6 +218,7 @@ namespace QuestTools.ProfileTags.Movement
             _lastGeneratedNavPoint = DateTime.MinValue;
             _lastMoveResult = MoveResult.Moved;
             _tagStartTime = DateTime.MinValue;
+            base.ResetCachedDone();
         }
 
         #region IEnhancedProfileBehavior
