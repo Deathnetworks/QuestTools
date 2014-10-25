@@ -125,9 +125,9 @@ namespace QuestTools.ProfileTags.Beta
                     persistedTimings.Add(t);
             });
 
-            Save(persistedTimings);
-
-            Reset();            
+            if(Save(persistedTimings))
+                Reset();   
+         
         }
 
         /// <summary>
