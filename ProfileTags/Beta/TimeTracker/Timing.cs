@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using QuestTools.Helpers;
 using Zeta.Common;
@@ -25,7 +26,6 @@ namespace QuestTools.ProfileTags.Beta
         public int MinTimeSeconds = 0;
         public int FailedCount = 0;
         public int ObjectiveCount = 0;
-        public double ObjectivePercent = 0;
         public bool AllowResetStartTime = false;
         public bool IsDirty = false;
         public bool ObjectiveComplete = false;
@@ -50,6 +50,11 @@ namespace QuestTools.ProfileTags.Beta
                 }
                 return 0;
             }
+        }
+
+        public double ObjectivePercent
+        {
+            get { return (TimesTimed > 0) ? (float) ObjectiveCount/(float) TimesTimed*100 : 0; }
         }
 
         /// <summary>
@@ -83,6 +88,19 @@ namespace QuestTools.ProfileTags.Beta
         }
 
         /// <summary>
+        /// Adds this timer to another timer
+        /// </summary>
+        public Timing Add(Timing timer)
+        {
+            timer.TimesTimed += this.TimesTimed;
+            timer.TotalTimeSeconds += this.TotalTimeSeconds;
+            timer.MaxTimeSeconds = this.MaxTimeSeconds > timer.MaxTimeSeconds ? this.MaxTimeSeconds : timer.MaxTimeSeconds;
+            timer.MinTimeSeconds = timer.MinTimeSeconds == 0 || this.MinTimeSeconds < timer.MinTimeSeconds ? this.MinTimeSeconds : timer.MinTimeSeconds;
+            timer.ObjectiveCount = this.ObjectiveCount >= timer.ObjectiveCount ? this.ObjectiveCount : timer.ObjectiveCount;
+            return timer;
+        }
+
+        /// <summary>
         /// Update statistics for the timer
         /// </summary>
         public void Update()
@@ -92,7 +110,6 @@ namespace QuestTools.ProfileTags.Beta
             MaxTimeSeconds = (int)Elapsed.TotalSeconds > MaxTimeSeconds ? (int)Elapsed.TotalSeconds : MaxTimeSeconds;
             MinTimeSeconds = MinTimeSeconds == 0 || (int)Elapsed.TotalSeconds < MinTimeSeconds ? (int)Elapsed.TotalSeconds : MinTimeSeconds;
             ObjectiveCount = ObjectiveComplete ? ObjectiveCount + 1 : ObjectiveCount;
-            ObjectivePercent = (TimesTimed > 0) ? (float)ObjectiveCount / (float)TimesTimed * 100 : 0;
         }
 
         /// <summary>

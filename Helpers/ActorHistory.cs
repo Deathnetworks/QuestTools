@@ -79,7 +79,7 @@ namespace QuestTools.Helpers
 
         public static void UpdateActors()
         {
-            if (DateTime.UtcNow.Subtract(_lastChangeCheckTime).TotalMilliseconds < 500)
+            if (DateTime.UtcNow.Subtract(_lastChangeCheckTime).TotalMilliseconds < 250)
                 return;
 
             _lastChangeCheckTime = DateTime.UtcNow;

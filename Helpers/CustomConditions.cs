@@ -177,6 +177,11 @@ namespace QuestTools
             return UseOnceTag.UseOnceIDs.Contains(id);
         }
 
+        public static bool HasBeenOperated(int actorId)
+        {
+            var actor = ZetaDia.Actors.GetActorsOfType<DiaGizmo>().FirstOrDefault(a => a.ActorSNO == actorId);
+            return actor != null && actor.HasBeenOperated;
+        }
 
     }
 }

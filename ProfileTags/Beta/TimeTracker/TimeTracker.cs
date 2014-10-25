@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using QuestTools.Helpers;
 using Zeta.Bot;
@@ -15,7 +16,7 @@ namespace QuestTools.ProfileTags.Beta
     public static class TimeTracker
     {
         public static List<Timing> Timings = new List<Timing>();
-        private static string _filePath = Path.Combine(FileManager.LoggingPath, String.Format("TimeTracker.csv"));
+        private static readonly string FilePath = Path.Combine(FileManager.LoggingPath, String.Format("TimeTracker.csv"));
         internal static DateTime LastLoad { get; set; }
         internal static DateTime LastSave { get; set; }
         private static bool Initialized { get; set; }
@@ -27,7 +28,6 @@ namespace QuestTools.ProfileTags.Beta
                 return;
             
             WireUp();
-            Load();
             Initialized = true;            
         }
 
@@ -45,7 +45,7 @@ namespace QuestTools.ProfileTags.Beta
         private static DateTime _lastPulse = DateTime.MinValue;
         private static void PulsatorOnOnPulse(object sender, EventArgs eventArgs)
         {
-            if (!QuestToolsSettings.Instance.DebugEnabled || DateTime.UtcNow.Subtract(_lastPulse).TotalMilliseconds < 30000 || !Timings.Any(t => t.IsRunning))
+            if (!QuestToolsSettings.Instance.DebugEnabled || DateTime.UtcNow.Subtract(_lastPulse).TotalMilliseconds < 15000 || !Timings.Any(t => t.IsRunning))
                 return;
 
             _lastPulse = DateTime.UtcNow;
@@ -68,7 +68,7 @@ namespace QuestTools.ProfileTags.Beta
         /// </summary>
         private static void PersistentTiming_OnStart(IBot bot)
         {
-            Load();
+
         }
 
         /// <summary>
@@ -76,15 +76,29 @@ namespace QuestTools.ProfileTags.Beta
         /// </summary>
         private static void PersistentTiming_OnStop(IBot bot)
         {
-            Save();
-            Reset();
-        }
+            LoadUpdateAndSaveTimings();
+        }        
 
         /// <summary>
         /// Handle when the game is 'reset' - (leaving game and starting a new one)
         /// </summary>
         private static void PersistentTiming_OnGameChanged(object sender, EventArgs e)
         {
+            LoadUpdateAndSaveTimings();
+        }
+
+        public static void LoadUpdateAndSaveTimings()
+        {
+            if (!Timings.Any())
+                return;
+
+            var persistedTimings = Load();
+
+            Logger.Debug("Loaded");
+
+            if (!persistedTimings.Any())
+                Logger.Debug("No existing timings were loaded");
+
             // Mark any unfinished timers from last game as failed
             Timings.ForEach(t =>
             {
@@ -98,7 +112,22 @@ namespace QuestTools.ProfileTags.Beta
                 }
             });
 
-            Save();
+            // Update the loaded timings with this sessions data.
+            Timings.ForEach(t =>
+            {
+                t.DebugPrint("Merging: ");
+
+                var pTiming = persistedTimings.FirstOrDefault(t1 => t1.Name == t.Name && (string.IsNullOrEmpty(t1.Group) || t1.Group == t.Group));
+
+                if (pTiming != null)
+                    t.Add(pTiming);
+                else
+                    persistedTimings.Add(t);
+            });
+
+            Save(persistedTimings);
+
+            Reset();            
         }
 
         /// <summary>
@@ -227,27 +256,26 @@ namespace QuestTools.ProfileTags.Beta
             "ObjectivePercent"
         );
 
-
-
         /// <summary>
         /// Load timing data from file
         /// </summary>
-        private static void Load()
+        private static List<Timing> Load()
         {
             Logger.Debug(">> Loading Timings");
             var output = new List<Timing>();
             try
             {
-                if (File.Exists(_filePath))
+                if (File.Exists(FilePath) && LockManager.GetLock())
                 {
-                    var lines = File.ReadAllLines(_filePath);
+                    var lines = File.ReadAllLines(FilePath);
 
-                     // If file format doesnt match, ignore and abort, data will be lost on save.
-                    if (lines.First() != FileHeaderLabels)
+                    // Check file format; .Contains avoids having to filter out BOM
+                    if (lines.First().Contains(FileHeaderLabels))
                     {
+                        Logger.Log("{0}", lines.First());
+                        Logger.Log("{0}", FileHeaderLabels);
                         Logger.Warn("TimeTracker.csv data format doesn't match, all old timing data will be lost on save");
-                        Reset();
-                        return;
+                        return output;
                     }
 
                     foreach (var line in lines.Skip(1))
@@ -257,13 +285,12 @@ namespace QuestTools.ProfileTags.Beta
                         {
                             Name = tokens[0],
                             Group = tokens[1],
-                            MinTimeSeconds = tokens[2].ChangeType<int>(),
-                            MaxTimeSeconds = tokens[3].ChangeType<int>(),
-                            TimesTimed = tokens[4].ChangeType<int>(),
-                            TotalTimeSeconds = tokens[5].ChangeType<int>(),
-                            FailedCount = tokens[6].ChangeType<int>(),
-                            ObjectiveCount = tokens[7].ChangeType<int>(),
-                            ObjectivePercent = tokens[8].ChangeType<double>(),
+                            MinTimeSeconds = tokens[3].ChangeType<int>(),
+                            MaxTimeSeconds = tokens[4].ChangeType<int>(),
+                            TimesTimed = tokens[5].ChangeType<int>(),
+                            TotalTimeSeconds = tokens[6].ChangeType<int>(),
+                            FailedCount = tokens[7].ChangeType<int>(),
+                            ObjectiveCount = tokens[8].ChangeType<int>()
                         };
                         t.DebugPrint("Loaded: ");
                         output.Add(t);
@@ -271,66 +298,126 @@ namespace QuestTools.ProfileTags.Beta
                     LastLoad = DateTime.UtcNow;
                     _loadFailed = false;
                 }
-                Timings = output;
+                else
+                {
+                    LockManager.ReleaseLock();
+                }
             }
             catch (Exception ex)
             {
                 Logger.Log("Load Exception, data will not be saved this game: {0}", ex);
                 _loadFailed = true;
-            }
-
+                LockManager.ReleaseLock();
+            }            
+            return output;
         }
 
         /// <summary>
         /// Save timing data to a file
         /// </summary>
-        public static bool Save()
+        public static bool Save(List<Timing> timings)
         {
             Logger.Debug(">> Saving Timings");
             var saved = false;
 
             try
             {
-                if (_loadFailed)
-                    return false;
-
-                if (File.Exists(_filePath))
-                {
-                    Logger.Debug("Timings File Exists at {0}, Overwriting!", _filePath);
-                    File.Delete(_filePath);
-                }
-
-                using (var w = new StreamWriter(_filePath, true))
-                {
-                    w.Write(FileHeaderLabels);
-                    Timings.ForEach(t =>
+                if (timings.Any() && LockManager.GetLock())
+                {                        
+                    if (File.Exists(FilePath))
                     {
-                        var line = String.Format(FileFieldFormat,
-                            t.Name,
-                            t.Group,
-                            t.TimeAverageSeconds,
-                            t.MinTimeSeconds,
-                            t.MaxTimeSeconds,
-                            t.TimesTimed,
-                            t.TotalTimeSeconds,
-                            t.FailedCount,  
-                            t.ObjectiveCount,
-                            t.ObjectivePercent
-                        );
-                        t.DebugPrint("Saving: ");
-                        t.IsDirty = false;
-                        w.Write(line);
-                    });
-                }
-                saved = true;
-                LastSave = DateTime.UtcNow;
+                        Logger.Debug("Timings File Exists at {0}, Overwriting!", FilePath);
+                        File.Delete(FilePath);
+                    }
+
+                    using (var w = new StreamWriter(FilePath, true))
+                    {
+                        w.Write(FileHeaderLabels);
+                        timings.ForEach(t =>
+                        {
+                            var line = String.Format(FileFieldFormat,
+                                t.Name,
+                                t.Group,
+                                t.TimeAverageSeconds,
+                                t.MinTimeSeconds,
+                                t.MaxTimeSeconds,
+                                t.TimesTimed,
+                                t.TotalTimeSeconds,
+                                t.FailedCount,
+                                t.ObjectiveCount,
+                                t.ObjectivePercent
+                                );
+                            t.DebugPrint("Saving: ");
+                            t.IsDirty = false;
+                            w.Write(line);
+                        });
+                    }
+                    saved = true;
+                    LastSave = DateTime.UtcNow;
+                }               
             }
             catch (Exception ex)
             {
                 Logger.Log("Exception Saving Timer File: {0}", ex);
             }
+            finally
+            {
+                LockManager.ReleaseLock();             
+            }
             return saved;
         }
+
+        /// <summary>
+        /// Ensures multiple bots dont mess each other up or the stats when trying to access the same file.
+        /// </summary>
+        internal class LockManager
+        {
+            internal static bool HasLock { get; private set; }
+
+            private static readonly string FileLockPath = Path.Combine(FileManager.LoggingPath, String.Format("TimeTracker.lock"));
+
+            internal static bool GetLock()
+            {
+                if (HasLock && File.Exists(FileLockPath))
+                    return true;
+
+                if (!WaitForLock())
+                    return false;
+
+                File.Create(FileLockPath).Close();
+
+                if (!File.Exists(FileLockPath))
+                    return false;
+
+                HasLock = true;
+                return true;
+            }
+
+            internal static bool WaitForLock()
+            {
+                var startTime = DateTime.UtcNow;
+                while (File.Exists(FileLockPath))
+                {
+                    if (DateTime.UtcNow.Subtract(startTime).TotalSeconds > 10)
+                    {
+                        Logger.Error("Timed out waiting for file lock on {0}", FilePath);
+                        return false;
+                    }
+                    Logger.Debug("Waiting for {0} to become available", FilePath);
+                    Thread.Sleep(50);
+                }
+                return true;
+            }
+
+            internal static void ReleaseLock()
+            {
+                if (File.Exists(FileLockPath) && HasLock)
+                    File.Delete(FileLockPath);
+
+                HasLock = false;
+            }
+        }
+
     }
 
 }
