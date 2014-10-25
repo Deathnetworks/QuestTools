@@ -31,16 +31,22 @@ namespace QuestTools.ProfileTags.Beta
         [XmlAttribute("group")]
         public string Group { get; set; }
 
+        /// <summary>
+        /// Flags the timer as successfull in finding an objective
+        /// </summary>
+        [XmlAttribute("objectiveFound")]
+        public bool ObjectiveFound { get; set; }
+
         protected override Composite CreateBehavior()
         {
             return new Sequence(
                 new PrioritySelector(
 
                     new Decorator(ret => Name != null,
-                        new Action(ret => TimeTracker.StopTimer(Name))),
+                        new Action(ret => TimeTracker.StopTimer(Name, ObjectiveFound))),
 
                     new Decorator(ret => Group != null,
-                        new Action(ret => TimeTracker.StopGroup(Group)))
+                        new Action(ret => TimeTracker.StopGroup(Group, ObjectiveFound)))
 
                 ),
                 new Action(ret => _isDone = true)

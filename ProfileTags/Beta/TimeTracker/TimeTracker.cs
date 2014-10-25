@@ -19,6 +19,7 @@ namespace QuestTools.ProfileTags.Beta
         internal static DateTime LastLoad { get; set; }
         internal static DateTime LastSave { get; set; }
         private static bool Initialized { get; set; }
+        private static bool _loadFailed;
 
         static TimeTracker()
         {
@@ -37,7 +38,19 @@ namespace QuestTools.ProfileTags.Beta
         {
             BotMain.OnStart += PersistentTiming_OnStart;
             BotMain.OnStop += PersistentTiming_OnStop;
+            Pulsator.OnPulse += PulsatorOnOnPulse;
             GameEvents.OnGameChanged += PersistentTiming_OnGameChanged;
+        }
+
+        private static DateTime _lastPulse = DateTime.MinValue;
+        private static void PulsatorOnOnPulse(object sender, EventArgs eventArgs)
+        {
+            if (!QuestToolsSettings.Instance.DebugEnabled || DateTime.UtcNow.Subtract(_lastPulse).TotalMilliseconds < 30000 || !Timings.Any(t => t.IsRunning))
+                return;
+
+            _lastPulse = DateTime.UtcNow;
+            Logger.Debug("----- Timings Total={0} Running={1} ChangedSinceLoad={2} -----", Timings.Count, Timings.Count(t => t.IsRunning), Timings.Count(t => t.IsDirty));
+            Timings.ForEach(t => t.DebugPrint());
         }
 
         /// <summary>
@@ -72,20 +85,20 @@ namespace QuestTools.ProfileTags.Beta
         /// </summary>
         private static void PersistentTiming_OnGameChanged(object sender, EventArgs e)
         {
-            Logger.Log("Game Changed");
-
-            // Mark any partially finished timers from last game as failed
+            // Mark any unfinished timers from last game as failed
             Timings.ForEach(t =>
             {
-                if (t.IsDirty)
+                if (t.IsRunning)
                 {
+                    if (QuestToolsSettings.Instance.DebugEnabled)
+                        Logger.Debug("Found a timer still running '{0}', stopping it and marking as failed", t.Name);
+
                     t.FailedCount++;
+                    t.Stop();
                 }
             });
 
             Save();
-            
-            Timings.Clear();
         }
 
         /// <summary>
@@ -107,13 +120,17 @@ namespace QuestTools.ProfileTags.Beta
                 timing.Start();
                 timing.IsDirty = true;
                 Timings.Add(timing);
-                Logger.Debug("Starting Timer (New) '{0}' Group:{1} {2} ({3})", timing.Name, timing.Group, timing.QuestName, timing.QuestId);
+                
+                if (QuestToolsSettings.Instance.DebugEnabled)
+                    Logger.Debug("Starting Timer (New) Name={0} Group={1}", timing.Name, timing.Group);
             }
             else
             {
                 existingTimer.Start();
                 existingTimer.IsDirty = true;
-                Logger.Debug("Starting Timer (Known) '{0}' Group:{1} {2} ({3})", timing.Name, timing.Group, timing.QuestName, timing.QuestId);
+
+                if (QuestToolsSettings.Instance.DebugEnabled)
+                    Logger.Debug("Starting Timer (Known) '{0}' Group:{1}", timing.Name, timing.Group);
 
             }
         }
@@ -121,19 +138,25 @@ namespace QuestTools.ProfileTags.Beta
         /// <summary>
         /// Stop a timer
         /// </summary>
-        public static bool StopTimer(string timerName)
+        public static bool StopTimer(string timerName, bool objectiveFound)
         {
             var found = false;
-            Logger.Debug("Stopping Timer: {0}", timerName);
+
+            if (QuestToolsSettings.Instance.DebugEnabled)
+                Logger.Debug("Stopping Timer Name={0}", timerName);
+
             Timings.ForEach(t =>
             {
-                if (t.Name == timerName && t.IsRunning)
-                {
-                    found = true;
-                    t.Update();
-                    t.PrintSimple();
-                    t.Stop();
-                }
+                if (t.Name != timerName || !t.IsRunning) 
+                    return;
+
+                found = true;
+                t.ObjectiveComplete = objectiveFound;
+                t.DebugPrint("Pre-Update");
+                t.Update();
+                t.DebugPrint("Post-Update");
+                t.PrintSimple();
+                t.Stop();
             });
             return found;
         }
@@ -141,19 +164,25 @@ namespace QuestTools.ProfileTags.Beta
         /// <summary>
         /// Stop all timers that are part of a group
         /// </summary>
-        public static bool StopGroup(string groupName)
+        public static bool StopGroup(string groupName, bool objectiveFound)
         {
             var found = false;
-            Logger.Debug("Stopping Group: {0}", groupName);
+            
+            if (QuestToolsSettings.Instance.DebugEnabled)
+                Logger.Debug("Stopping Timers Group={0}", groupName);
+            
             Timings.ForEach(t =>
             {
-                if (t.Group == groupName && t.IsRunning)
-                {
-                    found = true;
-                    t.Update();
-                    t.PrintSimple();
-                    t.Stop();
-                }
+                if (t.Group != groupName || !t.IsRunning) 
+                    return;
+
+                found = true;
+                t.ObjectiveComplete = objectiveFound;
+                t.DebugPrint("Pre-Update");
+                t.Update();
+                t.DebugPrint("Post-Update");
+                t.PrintSimple();
+                t.Stop();
             });
             return found;
         }
@@ -161,22 +190,44 @@ namespace QuestTools.ProfileTags.Beta
         /// <summary>
         /// Stop all timers
         /// </summary>
-        public static bool StopAll()
+        public static bool StopAll(bool objectiveFound)
         {
             var found = false;
-            Logger.Debug("Stopping All");
+
+            if (QuestToolsSettings.Instance.DebugEnabled)
+                Logger.Debug("Stopping All");
+
             Timings.ForEach(t =>
             {
-                if (t.IsRunning)
-                {
-                    found = true;
-                    t.Update();
-                    t.PrintSimple();
-                    t.Stop();
-                }
+                if (!t.IsRunning) return;
+
+                found = true;
+                t.ObjectiveComplete = objectiveFound;
+                t.DebugPrint("Pre-Update");
+                t.Update();
+                t.DebugPrint("Post-Update");
+                t.PrintSimple();
+                t.Stop();
             });
             return found;
         }
+
+        private const string FileFieldFormat = "{0},{1},{2},{3},{4},{5},{6},{7},{8},{9}\r\n";
+
+        private static readonly string FileHeaderLabels = String.Format(FileFieldFormat,
+            "Name",
+            "Group",
+            "TimeAverageSeconds",
+            "MinTimeSeconds",
+            "MaxTimeSeconds",
+            "TimesTimed",
+            "TotalTimeSeconds",
+            "FailedCount",
+            "ObjectiveCount",
+            "ObjectivePercent"
+        );
+
+
 
         /// <summary>
         /// Load timing data from file
@@ -189,32 +240,43 @@ namespace QuestTools.ProfileTags.Beta
             {
                 if (File.Exists(_filePath))
                 {
-                    foreach (var line in File.ReadAllLines(_filePath).Skip(1))
+                    var lines = File.ReadAllLines(_filePath);
+
+                     // If file format doesnt match, ignore and abort, data will be lost on save.
+                    if (lines.First() != FileHeaderLabels)
+                    {
+                        Logger.Warn("TimeTracker.csv data format doesn't match, all old timing data will be lost on save");
+                        Reset();
+                        return;
+                    }
+
+                    foreach (var line in lines.Skip(1))
                     {
                         var tokens = line.Split(',');
                         var t = new Timing
                         {
                             Name = tokens[0],
-                            QuestId = tokens[1].ChangeType<int>(),
-                            QuestName = tokens[2],
-                            QuestIsBounty = tokens[3].ChangeType<Boolean>(),
-                            MinTimeSeconds = tokens[5].ChangeType<int>(),
-                            MaxTimeSeconds = tokens[6].ChangeType<int>(),
-                            TimesTimed = tokens[7].ChangeType<int>(),
-                            TotalTimeSeconds = tokens[8].ChangeType<int>(),
-                            Group = tokens[9],
-                            FailedCount = tokens[10].ChangeType<int>(),
+                            Group = tokens[1],
+                            MinTimeSeconds = tokens[2].ChangeType<int>(),
+                            MaxTimeSeconds = tokens[3].ChangeType<int>(),
+                            TimesTimed = tokens[4].ChangeType<int>(),
+                            TotalTimeSeconds = tokens[5].ChangeType<int>(),
+                            FailedCount = tokens[6].ChangeType<int>(),
+                            ObjectiveCount = tokens[7].ChangeType<int>(),
+                            ObjectivePercent = tokens[8].ChangeType<double>(),
                         };
-                        t.Print("Loaded: ");
+                        t.DebugPrint("Loaded: ");
                         output.Add(t);
                     }
                     LastLoad = DateTime.UtcNow;
+                    _loadFailed = false;
                 }
                 Timings = output;
             }
             catch (Exception ex)
             {
-                Logger.Log("Load Exception: {0}", ex);
+                Logger.Log("Load Exception, data will not be saved this game: {0}", ex);
+                _loadFailed = true;
             }
 
         }
@@ -229,50 +291,33 @@ namespace QuestTools.ProfileTags.Beta
 
             try
             {
+                if (_loadFailed)
+                    return false;
+
                 if (File.Exists(_filePath))
                 {
-                    //Logger.Log("File Exists, Deleting");
+                    Logger.Debug("Timings File Exists at {0}, Overwriting!", _filePath);
                     File.Delete(_filePath);
                 }
 
                 using (var w = new StreamWriter(_filePath, true))
                 {
-                    var line = string.Empty;
-                    var format = "{0},{1},{2},{3},{4},{5},{6},{7},{8},{9},{10}\r\n";
-
-                    var headerline = String.Format(format,
-                        "Name",
-                        "QuestId",
-                        "QuestName",
-                        "QuestIsBounty",
-                        "TimeAverageSeconds",
-                        "MinTimeSeconds",
-                        "MaxTimeSeconds",
-                        "TimesTimed",
-                        "TotalTimeSeconds",
-                        "Group",
-                        "FailedCount"
-                    );
-
-                    w.Write(headerline);
-
+                    w.Write(FileHeaderLabels);
                     Timings.ForEach(t =>
                     {
-
-                        line = String.Format(format,
+                        var line = String.Format(FileFieldFormat,
                             t.Name,
-                            t.QuestId,
-                            t.QuestName,
-                            t.QuestIsBounty,
+                            t.Group,
                             t.TimeAverageSeconds,
                             t.MinTimeSeconds,
                             t.MaxTimeSeconds,
                             t.TimesTimed,
                             t.TotalTimeSeconds,
-                            t.Group,
-                            t.FailedCount
+                            t.FailedCount,  
+                            t.ObjectiveCount,
+                            t.ObjectivePercent
                         );
-                        t.Print("Saving: ");
+                        t.DebugPrint("Saving: ");
                         t.IsDirty = false;
                         w.Write(line);
                     });
