@@ -1,148 +1,129 @@
-﻿//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using Zeta.Bot;
-//using Zeta.Bot.Navigation;
-//using Zeta.Bot.Profile;
-//using Zeta.Common;
-//using Zeta.Game;
-//using Zeta.TreeSharp;
-//using Zeta.XmlEngine;
-//using Action = Zeta.TreeSharp.Action;
+﻿using QuestTools.Helpers;
+using QuestTools.ProfileTags.Complex;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Zeta.Bot.Profile;
+using Zeta.Common;
+using Zeta.Game;
+using Zeta.Game.Internals.SNO;
+using Zeta.TreeSharp;
+using Zeta.XmlEngine;
+using Action = Zeta.TreeSharp.Action;
 
-//namespace QuestTools.ProfileTags.Complex
-//{
-//    /// <summary>
-//    /// Run a circle around the current location then return to starting point
-//    /// </summary>
-//    [XmlElement("RandomMoveTo")]
-//    public class RandomMoveTo : ProfileBehavior, IEnhancedProfileBehavior
-//    {
-//        private bool _isDone;
+namespace QuestTools.ProfileTags
+{
+    /// <summary>
+    /// Move to a random valid location from current position without using navigation or pathfinding.
+    /// </summary>
+    [XmlElement("RandomMove")]
+    public class RandomMoveTag : ProfileBehavior, IEnhancedProfileBehavior
+    {
+        [XmlAttribute("radius")]
+        public int Radius { get; set; }
 
-//        private List<Vector3> _points;
-//        private DefaultNavigationProvider _navigator;
+        /// <summary>
+        /// This is the longest time this behavior can run for. Default is 15 seconds.
+        /// </summary>
+        [XmlAttribute("timeout")]
+        public int Timeout { get; set; }
 
-//        [XmlAttribute("radius")]
-//        public int Radius { get; set; }
+        private bool _isDone;
+        private List<Vector3> _points = new List<Vector3>();
+        private DateTime _startTime = DateTime.MaxValue;
+        public int Points = 12;
 
-//        [XmlAttribute("points")]
-//        public int Points { get; set; }
+        public override bool IsDone
+        {
+            get
+            {
+                var done = _isDone || !IsActiveQuestStep;
+                CheckTimeout();
+                return done;
+            }
+        }
 
-//        [XmlAttribute("pathPrecision")]
-//        public float PathPrecision { get; set; }
+        public void CheckTimeout()
+        {
+            if (DateTime.UtcNow.Subtract(_startTime).TotalSeconds <= Timeout)
+                return;
 
-//        public override bool IsDone
-//        {
-//            get { return QuestId > 0 && !IsActiveQuestStep || _isDone; }
-//        }
+            Logger.Log("timed out ({0} seconds)", Timeout);
+            _isDone = true;
+        }
 
-//        private static Random rnd = new Random();
+        public RandomMoveTag()
+        {
+            QuestId = QuestId <= 0 ? 1 : QuestId;
+            Radius = Radius < 10 ? 60 : Radius;
+            Timeout = Timeout <= 0 ? 15 : Timeout;
+        }
 
-//        public override void OnStart()
-//        {
-//            _navigator = Navigator.GetNavigationProviderAs<DefaultNavigationProvider>();
+        public override void OnStart()
+        {
+            _startTime = DateTime.UtcNow;
+            _points = ProfileUtils.GetCirclePoints(Points, Radius, ZetaDia.Me.Position);
+            ProfileUtils.RandomShuffle(_points);
+            base.OnStart();
+        }
 
-//            Radius = Radius < 10 ? 10 : Radius;
-//            Points = Points < 4 || Points > 30 ? 10 : Points;
-//            PathPrecision = PathPrecision < 2f ? 5f : PathPrecision;
+        private DateTime _lastMoving = DateTime.MinValue;
 
-//            _points = GetCirclePoints(Points, Radius, ZetaDia.Me.Position);
+        protected override Composite CreateBehavior()
+        {
+            return new Decorator(ret => !_isDone, 
 
-//            _points.RemoveAll(p => !_navigator.CanPathWithinDistance(_points.First(), PathPrecision));
+                new Action(ret =>
+                {
+                    if(!_points.Any() || ProfileUtils.IsWithinRange(_points.First()))
+                    {
+                        _isDone = true;
+                        return RunStatus.Failure;
+                    }
 
-//            RandomShuffle(_points);
+                    if (ZetaDia.Me.Movement.IsMoving)
+                        _lastMoving = DateTime.UtcNow;
 
-//            base.OnStart();
-//        }
+                    var rayResult = ZetaDia.Physics.Raycast(ZetaDia.Me.Position, _points.First(), NavCellFlags.AllowWalk);
 
-//        protected override Composite CreateBehavior()
-//        {
-//            return new Decorator(ret => !_isDone, new Sequence(
+                    if (DateTime.UtcNow.Subtract(_lastMoving).TotalMilliseconds > 500 || !rayResult)
+                        _points.RemoveAt(0);
 
-//                new Decorator(ret => _points.First().Distance2D(ZetaDia.Me.Position) < 10f, CommonBehaviors.MoveTo(ret => _points)),
+                    if (_points.Any() && _points.First() != Vector3.Zero && ZetaDia.Me.Movement.MoveActor(_points.First()) == 1)
+                        return RunStatus.Success;
 
-//                new Decorator(ret => !IsReachable, new Action(ret => _points.RemoveAt(0))),
+                    _isDone = true;
+                    return RunStatus.Failure;
 
-//                new Decorator(ret => !_points.Any(), new Action(ret => _isDone = true))
+                })                
+            );
+        }
 
-//               )
-//            );
-//        }
+        public override void ResetCachedDone()
+        {
+            _points.Clear();
+            _startTime = DateTime.MaxValue;
+            _isDone = false;
+            base.ResetCachedDone();
+        }
 
-//        private bool IsReachable
-//        {
-//            get
-//            {
-//                if (_points.First().Distance2D(ZetaDia.Me.Position) < 8f)
-//                {
-//                    _isDone = true;
-//                    return false;
-//                }
-                    
+        #region IEnhancedProfileBehavior
 
-//                if (!_navigator.CanPathWithinDistance(_points.First(), PathPrecision) || Navigator.StuckHandler.IsStuck)
-//                    return false;
+        public void Update()
+        {
+            UpdateBehavior();
+        }
 
-//                return true;
-//            }
-//        }
+        public void Start()
+        {
+            OnStart();
+        }
 
-//        public static void RandomShuffle<T>(IList<T> list)
-//        {
-//            var rng = new Random();
-//            var n = list.Count;
-//            while (n > 1)
-//            {
-//                n--;
-//                var k = rng.Next(n + 1);
-//                var value = list[k];
-//                list[k] = list[n];
-//                list[n] = value;
-//            }
-//        }
+        public void Done()
+        {
+            _isDone = true;
+        }
 
-//        private List<Vector3> GetCirclePoints(int points, double radius, Vector3 center)
-//        {
-//            var result = new List<Vector3>();
-//            double slice = 2*Math.PI/points;
-//            for (int i = 0; i < points; i++)
-//            {
-//                double angle = slice*i;
-//                var newX = (int) (center.X + radius*Math.Cos(angle));
-//                var newY = (int) (center.Y + radius*Math.Sin(angle));
-
-//                var newpoint = new Vector3(newX, newY, center.Z);
-//                result.Add(newpoint);
-
-//                Logger.Debug("Calculated point {0}: {1}", i, newpoint.ToString());
-//            }
-//            return result;
-//        }
-
-//        public override void ResetCachedDone()
-//        {
-//            _isDone = false;
-//            base.ResetCachedDone();
-//        }
-
-//        #region IEnhancedProfileBehavior
-
-//        public void AsyncUpdateBehavior()
-//        {
-//            UpdateBehavior();
-//        }
-
-//        public void AsyncOnStart()
-//        {
-//            OnStart();
-//        }
-
-//        public void Done()
-//        {
-//            _isDone = true;
-//        }
-
-//        #endregion
-//    }
-//}
+        #endregion
+    }
+}

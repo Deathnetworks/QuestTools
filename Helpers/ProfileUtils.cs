@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Windows.Forms;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using log4net.Core;
@@ -7,16 +8,58 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Zeta.Bot;
+using Zeta.Bot.Navigation;
 using Zeta.Bot.Profile;
 using Zeta.Bot.Profile.Common;
 using Zeta.Bot.Profile.Composites;
 using Zeta.Bot.Settings;
+using Zeta.Common;
 using Zeta.Game;
+using Zeta.Game.Internals.SNO;
+using Zeta.TreeSharp;
+using Action = System.Action;
 
 namespace QuestTools.Helpers
 {
     internal class ProfileUtils
     {
+        public static bool IsWithinRange(Vector3 position, float range = 12f)
+        {
+            return position != Vector3.Zero && !(position.Distance2D(ZetaDia.Me.Position) > range);
+        }
+
+        public static void RandomShuffle<T>(IList<T> list)
+        {
+            var rng = new Random();
+            var n = list.Count;
+            while (n > 1)
+            {
+                n--;
+                var k = rng.Next(n + 1);
+                var value = list[k];
+                list[k] = list[n];
+                list[n] = value;
+            }
+        }
+
+        public static List<Vector3> GetCirclePoints(int points, double radius, Vector3 center)
+        {
+            var result = new List<Vector3>();
+            var slice = 2 * Math.PI / points;
+            for (var i = 0; i < points; i++)
+            {
+                var angle = slice * i;
+                var newX = (int)(center.X + radius * Math.Cos(angle));
+                var newY = (int)(center.Y + radius * Math.Sin(angle));
+
+                var newpoint = new Vector3(newX, newY, center.Z);
+                result.Add(newpoint);
+
+                Logger.Verbose("Calculated point {0}: {1}", i, newpoint.ToString());
+            }
+            return result;
+        }
+
         public static void LoadAdditionalGameParams()
         {           
             // Only worry about GameParams if we're about to start a new game

@@ -96,7 +96,7 @@ namespace QuestTools.ProfileTags.Beta
             timer.TotalTimeSeconds += this.TotalTimeSeconds;
             timer.MaxTimeSeconds = this.MaxTimeSeconds > timer.MaxTimeSeconds ? this.MaxTimeSeconds : timer.MaxTimeSeconds;
             timer.MinTimeSeconds = timer.MinTimeSeconds == 0 || this.MinTimeSeconds < timer.MinTimeSeconds ? this.MinTimeSeconds : timer.MinTimeSeconds;
-            timer.ObjectiveCount = this.ObjectiveCount >= timer.ObjectiveCount ? this.ObjectiveCount : timer.ObjectiveCount;
+            timer.ObjectiveCount = this.ObjectiveCount > timer.ObjectiveCount ? this.ObjectiveCount : timer.ObjectiveCount;
             return timer;
         }
 

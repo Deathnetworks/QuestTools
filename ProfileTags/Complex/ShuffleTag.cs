@@ -87,26 +87,14 @@ namespace QuestTools.ProfileTags.Complex
 
                 default:
 
-                    RandomShuffle(Body);
+                    ProfileUtils.RandomShuffle(Body);
                     break;
             }
 
             _shuffled = true;
         }
             
-        public static void RandomShuffle<T>(IList<T> list)
-        {
-            var rng = new Random();
-            var n = list.Count;
-            while (n > 1)
-            {
-                n--;
-                var k = rng.Next(n + 1);
-                var value = list[k];
-                list[k] = list[n];
-                list[n] = value;
-            }
-        }
+
 
         public override void ResetCachedDone()
         {
