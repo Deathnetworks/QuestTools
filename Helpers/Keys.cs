@@ -178,5 +178,19 @@ namespace QuestTools.Helpers
                 _interQuartileRange));            
         }
 
+        public static int GetKeyIdNotWithinRange(int range = 2)
+        {
+            Update();
+
+            foreach (var keyId in KeyIds)
+            {
+                var count = GetKeyCount(keyId);
+                if (count < HighestKeyId - range && count > HighestKeyId + range)
+                    return keyId;                
+            }
+
+            return 0;
+        }
+
     }
 }

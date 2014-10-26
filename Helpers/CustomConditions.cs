@@ -172,6 +172,16 @@ namespace QuestTools
             return Keys.GetKeyCount(actorId) < Keys.LowerQuartile;
         }
 
+        public static bool IsKeyOutlier(int actorId)
+        {
+            return Keys.GetKeyIdNotWithinRange(1) == actorId;
+        }
+
+        public static bool IsKeyOutlier()
+        {
+            return Keys.GetKeyIdNotWithinRange(1) != 0;
+        }
+
         public static bool UsedOnce(string id)
         {
             return UseOnceTag.UseOnceIDs.Contains(id);
