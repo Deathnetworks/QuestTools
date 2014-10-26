@@ -15,6 +15,7 @@ namespace QuestTools.ProfileTags
 {
     /// <summary>
     /// Move to a random valid location from current position without using navigation or pathfinding.
+    /// Uses basic clicking on location to move. Useful for anti-stuck and areas prone to pathfinding issues.
     /// </summary>
     [XmlElement("RandomMove")]
     public class RandomMoveTag : ProfileBehavior, IEnhancedProfileBehavior
@@ -38,7 +39,8 @@ namespace QuestTools.ProfileTags
             get
             {
                 var done = _isDone || !IsActiveQuestStep;
-                CheckTimeout();
+                if (!done)
+                    CheckTimeout();
                 return done;
             }
         }
@@ -74,9 +76,12 @@ namespace QuestTools.ProfileTags
             return new Decorator(ret => !_isDone, 
 
                 new Action(ret =>
-                {
+                {                   
                     if(!_points.Any() || ProfileUtils.IsWithinRange(_points.First()))
                     {
+                        if (QuestToolsSettings.Instance.DebugEnabled)
+                            Logger.Debug("Arrived at Destination {0} Distance={1}", _points.First().ToString(), _points.First());
+                        
                         _isDone = true;
                         return RunStatus.Failure;
                     }
@@ -85,16 +90,21 @@ namespace QuestTools.ProfileTags
                         _lastMoving = DateTime.UtcNow;
 
                     var rayResult = ZetaDia.Physics.Raycast(ZetaDia.Me.Position, _points.First(), NavCellFlags.AllowWalk);
+                    var stuckResult = DateTime.UtcNow.Subtract(_lastMoving).TotalMilliseconds > 500;
+                    
+                    if (stuckResult || !rayResult)
+                    {
+                        if (QuestToolsSettings.Instance.DebugEnabled)
+                            Logger.Debug("Discarded Location {0} Distance={1} RaycastResult={2} StuckResult={3} LocationsRemaining={4}", _points.First().ToString(), _points.First().Distance(ZetaDia.Me.Position), rayResult, stuckResult, _points.Count - 1);
 
-                    if (DateTime.UtcNow.Subtract(_lastMoving).TotalMilliseconds > 500 || !rayResult)
                         _points.RemoveAt(0);
+                    }                        
 
                     if (_points.Any() && _points.First() != Vector3.Zero && ZetaDia.Me.Movement.MoveActor(_points.First()) == 1)
                         return RunStatus.Success;
 
                     _isDone = true;
                     return RunStatus.Failure;
-
                 })                
             );
         }

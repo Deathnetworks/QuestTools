@@ -55,7 +55,8 @@ namespace QuestTools.Helpers
                 var newpoint = new Vector3(newX, newY, center.Z);
                 result.Add(newpoint);
 
-                Logger.Verbose("Calculated point {0}: {1}", i, newpoint.ToString());
+                if(QuestToolsSettings.Instance.DebugEnabled)
+                    Logger.Debug("Calculated point {0}: {1}", i, newpoint.ToString());
             }
             return result;
         }
