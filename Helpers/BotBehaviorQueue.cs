@@ -72,8 +72,6 @@ namespace QuestTools.Helpers
                     if (!BotMain.IsRunning || BotMain.IsPausedForStateExecution || !ZetaDia.IsInGame || ZetaDia.IsLoadingWorld || ZetaDia.Me == null || !ZetaDia.Me.IsValid || ZetaDia.IsPlayingCutscene)
                         continue;                      
 
-                    BotMain.CurrentBot.Pulse();
-
                     if (Q.Any())
                         Logger.Verbose("{0} in Queue", Q.Count);
                 
