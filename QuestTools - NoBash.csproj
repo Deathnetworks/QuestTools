@@ -95,6 +95,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Helpers\ActorHistory.cs" />
+    <Compile Include="Helpers\ConcurrentHashSet.cs" />
     <Compile Include="Helpers\ConvertExtensions.cs" />
     <Compile Include="Helpers\FileManager.cs" />
     <Compile Include="Helpers\Keys.cs" />
