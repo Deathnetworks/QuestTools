@@ -42,7 +42,7 @@ namespace QuestTools
         
         public static bool CurrentSceneName(string sceneName)
         {
-            return ZetaDia.Me.CurrentScene.Name.ToLowerInvariant() == sceneName.ToLowerInvariant();          
+            return ZetaDia.Me.CurrentScene.Name.ToLowerInvariant().Contains(sceneName.ToLowerInvariant());          
         }
 
         public static bool CurrentDifficulty(string difficulty)
@@ -177,7 +177,7 @@ namespace QuestTools
             return Keys.GetKeyIdNotWithinRange(1) == actorId;
         }
 
-        public static bool IsKeyOutlier()
+        public static bool IsAnyKeyOutlier()
         {
             return Keys.GetKeyIdNotWithinRange(1) != 0;
         }
