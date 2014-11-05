@@ -453,32 +453,24 @@ namespace QuestTools.ProfileTags.Complex
     public class EnhancedIfTag : IfTag, IEnhancedProfileBehavior
     {
         private bool _isDone;
-        public bool ContinuouslyRecheck;
-
         public Common.BoolDelegate IsDoneDelegate;
 
-        // This constructor is just for convienience when adding directly to BotBehaviorQueue
-        // new EnhancedIfTag(ret => c#condition, List<ProfileBehavior>)
         public EnhancedIfTag(Common.BoolDelegate isDoneDelegate = null, params ProfileBehavior[] children)
         {
-            if (isDoneDelegate != null)
-            {
-                IsDoneDelegate = isDoneDelegate;
-                Condition = "True";
-            }
- 
+            IsDoneDelegate = isDoneDelegate;
             if(children!=null && children.Any())
                 Body = children.ToList();
         }
 
         public override bool IsDone
         {
-            get { return _isDone || base.IsDone; }
-        }
+            get
+            {
+                if (IsDoneDelegate != null)
+                    Conditional = ScriptManager.GetCondition(IsDoneDelegate.Invoke(null) ? "True" : "False");                
 
-        public new bool GetConditionExec()
-        {
-            return IsDoneDelegate != null && IsDoneDelegate.Invoke(null) || ScriptManager.GetCondition(Condition).Invoke();
+                return _isDone || base.IsDone;
+            }
         }
 
         public override void ResetCachedDone()
@@ -518,26 +510,24 @@ namespace QuestTools.ProfileTags.Complex
     public class EnhancedWhileTag : WhileTag, IEnhancedProfileBehavior
     {
         private bool _isDone;
-
         public Common.BoolDelegate IsDoneDelegate;
 
-        // This constructor is just for convienience when adding directly to BotBehaviorQueue
-        // new EnhancedWhileTag(ret => c#condition, List<ProfileBehavior>)
         public EnhancedWhileTag(Common.BoolDelegate isDoneDelegate = null, params ProfileBehavior[] children)
         {
-            if (isDoneDelegate != null)
-            {
-                IsDoneDelegate = isDoneDelegate;
-                Condition = "True";
-            }
- 
+            IsDoneDelegate = isDoneDelegate;
             if(children!=null && children.Any())
                 Body = children.ToList();
         }
 
         public override bool IsDone
         {
-            get { return _isDone || base.IsDone; }
+            get
+            {                
+                if (IsDoneDelegate != null)
+                    Conditional = ScriptManager.GetCondition(IsDoneDelegate.Invoke(null) ? "True" : "False");                     
+
+                return _isDone || base.IsDone;
+            }
         }
 
         public new bool GetConditionExec()

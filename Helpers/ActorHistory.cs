@@ -84,7 +84,7 @@ namespace QuestTools.Helpers
 
             _lastChangeCheckTime = DateTime.UtcNow;
 
-            if (!ZetaDia.IsInGame || !ZetaDia.Me.IsValid || ZetaDia.IsLoadingWorld || ZetaDia.WorldInfo.IsValid)
+            if (!ZetaDia.IsInGame || ZetaDia.Me == null || !ZetaDia.Me.IsValid || ZetaDia.IsLoadingWorld || ZetaDia.WorldInfo.IsValid)
                 return;
 
             try

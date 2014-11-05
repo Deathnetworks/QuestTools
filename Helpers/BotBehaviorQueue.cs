@@ -19,7 +19,7 @@ namespace QuestTools.Helpers
     public static class BotBehaviorQueue
     {
         public delegate bool ShouldRunCondition(List<ProfileBehavior> profileBehaviors);
-        private static ConcurrentHashSet<QueueItem> Q = new ConcurrentHashSet<QueueItem>();
+        private static readonly HashSet<QueueItem> Q = new HashSet<QueueItem>();
         private static bool _hooksInserted;
         private static bool _wired;
         private static Decorator _hook;
@@ -27,7 +27,6 @@ namespace QuestTools.Helpers
         private static QueueItem _active;
         public static List<QueueItem> Shelf = new List<QueueItem>();
         private static Thread _thread;
-        private static readonly object Synchronizer = new object();
 
         static BotBehaviorQueue()
         {
@@ -54,7 +53,7 @@ namespace QuestTools.Helpers
 
         private static bool CheckCondition(QueueItem item)
         {
-            return item.Condition.Invoke(item.Nodes);
+            return item.Condition != null && item.Condition.Invoke(item.Nodes);
         }
 
         /// <summary>
@@ -62,47 +61,14 @@ namespace QuestTools.Helpers
         /// </summary>
         private static void CheckConditions()
         {
-            var working = true;
-            while (working)
+            foreach (var item in Q.Where(item => !item.ConditionPassed).Where(CheckCondition)) 
             {
-                try
-                {
-                    Thread.Sleep(250);
+                item.ConditionPassed = true;
 
-                    if (!BotMain.IsRunning || BotMain.IsPausedForStateExecution || !ZetaDia.IsInGame || ZetaDia.IsLoadingWorld || ZetaDia.Me == null || !ZetaDia.Me.IsValid || ZetaDia.IsPlayingCutscene)
-                        continue;                      
-
-                    if (Q.Any())
-                        Logger.Verbose("{0} in Queue", Q.Count);
-                
-                    using (ZetaDia.Memory.AcquireFrame())
-                    using (new ZetaCacheHelper())
-                    {
-                        ZetaDia.Actors.Update();
-                        ActorHistory.UpdateActors();
-
-                        foreach (var item in Q.Where(item => !item.ConditionPassed).Where(CheckCondition)) 
-                        {
-                            item.ConditionPassed = true;
-
-                            Logger.Log("Triggered {1} with {0} Behaviors to be run at next opportunity",
-                                item.Nodes.Count, (!string.IsNullOrEmpty(item.Name)) ? item.Name : "Unnamed");
-                        }
-                    }
-                }
-                catch (ThreadAbortException e)
-                {
-                    Thread.ResetAbort();
-                    working = false;
-                }
-                catch (Exception ex)
-                {
-                    Logger.Verbose("Error in CheckConditions Thread: {0}", ex);
-                }
-            } 
+                Logger.Log("Triggered {1} with {0} Behaviors to be run at next opportunity",
+                    item.Nodes.Count, (!string.IsNullOrEmpty(item.Name)) ? item.Name : "Unnamed");
+            }
         }
-
-
 
         /// <summary>
         /// Magic self-updating composite
@@ -140,7 +106,7 @@ namespace QuestTools.Helpers
                 if (nextItem != null)
                 {
                     Logger.Verbose("Starting QueueItem");
-                    if (Q.TryRemove(nextItem))
+                    if (Q.Remove(nextItem))
                     {
                         _active = nextItem;
                         if (_active.OnStart != null)
@@ -322,13 +288,7 @@ namespace QuestTools.Helpers
                 item.Condition = ret => true;
 
             ProfileUtils.AsyncReplaceTags(item.Nodes);
-
-            while(!Q.TryAdd(item))
-            {
-                Logger.Debug("Failed to add new QueueItem :(");
-                BotMain.PauseFor(TimeSpan.FromMilliseconds(25));
-            }
-           
+            Q.Add(item);
         }
 
         #endregion
@@ -339,13 +299,11 @@ namespace QuestTools.Helpers
         {
             if (_wired) return;
 
-            ThreadStart();
             BotMain.OnStart += OnStartHandler;
             GameEvents.OnGameChanged += OnGameChangedHandler;
             TreeHooks.Instance.OnHooksCleared += OnHooksClearedHandler;
-            BrainBehavior.OnScheduling += OnSchedulingHandler;
+            Pulsator.OnPulse += OnPulse;
             ProfileManager.OnProfileLoaded += OnProfileLoaded;
-            BotMain.OnStop += bot => ThreadShutdown();
             _wired = true;
         }
 
@@ -370,10 +328,9 @@ namespace QuestTools.Helpers
             InsertHooks();
         }
 
-        private static void OnSchedulingHandler(object sender, EventArgs eventArgs)
+        private static void OnPulse(object sender, EventArgs eventArgs)
         {
-            if(!ThreadIsRunning)
-                ThreadStart();
+            CheckConditions();
         }
 
         public static void UnWire()
@@ -383,7 +340,7 @@ namespace QuestTools.Helpers
             BotMain.OnStart -= OnStartHandler;
             GameEvents.OnGameChanged -= OnGameChangedHandler;
             TreeHooks.Instance.OnHooksCleared -= OnHooksClearedHandler;
-            BrainBehavior.OnScheduling -= OnSchedulingHandler;
+            Pulsator.OnPulse -= OnPulse;
             ProfileManager.OnProfileLoaded -= OnProfileLoaded;
 
             _wired = false;
@@ -395,40 +352,6 @@ namespace QuestTools.Helpers
             _hook = CreateMasterHook();
             TreeHooks.Instance.InsertHook("BotBehavior", 0, _hook);
             _hooksInserted = true;
-        }
-
-        public static bool ThreadIsRunning
-        {
-            get { return _thread != null && _thread.IsAlive;  }
-        }
-
-        public static void ThreadStart()
-        {
-            if (ThreadIsRunning)
-                return;
-
-            _thread = new Thread(CheckConditions)
-            {
-                Name = "BotBehaviorQueue CheckConditions",
-                IsBackground = true,
-                Priority = ThreadPriority.BelowNormal
-            };
-
-            Logger.Debug("Starting CheckConditions Thread Id={0}", _thread.ManagedThreadId);
-
-            _thread.Start();
-
-        }
-
-        public static void ThreadShutdown()
-        {
-            Logger.Debug("Shutting down thread");
-
-            if (!ThreadIsRunning)
-                return;
-
-            _thread.Abort();
-            _thread.Join();
         }
 
         #endregion
@@ -459,14 +382,9 @@ namespace QuestTools.Helpers
             if (forceClearAll)
                 Q.Clear();
             else
-                Q.ForEach(i =>
-                {
-                    if (!i.Persist)
-                        Q.TryRemove(i);
-                });
+                Q.RemoveWhere(i => !i.Persist);
 
             Shelf.Clear();
-
             _active = null;
         }
 
