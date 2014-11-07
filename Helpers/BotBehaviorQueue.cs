@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using Zeta.Bot;
 using Zeta.Bot.Logic;
 using Zeta.Bot.Profile;
@@ -26,7 +25,8 @@ namespace QuestTools.Helpers
         internal static QueueItemEqualityComparer QueueItemComparer = new QueueItemEqualityComparer();
         private static QueueItem _active;
         public static List<QueueItem> Shelf = new List<QueueItem>();
-        private static Thread _thread;
+        private static DateTime LastChecked = DateTime.UtcNow;
+        private static int MinCheckInterval = 100;
 
         static BotBehaviorQueue()
         {
@@ -61,6 +61,8 @@ namespace QuestTools.Helpers
         /// </summary>
         private static void CheckConditions()
         {
+            if(DateTime.UtcNow.Subtract(LastChecked).TotalMilliseconds < MinCheckInterval)
+
             foreach (var item in Q.Where(item => !item.ConditionPassed).Where(CheckCondition)) 
             {
                 item.ConditionPassed = true;
@@ -68,6 +70,8 @@ namespace QuestTools.Helpers
                 Logger.Log("Triggered {1} with {0} Behaviors to be run at next opportunity",
                     item.Nodes.Count, (!string.IsNullOrEmpty(item.Name)) ? item.Name : "Unnamed");
             }
+
+            LastChecked = DateTime.UtcNow;
         }
 
         /// <summary>

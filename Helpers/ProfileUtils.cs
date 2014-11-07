@@ -86,8 +86,12 @@ namespace QuestTools.Helpers
         /// <summary>
         /// Replace some default DemonBuddy tags with enhanced Questtools versions
         /// </summary>
-        public static void ReplaceDefaultTags()
+        public static void ProcessProfile()
         {
+            // All unrecognized tags are set as null and moved to root.
+            // Avoid these tags throwing exception by removing them.
+            ProfileManager.CurrentProfile.Order.RemoveAll(t => t == null);
+
             RecurseBehaviors(Zeta.Bot.ProfileManager.CurrentProfile.Order, (node, i, type) =>
             {
                 //if (node is IfTag && type == typeof(IfTag))
@@ -112,7 +116,7 @@ namespace QuestTools.Helpers
 
                 return node;
             });
-        }
+        }        
 
         public static void AsyncReplaceTags(IList<ProfileBehavior> tags)
         {
@@ -183,10 +187,9 @@ namespace QuestTools.Helpers
             {
                 if (nodes[i] == null)
                     continue;
-
+                 
                 var node = nodes[i];
                 var type = node.GetType();
-
                 
                 nodes[i] = replacementDelegate.Invoke(node, i, type);
 
