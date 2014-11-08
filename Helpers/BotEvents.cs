@@ -108,7 +108,7 @@ namespace QuestTools.Helpers
         {
             ProfileUtils.LoadAdditionalGameParams();
             ProfileHistory.Add(ProfileManager.CurrentProfile);
-            ProfileUtils.ReplaceDefaultTags();
+            ProfileUtils.ProcessProfile();
         }
     }
 

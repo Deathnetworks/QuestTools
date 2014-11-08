@@ -51,6 +51,11 @@ namespace QuestTools.Helpers
             get { return _hooksInserted && _wired; }
         }
 
+        public static ProfileBehavior CurrentBehavior
+        {
+            get { return _active != null ? _active.ActiveNode : null; }
+        }
+
         private static bool CheckCondition(QueueItem item)
         {
             return item.Condition != null && item.Condition.Invoke(item.Nodes);
