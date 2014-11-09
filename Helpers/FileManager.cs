@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace QuestTools.Helpers
@@ -69,5 +70,67 @@ namespace QuestTools.Helpers
             }
         }
 
+
+        internal static string GetFile(string startDirectory, string fileName)
+        {
+            return GetFile(startDirectory, new List<string>() { fileName });
+        }
+
+        internal static string GetFile(string startDirectory, ICollection<string> fileNames)
+        {
+            var dirExcludes = new HashSet<string>
+            {
+                ".svn",
+                "obj",
+                "bin",
+                "debug"
+            };
+
+            var queue = new Queue<string>();
+
+            queue.Enqueue(startDirectory);
+
+            Func<string, string> last = input => input.Split('\\').Last().ToLower();
+
+            Func<IEnumerable<string>, string, bool> contains = (haystack, needle) =>
+            {
+                return haystack.Contains(needle, StringComparer.Create(Thread.CurrentThread.CurrentCulture, true));
+            };
+
+            while (queue.Count > 0)
+            {
+                startDirectory = queue.Dequeue();
+                try
+                {
+                    foreach (var subDir in Directory.GetDirectories(startDirectory))
+                    {
+                        if (contains(dirExcludes, last(subDir))) continue;
+                        queue.Enqueue(subDir);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine(ex);
+                }
+                string[] files = null;
+                try
+                {
+                    files = Directory.GetFiles(startDirectory);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine(ex);
+                }
+                if (files != null)
+                {
+                    foreach (var filePath in files)
+                    {
+                        if (!contains(fileNames, last(filePath))) continue;
+                        return filePath;
+                    }
+                }
+            }
+            return string.Empty;
+        }
     }
 }

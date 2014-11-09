@@ -21,7 +21,7 @@ using Action = System.Action;
 
 namespace QuestTools.Helpers
 {
-    internal class ProfileUtils
+    public class ProfileUtils
     {
         public static bool IsWithinRange(Vector3 position, float range = 12f)
         {
@@ -61,7 +61,7 @@ namespace QuestTools.Helpers
             return result;
         }
 
-        public static void LoadAdditionalGameParams()
+        internal static void LoadAdditionalGameParams()
         {           
             // Only worry about GameParams if we're about to start a new game
             if (ZetaDia.IsInGame || ProfileManager.CurrentProfile == null)
@@ -86,7 +86,7 @@ namespace QuestTools.Helpers
         /// <summary>
         /// Replace some default DemonBuddy tags with enhanced Questtools versions
         /// </summary>
-        public static void ProcessProfile()
+        internal static void ProcessProfile()
         {
             // All unrecognized tags are set as null and moved to root.
             // Avoid these tags throwing exception by removing them.
@@ -118,7 +118,7 @@ namespace QuestTools.Helpers
             });
         }        
 
-        public static void AsyncReplaceTags(IList<ProfileBehavior> tags)
+        internal static void AsyncReplaceTags(IList<ProfileBehavior> tags)
         {
             RecurseBehaviors(tags, (behavior, i, type) =>
             {
@@ -211,5 +211,71 @@ namespace QuestTools.Helpers
 
             }
         }
+
+        /// <summary>
+        /// Checks if navigator can find a path to location
+        /// </summary>
+        /// <returns></returns>
+        public static bool CanPathToLocation(Vector3 position, int maxDistance = 200, int pathPrecision = 10)
+        {
+            var distance = position.Distance2D(ZetaDia.Me.Position);
+
+            if (position == Vector3.Zero || distance > maxDistance)
+            {
+                Logger.Debug("Location is too far away! Distance={0}", distance);
+                return false;
+            }
+
+            if (!Navigator.GetNavigationProviderAs<DefaultNavigationProvider>().CanPathWithinDistance(position, pathPrecision) || Navigator.StuckHandler.IsStuck)
+            {
+                Logger.Debug("Can't navigate to position or currently stuck! Distance={0}", distance);
+                return false;
+            }
+
+            Logger.Verbose("Found path to position! Distance={0}", distance);
+            return true;
+        }
+
+        /// <summary>
+        /// A Vector3 to the middle of current town.
+        /// </summary>
+        public static Vector3 TownApproachVector
+        {
+            get
+            {
+                Logger.Debug("ZetaDia.CurrentAct={0}", ZetaDia.CurrentAct);
+
+                switch (ZetaDia.CurrentLevelAreaId)
+                {
+                    case 332339: // Act1
+                        return new Vector3(403.2f, 569.4f, 24.0f);
+                    case 168314: // Act2
+                        return new Vector3(304.9f, 243.5f, 0.10f);
+                    case 92945:  // Act3/4
+                        return new Vector3(442.4f, 415.1f, 0.1f);
+                    case 270011: // Act5
+                        return new Vector3(576f, 775f, 2.6f);
+                }
+
+                switch (ZetaDia.CurrentAct)
+                {
+                    case Act.A1:
+                        return new Vector3(403.2f, 569.4f, 24.0f);
+                    case Act.A2:
+                        return new Vector3(304.9f, 243.5f, 0.10f);
+                    case Act.A3:
+                    case Act.A4:
+                        return new Vector3(442.4f, 415.1f, 0.1f);
+                    case Act.A5:
+                        return new Vector3(576f, 775f, 2.6f);
+                }
+
+                Logger.Debug("Failed to find current act CurrentLevelAreaId={0} ZetaDia.CurrentAct={1} WorldType={2}", 
+                    ZetaDia.CurrentActSNOId, ZetaDia.CurrentAct, ZetaDia.WorldType);
+
+                return Vector3.Zero;
+            }
+        }
+
     }
 }

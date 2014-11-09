@@ -33,19 +33,21 @@ namespace QuestTools
             }
         }
 
-        public static bool IsPlayerValid()
+        public static bool IsValid
         {
-            if (ZetaDia.Me != null && 
-                ZetaDia.Me.IsValid && 
-                ZetaDia.Service.IsValid && 
-                ZetaDia.IsInGame && 
-                !ZetaDia.IsLoadingWorld && 
-                !ZetaDia.Me.IsDead)
-                return true;
+            get
+            {
+                if (ZetaDia.Me != null &&
+                    ZetaDia.Me.IsValid &&
+                    ZetaDia.Service.IsValid &&
+                    ZetaDia.IsInGame &&
+                    !ZetaDia.IsLoadingWorld &&
+                    !ZetaDia.Me.IsDead)
+                    return true;
 
-            return false;
+                return false;                
+            }
         }
-
 
     }
 }

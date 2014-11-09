@@ -25,9 +25,12 @@ namespace QuestTools.Helpers
             _lastBackPackLocation = new Vector2(-2, -2);
         }
 
-        public static bool IsValidTwoSlotLocation()
-        {
-            return FindValidBackpackLocation(true) == new Vector2(-1, -1);
+        public static bool IsValidTwoSlotLocation
+        { 
+            get
+            {
+                return FindValidBackpackLocation(true) == new Vector2(-1, -1);
+            }            
         }
 
         /// <summary>
