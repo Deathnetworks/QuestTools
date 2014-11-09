@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Navigation;
 using Zeta.Bot;
 using Zeta.Bot.Settings;
 using Zeta.Common;
@@ -24,6 +25,11 @@ namespace QuestTools.Helpers
             _lastBackPackLocation = new Vector2(-2, -2);
         }
 
+        public static bool IsValidTwoSlotLocation()
+        {
+            return FindValidBackpackLocation(true) == new Vector2(-1, -1);
+        }
+
         /// <summary>
         /// Search backpack to see if we have room for a 2-slot item anywhere
         /// </summary>
@@ -34,7 +40,8 @@ namespace QuestTools.Helpers
             try
             {
                 if (_lastBackPackLocation != new Vector2(-2, -2) &&
-                    _lastBackPackCount == ZetaDia.Me.Inventory.Backpack.Count(i => i.IsValid))
+                    _lastBackPackCount == ZetaDia.Me.Inventory.Backpack.Count(i => i.IsValid) &&
+                    _lastProtectedSlotsCount == CharacterSettings.Instance.ProtectedBagSlots.Count)
                 {
                     return _lastBackPackLocation;
                 }
@@ -62,6 +69,20 @@ namespace QuestTools.Helpers
                     int row = item.InventoryRow;
                     int col = item.InventoryColumn;
 
+                    if (row < 0 || row > 5)
+                    {
+                        Logger.Error("Item {0} ({1}) is reporting invalid backpack row of {2}!",
+                            item.Name, item.InternalName, item.InventoryRow);
+                        continue;
+                    }
+
+                    if (row < 0 || row > 9)
+                    {
+                        Logger.Error("Item {0} ({1}) is reporting invalid backpack column of {2}!",
+                            item.Name, item.InternalName, item.InventoryColumn);
+                        continue;
+                    }
+
                     // Slot is already protected, don't double count
                     if (!backpackSlotBlocked[col, row])
                     {
@@ -72,9 +93,18 @@ namespace QuestTools.Helpers
                     if (!item.IsTwoSquareItem)
                         continue;
 
-                    // Slot is already protected, don't double count
-                    if (backpackSlotBlocked[col, row + 1])
+                    try
+                    {
+                        // Slot is already protected, don't double count
+                        if (backpackSlotBlocked[col, row + 1])
+                            continue;
+                    }
+                    catch (IndexOutOfRangeException)
+                    {
+                        Logger.Error("Error checking for next slot on item {0}, row={1} col={2} IsTwoSquare={3} ItemType={4}",
+                            item.Name, item.InventoryRow, item.InventoryColumn, item.ItemType);
                         continue;
+                    }
 
                     freeBagSlots--;
                     backpackSlotBlocked[col, row + 1] = true;
@@ -84,11 +114,15 @@ namespace QuestTools.Helpers
                 int unprotectedSlots = 60 - _lastProtectedSlotsCount;
 
                 // free bag slots is less than required
-                if (noFreeSlots)
+                if (noFreeSlots || freeBagSlots < unprotectedSlots)
                 {
+                    Logger.Debug("Free Bag Slots is less than required. FreeSlots={0}, Protected={1} BackpackCount={2}",
+                        freeBagSlots, _lastProtectedSlotsCount, _lastBackPackCount);
+
                     _lastBackPackLocation = new Vector2(-1, -1);
                     return _lastBackPackLocation;
                 }
+
                 // 10 columns
                 for (int col = 0; col <= 9; col++)
                 {
@@ -126,6 +160,8 @@ namespace QuestTools.Helpers
             }
             catch (Exception ex)
             {
+                Logger.Log("Error in finding backpack slot");
+                Logger.Debug("{0}", ex.ToString());
                 return new Vector2(1, 1);
             }
         }

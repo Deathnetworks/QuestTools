@@ -5,6 +5,7 @@ using System.Linq;
 using Zeta.Bot.Settings;
 using Zeta.Common;
 using Zeta.Game;
+using Zeta.Game.Internals;
 using Zeta.Game.Internals.Actors;
 using ConditionParser = Zeta.Bot.ConditionParser;
 
@@ -26,6 +27,7 @@ namespace QuestTools
                 ZetaDia.Me.IsValid && 
                 ZetaDia.Me.CommonData != null && 
                 ZetaDia.Me.CommonData.IsValid &&
+                !ZetaDia.Me.IsDead &&
                 (
                     ZetaDia.IsLoadingWorld ||
                     ZetaDia.Me.CommonData.AnimationState == AnimationState.Casting || 
@@ -191,6 +193,11 @@ namespace QuestTools
         {
             var actor = ZetaDia.Actors.GetActorsOfType<DiaGizmo>().FirstOrDefault(a => a.ActorSNO == actorId);
             return actor != null && actor.HasBeenOperated;
+        }
+
+        public static bool IsVendorWindowOpen()
+        {
+            return UIElements.VendorWindow != null && UIElements.VendorWindow.IsValid && UIElements.VendorWindow.IsVisible;
         }
 
     }
