@@ -71,7 +71,7 @@ namespace QuestTools.Helpers
         }
 
 
-        internal static string GetFile(string startDirectory, string fileName)
+        public static string GetFile(string startDirectory, string fileName)
         {
             return GetFile(startDirectory, new List<string>() { fileName });
         }
