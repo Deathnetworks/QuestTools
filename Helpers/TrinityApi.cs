@@ -8,7 +8,7 @@ namespace QuestTools.Helpers
     /// <summary>
     /// This class well get and set static Trinity Properties and Fields. It does not support instances.
     /// </summary>
-    class TrinityApi
+    public class TrinityApi
     {
         // Trinity_635346394618921335.dll
         private const string AssemblyName = "Trinity";

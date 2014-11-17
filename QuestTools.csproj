@@ -114,9 +114,12 @@
     <Compile Include="Helpers\ProfileExtensions.cs" />
     <Compile Include="Helpers\ProfileHistory.cs" />
     <Compile Include="Helpers\ProfileUtils.cs" />
+    <Compile Include="Helpers\QuestToolsPlugin.cs" />
     <Compile Include="Helpers\RiftTrial.cs" />
     <Compile Include="Helpers\StringUtils.cs" />
     <Compile Include="Helpers\TrinityApi.cs" />
+    <Compile Include="Helpers\Vendor.cs" />
+    <Compile Include="Helpers\WindowManager.cs" />
     <Compile Include="Helpers\ZetaCacheHelper.cs" />
     <Compile Include="ProfileTags\Beta\Experiments\ClearObstacleTag.cs" />
     <Compile Include="ProfileTags\Beta\Experiments\CommandTag.cs" />

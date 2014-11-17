@@ -96,6 +96,8 @@
   <ItemGroup>
     <Compile Include="Helpers\ActorHistory.cs" />
     <Compile Include="Helpers\ConvertExtensions.cs" />
+    <Compile Include="Helpers\QuestToolsPlugin.cs" />
+    <Compile Include="Helpers\Vendor.cs" />
     <Compile Include="Helpers\FileManager.cs" />
     <Compile Include="Helpers\Keys.cs" />
     <Compile Include="Helpers\ProfileHistory.cs" />
@@ -106,6 +108,7 @@
     <Compile Include="Helpers\ProfileExtensions.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Helpers\WindowManager.cs" />
     <Compile Include="ProfileTags\Beta\Experiments\GoblinPortals.cs" />
     <Compile Include="ProfileTags\EnchancedDefaultTags.cs">
       <SubType>Code</SubType>

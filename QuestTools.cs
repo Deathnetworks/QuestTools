@@ -57,7 +57,7 @@ namespace QuestTools
         {
             try
             {
-                if (!Player.IsPlayerValid())
+                if (!Player.IsValid)
                     return;
 
                 ChangeMonitor.CheckForChanges();

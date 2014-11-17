@@ -43,9 +43,6 @@ namespace QuestTools.ProfileTags.Beta
                     Name = Name,
                     StartTime = DateTime.UtcNow,
                     Group = Group,
-                    QuestIsBounty = (quest != null) && quest.QuestType == QuestType.Bounty,
-                    QuestName = (quest != null) ? quest.Quest.ToString() : string.Empty,
-                    QuestId = (quest != null) ? quest.QuestSNO : -1,
                 })),
                 new Action(ret => _isDone = true)
             );

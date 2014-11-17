@@ -5,6 +5,7 @@ using System.Linq;
 using Zeta.Bot.Settings;
 using Zeta.Common;
 using Zeta.Game;
+using Zeta.Game.Internals;
 using Zeta.Game.Internals.Actors;
 using ConditionParser = Zeta.Bot.ConditionParser;
 
@@ -26,6 +27,7 @@ namespace QuestTools
                 ZetaDia.Me.IsValid && 
                 ZetaDia.Me.CommonData != null && 
                 ZetaDia.Me.CommonData.IsValid &&
+                !ZetaDia.Me.IsDead &&
                 (
                     ZetaDia.IsLoadingWorld ||
                     ZetaDia.Me.CommonData.AnimationState == AnimationState.Casting || 
@@ -42,7 +44,7 @@ namespace QuestTools
         
         public static bool CurrentSceneName(string sceneName)
         {
-            return ZetaDia.Me.CurrentScene.Name.ToLowerInvariant() == sceneName.ToLowerInvariant();          
+            return ZetaDia.Me.CurrentScene.Name.ToLowerInvariant().Contains(sceneName.ToLowerInvariant());          
         }
 
         public static bool CurrentDifficulty(string difficulty)
@@ -172,11 +174,31 @@ namespace QuestTools
             return Keys.GetKeyCount(actorId) < Keys.LowerQuartile;
         }
 
+        public static bool IsKeyOutlier(int actorId)
+        {
+            return Keys.GetKeyIdNotWithinRange(1) == actorId;
+        }
+
+        public static bool IsAnyKeyOutlier()
+        {
+            return Keys.GetKeyIdNotWithinRange(1) != 0;
+        }
+
         public static bool UsedOnce(string id)
         {
             return UseOnceTag.UseOnceIDs.Contains(id);
         }
 
+        public static bool HasBeenOperated(int actorId)
+        {
+            var actor = ZetaDia.Actors.GetActorsOfType<DiaGizmo>().FirstOrDefault(a => a.ActorSNO == actorId);
+            return actor != null && actor.HasBeenOperated;
+        }
+
+        public static bool IsVendorWindowOpen()
+        {
+            return UIElements.VendorWindow != null && UIElements.VendorWindow.IsValid && UIElements.VendorWindow.IsVisible;
+        }
 
     }
 }

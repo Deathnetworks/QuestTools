@@ -77,19 +77,19 @@ namespace QuestTools.Helpers
 
         public static void UpdateActors()
         {
-            if (DateTime.UtcNow.Subtract(_lastChangeCheckTime).TotalMilliseconds < 500)
+            if (DateTime.UtcNow.Subtract(_lastChangeCheckTime).TotalMilliseconds < 250)
                 return;
 
             _lastChangeCheckTime = DateTime.UtcNow;
 
-            _currentWorldId = ZetaDia.CurrentWorldId;
-            _currentLevelAreaId = ZetaDia.CurrentLevelAreaId;
-
-            if (!ZetaDia.IsInGame || !ZetaDia.Me.IsValid || ZetaDia.IsLoadingWorld)
+            if (!ZetaDia.IsInGame || ZetaDia.Me == null || !ZetaDia.Me.IsValid || ZetaDia.IsLoadingWorld || ZetaDia.WorldInfo.IsValid)
                 return;
 
             try
             {
+                _currentWorldId = ZetaDia.CurrentWorldId;
+                _currentLevelAreaId = ZetaDia.CurrentLevelAreaId;
+
                 (from o in ZetaDia.Actors.GetActorsOfType<DiaObject>(true)
                  where (o is DiaGizmo || o is DiaUnit) && !(o is DiaPlayer)
                  select o).ToList().ForEach(UpdateActor);   

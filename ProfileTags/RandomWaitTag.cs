@@ -28,7 +28,7 @@ namespace QuestTools.ProfileTags
             return
             new Sequence(
                 new Action(ret => _delay = new Random().Next(Min, Max)),
-                new Action(ret => Logger.Log("Random Wait - Taking a break for {0:3} seconds.", _delay)),
+                new Action(ret => Logger.Log("Random Wait - Taking a break for {0:0.#} Milliseconds.", _delay)),
                 new Action(ctx => DoRandomWait()),
                 new Action(ret => _isDone = true)
             );

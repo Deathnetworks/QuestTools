@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using QuestTools.Helpers;
 using QuestTools.ProfileTags.Complex;
 using Zeta.Bot;
 using Zeta.Bot.Navigation;
@@ -70,7 +71,7 @@ namespace QuestTools.ProfileTags
         public override void OnStart()
         {
             _startTime = DateTime.UtcNow;
-            _points = GetCirclePoints(Points, Radius, ZetaDia.Me.Position);
+            _points = ProfileUtils.GetCirclePoints(Points, Radius, ZetaDia.Me.Position);
             _points.Add(ZetaDia.Me.Position);
             _navigator = Navigator.GetNavigationProviderAs<DefaultNavigationProvider>();
             base.OnStart();
@@ -102,24 +103,6 @@ namespace QuestTools.ProfileTags
 
                 return true;
             }
-        }
-
-        private List<Vector3> GetCirclePoints(int points, double radius, Vector3 center)
-        {
-            var result = new List<Vector3>();
-            double slice = 2*Math.PI/points;
-            for (int i = 0; i < points; i++)
-            {
-                double angle = slice*i;
-                var newX = (int) (center.X + radius*Math.Cos(angle));
-                var newY = (int) (center.Y + radius*Math.Sin(angle));
-
-                var newpoint = new Vector3(newX, newY, center.Z);
-                result.Add(newpoint);
-
-                Logger.Debug("Calculated point {0}: {1}", i, newpoint.ToString());
-            }
-            return result;
         }
 
         public override void ResetCachedDone()

@@ -184,9 +184,11 @@ namespace QuestTools
             }
         }
 
-        public static void PressESC()
+        public static void CloseVendorWindow()
         {
-
+            UIElement.FromHash(0x109597E125942DA4).Click();
         }
+
+
     }
 }

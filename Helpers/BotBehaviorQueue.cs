@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Resources;
 using Zeta.Bot;
 using Zeta.Bot.Logic;
 using Zeta.Bot.Profile;
@@ -18,16 +17,16 @@ namespace QuestTools.Helpers
     /// </summary>
     public static class BotBehaviorQueue
     {
-        private const int MinimumCheckInterval = 250;
         public delegate bool ShouldRunCondition(List<ProfileBehavior> profileBehaviors);
-        private static readonly List<QueueItem> Q = new List<QueueItem>();
+        private static readonly HashSet<QueueItem> Q = new HashSet<QueueItem>();
         private static bool _hooksInserted;
         private static bool _wired;
         private static Decorator _hook;
-        private static DateTime _lastCheckedConditionsTime = DateTime.MinValue;
         internal static QueueItemEqualityComparer QueueItemComparer = new QueueItemEqualityComparer();
         private static QueueItem _active;
         public static List<QueueItem> Shelf = new List<QueueItem>();
+        private static DateTime LastChecked = DateTime.UtcNow;
+        private static int MinCheckInterval = 100;
 
         static BotBehaviorQueue()
         {
@@ -52,23 +51,32 @@ namespace QuestTools.Helpers
             get { return _hooksInserted && _wired; }
         }
 
+        public static ProfileBehavior CurrentBehavior
+        {
+            get { return _active != null ? _active.ActiveNode : null; }
+        }
+
+        private static bool CheckCondition(QueueItem item)
+        {
+            return item.Condition != null && item.Condition.Invoke(item.Nodes);
+        }
+
         /// <summary>
         /// Marks QueueItems as ready if their condition is True
         /// </summary>
         private static void CheckConditions()
         {
-            if (Q.Any())
-                Logger.Verbose("{0} in Queue", Q.Count);
+            if(DateTime.UtcNow.Subtract(LastChecked).TotalMilliseconds < MinCheckInterval)
 
-            Q.ForEach(node =>
+            foreach (var item in Q.Where(item => !item.ConditionPassed).Where(CheckCondition)) 
             {
-                if (node.ConditionPassed || !node.Condition.Invoke(node.Nodes)) return;
+                item.ConditionPassed = true;
 
-                node.ConditionPassed = true;
+                Logger.Log("Triggered {1} with {0} Behaviors to be run at next opportunity",
+                    item.Nodes.Count, (!string.IsNullOrEmpty(item.Name)) ? item.Name : "Unnamed");
+            }
 
-                Log("Triggered {1} with {0} Behaviors to be run at next opportunity",
-                    node.Nodes.Count, (!string.IsNullOrEmpty(node.Name)) ? node.Name : "Unnamed");
-            });
+            LastChecked = DateTime.UtcNow;
         }
 
         /// <summary>
@@ -94,7 +102,7 @@ namespace QuestTools.Helpers
         /// Which composite is returned changes based on the QueueItem currently being processed.
         /// </summary>
         private static Composite Next()       
-        {   
+        {
             // 1. No active node
             if (_active == null)
             {
@@ -103,18 +111,21 @@ namespace QuestTools.Helpers
                     return Continue;
 
                 // 1.2 Start the next QueueItem that has passed its condition
-                _active = Q.FirstOrDefault(n => n.ConditionPassed);
-                Logger.Verbose("Starting QueueItem");
-                if (_active != null)
+                var nextItem = Q.FirstOrDefault(n => n.ConditionPassed);
+                if (nextItem != null)
                 {
-                    Q.Remove(_active);
-                    if (_active.OnStart != null)
-                        _active.OnStart.Invoke(_active);
-                    return Loop;
+                    Logger.Verbose("Starting QueueItem");
+                    if (Q.Remove(nextItem))
+                    {
+                        _active = nextItem;
+                        if (_active.OnStart != null)
+                            _active.OnStart.Invoke(_active);
+                        return Loop;                        
+                    };
                 }
 
                 // 1.3 Nothing has passed condition yet.
-                return Continue;
+                return Continue;            
             }
             
             // 2. We're currently processing a QueueItem
@@ -170,13 +181,11 @@ namespace QuestTools.Helpers
                         _active.Reset();
                         _active = null;
                         Queue(temp);
-                        CheckConditions();
                         return Loop;
                     }
 
                     // 3.2.4 No parent, No Repeat, so just end the QueueItem 
                     _active = null;
-                    CheckConditions();
                     return Loop;
                 }
 
@@ -288,12 +297,12 @@ namespace QuestTools.Helpers
                 item.Condition = ret => true;
 
             ProfileUtils.AsyncReplaceTags(item.Nodes);
-            Q.Add(item);           
+            Q.Add(item);
         }
 
         #endregion
 
-        #region Binding, Events, Hooks Etc
+        #region Binding, Events, Hooks, Thread Etc
 
         public static void WireUp()
         {
@@ -302,9 +311,8 @@ namespace QuestTools.Helpers
             BotMain.OnStart += OnStartHandler;
             GameEvents.OnGameChanged += OnGameChangedHandler;
             TreeHooks.Instance.OnHooksCleared += OnHooksClearedHandler;
-            BrainBehavior.OnScheduling += OnSchedulingHandler;
+            Pulsator.OnPulse += OnPulse;
             ProfileManager.OnProfileLoaded += OnProfileLoaded;
-
             _wired = true;
         }
 
@@ -329,16 +337,8 @@ namespace QuestTools.Helpers
             InsertHooks();
         }
 
-        private static void OnSchedulingHandler(object sender, EventArgs eventArgs)
+        private static void OnPulse(object sender, EventArgs eventArgs)
         {
-            if (!BotMain.IsRunning || !ZetaDia.IsInGame || ZetaDia.IsLoadingWorld || ZetaDia.Me == null || !ZetaDia.Me.IsValid || ZetaDia.IsPlayingCutscene)
-                return;
-
-            if (DateTime.UtcNow.Subtract(_lastCheckedConditionsTime).TotalMilliseconds < MinimumCheckInterval)
-                return;
-
-            _lastCheckedConditionsTime = DateTime.UtcNow;
-
             CheckConditions();
         }
 
@@ -349,7 +349,7 @@ namespace QuestTools.Helpers
             BotMain.OnStart -= OnStartHandler;
             GameEvents.OnGameChanged -= OnGameChangedHandler;
             TreeHooks.Instance.OnHooksCleared -= OnHooksClearedHandler;
-            BrainBehavior.OnScheduling -= OnSchedulingHandler;
+            Pulsator.OnPulse -= OnPulse;
             ProfileManager.OnProfileLoaded -= OnProfileLoaded;
 
             _wired = false;
@@ -391,10 +391,9 @@ namespace QuestTools.Helpers
             if (forceClearAll)
                 Q.Clear();
             else
-                Q.RemoveAll(i => !i.Persist);
+                Q.RemoveWhere(i => !i.Persist);
 
             Shelf.Clear();
-
             _active = null;
         }
 
