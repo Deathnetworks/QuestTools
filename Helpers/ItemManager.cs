@@ -28,7 +28,7 @@ namespace QuestTools.Helpers
         {
             get
             {
-                return FindValidBackpackLocation(true) == new Vector2(-1, -1);
+                return FindValidBackpackLocation(true) != new Vector2(-1, -1);
             }            
         }
 
