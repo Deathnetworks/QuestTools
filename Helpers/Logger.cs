@@ -208,7 +208,7 @@ namespace QuestTools
                 if (type.Namespace != null && type.Namespace.ToLowerInvariant().Contains("questtools"))
                     return "[QuestTools][" + type.Name + "] ";
 
-                if (type.Namespace == type.Name)
+                if (type.Namespace == type.Name || type.Name.ToLowerInvariant().Contains("displayclass"))
                     return "[" + type.Namespace + "] ";
 
                 return "[" + type.Namespace + "][" + type.Name + "] ";
