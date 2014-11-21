@@ -238,12 +238,12 @@ namespace QuestTools.Helpers
         }
 
         /// <summary>
-        /// Checks if navigator can find a path to location
+        /// Checks if navigator can find a path to actor
         /// </summary>
         /// <returns></returns>
         public static bool CanPathToActor(int actorId, int maxDistance = 200, int pathPrecision = 10)
         {
-            var actor = ZetaDia.Actors.GetActorsOfType<DiaObject>().FirstOrDefault(a => a.ActorSNO == actorId);
+            var actor = ZetaDia.Actors.GetActorsOfType<DiaObject>(true).FirstOrDefault(a => a.ActorSNO == actorId);
 
             if (actor == null)
             {
