@@ -119,7 +119,7 @@ namespace QuestTools.ProfileTags
         {
             if (ZetaDia.Me.IsParticipatingInTieredLootRun)
             {
-                Logger.Log("Already in Greater Rift!");
+                Logger.Debug("Already in Greater Rift!");
                 _isDone = true;
                 return false;
             }
@@ -132,7 +132,7 @@ namespace QuestTools.ProfileTags
             var portals = ZetaDia.Actors.GetActorsOfType<GizmoPortal>(true).Where(p => p.IsValid && p.ActorSNO == RiftPortalSno);
             if (portals.Any())
             {
-                Logger.Log("Rift portal already open!");
+                Logger.Debug("Rift portal already open!");
                 _isDone = true;
                 return false;
             }
