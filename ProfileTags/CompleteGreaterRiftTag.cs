@@ -194,10 +194,18 @@ namespace QuestTools.ProfileTags
                     var randomGems = ZetaDia.Actors.GetActorsOfType<ACDItem>()
                                         .Where(item => item.ItemType == ItemType.LegendaryGem)
                                         .OrderBy(item => item.JewelRank).ToList();
+
                     Random random = new Random(DateTime.UtcNow.Millisecond);
                     int i = random.Next(0, randomGems.Count - 1);
-                    var randomGem = gems[i];
+
+                    var randomGem = randomGems.ElementAtOrDefault(i);
+                    if (randomGem == null)
+                    {
+                        Logger.Error("Error: No gems found");                        
+                    }
+
                     Logger.Error("Gem Upgrade failed! Upgrading random Gem {0} ({1}) - {2:##.##}% {3} ", randomGem.Name, randomGem.JewelRank, GetUpgradeChance(randomGem) * 100, IsGemEquipped(randomGem) ? "Equipped" : string.Empty);
+                    
                     if (await CommonCoroutines.AttemptUpgradeGem(randomGem))
                     {
                     }
