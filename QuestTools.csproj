@@ -103,6 +103,7 @@
     <Compile Include="Helpers\CustomConditions.cs" />
     <Compile Include="Helpers\DataDictionary.cs" />
     <Compile Include="Helpers\Death.cs" />
+    <Compile Include="Helpers\DemonbuddyUI.cs" />
     <Compile Include="Helpers\FileManager.cs" />
     <Compile Include="Helpers\GameUI.cs" />
     <Compile Include="Helpers\ItemManager.cs" />
