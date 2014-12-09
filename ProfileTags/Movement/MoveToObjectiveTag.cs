@@ -244,7 +244,7 @@ namespace QuestTools.ProfileTags.Movement
         {
             try
             {
-                return (_objectiveObject != null &&  _objectiveObject.IsValid &&
+                return (_objectiveObject != null &&  _objectiveObject.IsValid && _objectiveObject.CommonData != null && _objectiveObject.CommonData.IsValid &&
                     _objectiveObject.CommonData.GetAttribute<int>(ActorAttributeType.BountyObjective) > 0) || _objectiveObject is GizmoPortal;
             }
             catch (Exception ex)
