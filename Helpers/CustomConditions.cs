@@ -42,6 +42,14 @@ namespace QuestTools
             return RiftTrial.CurrentWave == waveNumber;
         }
         
+        public static bool RiftAtMaxWave()
+        {        
+            if (QuestToolsSettings.Instance.EnableTrialRiftMaxLevel)
+                return RiftTrial.CurrentWave >= QuestToolsSettings.Instance.TrialRiftMaxLevel;
+            
+            return false;            
+        }
+        
         public static bool CurrentSceneName(string sceneName)
         {
             return ZetaDia.Me.CurrentScene.Name.ToLowerInvariant().Contains(sceneName.ToLowerInvariant());          

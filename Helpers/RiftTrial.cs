@@ -85,7 +85,8 @@ namespace QuestTools.Helpers
                         PathPointLimit = 250,
                         X = 393,
                         Y = 237,
-                        Z = -11
+                        Z = -11,
+                        AllowLongDistance = true
                     },
                     new TownPortalTag(),
                     new CompositeTag()
