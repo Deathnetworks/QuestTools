@@ -15,6 +15,7 @@ using Zeta.Bot.Profile.Composites;
 using Zeta.Bot.Settings;
 using Zeta.Common;
 using Zeta.Game;
+using Zeta.Game.Internals.Actors;
 using Zeta.Game.Internals.SNO;
 using Zeta.TreeSharp;
 using Action = System.Action;
@@ -234,6 +235,23 @@ namespace QuestTools.Helpers
 
             Logger.Verbose("Found path to position! Distance={0}", distance);
             return true;
+        }
+
+        /// <summary>
+        /// Checks if navigator can find a path to actor
+        /// </summary>
+        /// <returns></returns>
+        public static bool CanPathToActor(int actorId, int maxDistance = 200, int pathPrecision = 10)
+        {
+            var actor = ZetaDia.Actors.GetActorsOfType<DiaObject>(true).FirstOrDefault(a => a.ActorSNO == actorId);
+
+            if (actor == null)
+            {
+                Logger.Debug("Can't find actor Id={0}", actorId);
+                return false;
+            }
+
+            return CanPathToLocation(actor.Position, maxDistance, pathPrecision);
         }
 
         /// <summary>

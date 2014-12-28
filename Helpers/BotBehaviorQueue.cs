@@ -149,7 +149,7 @@ namespace QuestTools.Helpers
                 // 3.1 Handle ActiveNode has finished                
                 _active.CompletedNodes++;
                 _active.ActiveNode.OnDone();
-                Logger.Verbose("[{0}] Complete {1}/{2}", _active.Name, _active.CompletedNodes, _active.Nodes.Count);
+                Logger.Verbose("[{0}] Complete {1}/{2} ({3})", _active.Name, _active.CompletedNodes, _active.Nodes.Count, _active.ActiveNode.GetType());
                 if (_active.OnNodeDone != null)
                     _active.OnNodeDone.Invoke(_active);
                 
@@ -165,7 +165,7 @@ namespace QuestTools.Helpers
                     // If this QueueItem is a child, we need to continue with its parent
                     // Parent gets taken off the shelf (unpaused) and set as the new active Queueitem.
                     var parent = Shelf.FirstOrDefault(i => i.ParentOf == _active.Id);
-                    Logger.Verbose("All Nodes Complete ParentId={0} ThisId={1}", parent != null ? parent.Id.ToString() : "Null", _active.Id );
+                    Logger.Verbose("All Nodes Complete ParentId={0} ThisId={1}", parent != null ? parent.Id.ToString() : "Null", _active.Id);
                     if (parent != null)
                     {
                         _active = parent;

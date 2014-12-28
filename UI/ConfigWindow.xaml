@@ -151,7 +151,7 @@
                         <GroupBox Header="Trial Rifts: Disable Combat At Level...">
                             <StackPanel>
                                 <CheckBox Content="Enabled" IsChecked="{Binding Path=Settings.EnableTrialRiftMaxLevel}" />
-                                <ComboBox SelectedValue="{Binding Path=Settings.TrialRiftMaxLevel}" SelectedValuePath="Tag" IsEnabled="{Binding Path=Settings.EnableTrialRiftMaxLevel}" >
+                                <ComboBox SelectedValue="{Binding Path=Settings.TrialRiftMaxLevel}" SelectedValuePath="Tag" IsEnabled="{Binding Path=Settings.EnableTrialRiftMaxLevel}"  ToolTip="How many waves to kill before stopping">
                                     <ComboBoxItem Content="1" Tag="1" />
                                     <ComboBoxItem Content="2" Tag="2" />
                                     <ComboBoxItem Content="3" Tag="3" />

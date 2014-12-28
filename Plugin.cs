@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Controls.Primitives;
+using System.Windows.Media;
 using Demonbuddy;
 using QuestTools.Helpers;
 using QuestTools.UI;
@@ -71,27 +75,36 @@ namespace QuestTools
 
         public void OnInitialize()
         {
-            Application.Current.Dispatcher.Invoke(FixSettingsButton);
+            Application.Current.Dispatcher.Invoke(UpdateDemonBuddyInterface);
         }
 
-        public void FixSettingsButton()
+
+        public void UpdateDemonBuddyInterface()
         {
-            var mainWindow = Application.Current.MainWindow as MainWindow;
 
-            if (mainWindow == null)
-                return;
-
-            var settingsButton = mainWindow.FindName("btnSettings") as SplitButton;
-
-            if (settingsButton == null)
-                return;
-
-            var botSettingsButton = settingsButton.ButtonMenuItemsSource.First() as MenuItem;
-
+            var botSettingsButton = DemonbuddyUI.SettingsButton.ButtonMenuItemsSource.First() as MenuItem;
             if (botSettingsButton == null)
                 return;
 
-            settingsButton.Click += (sender, args) => botSettingsButton.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+            DemonbuddyUI.SettingsButton.Click += (sender, args) => botSettingsButton.RaiseEvent(new RoutedEventArgs(MenuItem.ClickEvent));
+
+            // Add version number to status bar
+            var versionItem = new StatusBarItem
+            {
+                HorizontalAlignment = HorizontalAlignment.Stretch,
+                HorizontalContentAlignment = HorizontalAlignment.Right,
+                Content = FileVersionInfo.GetVersionInfo(Application.ResourceAssembly.Location).FileVersion,
+                Margin = new Thickness(-85, 0, 0, 0),                
+                Padding = new Thickness(8, 3, 5, 3),
+                BorderBrush = DemonbuddyUI.StatusBarText.BorderBrush,
+                BorderThickness = DemonbuddyUI.StatusBarText.BorderThickness,
+                Foreground = DemonbuddyUI.StatusBarText.Foreground,
+                Background = DemonbuddyUI.StatusBarText.Background
+            };
+            DemonbuddyUI.StatusBarText.Margin = new Thickness(0, 0, 85, 0);
+            DemonbuddyUI.StatusBarText.HorizontalAlignment = HorizontalAlignment.Left;
+            DemonbuddyUI.StatusBarText.HorizontalContentAlignment = HorizontalAlignment.Stretch;
+            DemonbuddyUI.StatusBar.Items.Add(versionItem);
         }
 
         public bool Equals(IPlugin other) { return (other.Name == Name) && (other.Version == Version); }

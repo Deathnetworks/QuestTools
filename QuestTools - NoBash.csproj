@@ -71,7 +71,7 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Demonbuddy, Version=1.1.2154.488, Culture=neutral, PublicKeyToken=eff32ccf253d66d4, processorArchitecture=x86">
+    <Reference Include="Demonbuddy, Version=1.1.2197.502, Culture=neutral, PublicKeyToken=eff32ccf253d66d4, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\Demonbuddy.exe</HintPath>
     </Reference>
@@ -96,6 +96,7 @@
   <ItemGroup>
     <Compile Include="Helpers\ActorHistory.cs" />
     <Compile Include="Helpers\ConvertExtensions.cs" />
+    <Compile Include="Helpers\DemonbuddyUI.cs" />
     <Compile Include="Helpers\QuestToolsPlugin.cs" />
     <Compile Include="Helpers\Vendor.cs" />
     <Compile Include="Helpers\FileManager.cs" />

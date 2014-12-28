@@ -199,8 +199,27 @@ namespace QuestTools
 
         public static bool HasBeenOperated(int actorId)
         {
-            var actor = ZetaDia.Actors.GetActorsOfType<DiaGizmo>().FirstOrDefault(a => a.ActorSNO == actorId);
+            var actor = ZetaDia.Actors.GetActorsOfType<DiaGizmo>(true).FirstOrDefault(a => a.ActorSNO == actorId);
             return actor != null && actor.HasBeenOperated;
+        }
+
+        public static bool CurrentAnimation(int actorId, string animationName)
+        {
+            var actor = ZetaDia.Actors.GetActorsOfType<DiaGizmo>(true).FirstOrDefault(a => a.ActorSNO == actorId);
+
+            if (actor == null || actor.CommonData == null)
+                return false;
+
+            var result = actor.CommonData.CurrentAnimation.ToString() == animationName;
+
+            Logger.Debug("Animation for {0} ({1}) is {2} State={3} ({4})", 
+                actor.Name, 
+                actor.ActorSNO, 
+                actor.CommonData.CurrentAnimation,
+                actor.CommonData.AnimationState,
+                result);
+
+            return result;
         }
 
         public static bool IsVendorWindowOpen()
